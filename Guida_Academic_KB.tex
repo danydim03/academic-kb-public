@@ -1,0 +1,193 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\geometry{a4paper, margin=2.5cm}
+
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegray},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\title{\textbf{Manuale Completo e Dettagliato: Academic Knowledge Engine}}
+\author{Antigravity Assistant}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduzione all'Academic Knowledge Engine}
+Benvenuto nella guida completa del tuo \textbf{Academic Knowledge Engine}. Questo sistema non è un semplice "motore di ricerca" per file, ma un vero e proprio \textbf{Grafo della Conoscenza (Knowledge Graph)} combinato con intelligenza artificiale. 
+
+L'obiettivo principale è fornire al tuo \textit{Pi Coding Agent} una memoria permanente e contestuale relativa ai tuoi studi universitari, permettendogli di aiutarti nello sviluppo software tenendo conto delle lezioni teoriche (es. Sicurezza, Reti, Sistemi Operativi) in modo preciso e affidabile, abbattendo le "allucinazioni" (ovvero le risposte inventate dall'IA).
+
+Il sistema ingerisce i dati, li trasforma in frammenti (Chunk), genera delle rappresentazioni matematiche del significato (Embedding Vettoriali) e li collega tra loro su un database Neo4j.
+
+\section{Architettura di Sistema e Requisiti}
+Il sistema è costruito interamente in locale sul tuo Mac (Privacy-First) e si basa su:
+\begin{itemize}
+    \item \textbf{Python 3.12+}: Per l'elaborazione dei dati, l'estrazione dai PDF e l'interazione con le API.
+    \item \textbf{Neo4j}: Il database a grafo che gestisce sia le connessioni logiche tra i concetti, sia gli indici vettoriali per la ricerca per similarità (RAG - Retrieval-Augmented Generation).
+    \item \textbf{MCP (Model Context Protocol)}: L'interfaccia standard creata da Anthropic che permette al tuo agente IA di comunicare con il database.
+\end{itemize}
+
+\section{Avvio Iniziale e Setup Base}
+
+\subsection{1. Accendere il Database Neo4j}
+Neo4j deve essere sempre in esecuzione quando vuoi interrogare i dati o caricare nuovi file. Essendo installato nativamente tramite Homebrew, devi avviare il servizio:
+\begin{lstlisting}[language=bash]
+brew services start neo4j
+\end{lstlisting}
+Per fermarlo quando hai finito di lavorare (per risparmiare RAM):
+\begin{lstlisting}[language=bash]
+brew services stop neo4j
+\end{lstlisting}
+
+\subsection{2. Creare o Modificare la Password}
+La prima volta, Neo4j richiede l'impostazione di una password per l'utente "neo4j". Se non lo hai già fatto o se ottieni un errore di autenticazione ("AuthError"), esegui questo comando da terminale:
+\begin{lstlisting}[language=bash]
+neo4j-admin dbms set-initial-password YOUR_PASSWORD_HERE
+\end{lstlisting}
+
+\subsection{3. Attivare l'Ambiente Python}
+Apri il terminale, naviga nella cartella del progetto e attiva l'ambiente virtuale:
+\begin{lstlisting}[language=bash]
+cd /path/to/academic-kb
+source .venv/bin/activate
+\end{lstlisting}
+Devi vedere \texttt{(.venv)} all'inizio della riga di comando.
+
+\section{Configurazione Avanzata: Il file \texttt{.env}}
+Nella cartella principale troverai un file chiamato \texttt{.env.example}. Rinominandolo o copiandolo in \texttt{.env} potrai configurare le chiavi.
+
+\begin{lstlisting}[language=bash]
+# Impostazioni Database
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=YOUR_PASSWORD_HERE
+
+# Impostazioni Embeddings (Creazione Vettori)
+EMBEDDING_PROVIDER=mock
+EMBEDDING_MODEL=text-embedding-004
+EMBEDDING_DIMENSION=768
+# Se usi Gemini o OpenAI, metti qui la tua API Key:
+EMBEDDING_API_KEY=tua_api_key_reale
+
+# Impostazioni Notion
+NOTION_API_KEY=secret_tua_chiave_notion
+NOTION_ROOT_DATABASE_ID=tuo_id_database
+\end{lstlisting}
+
+\textbf{Importante:} Attualmente il sistema è impostato su \texttt{mock} (finto). Questo significa che genera vettori casuali perfetti per testare il caricamento offline senza consumare crediti. Quando vorrai che l'IA capisca *davvero* il significato delle parole, cambia \texttt{EMBEDDING\_PROVIDER} in \texttt{gemini} o \texttt{openai} e inserisci una chiave API valida.
+
+\section{Upload e Analisi dei Dati (Ingestion Pipeline)}
+
+\subsection{Caricamento dei PDF Universitari}
+1. Crea una cartella in cui posizionare temporaneamente i tuoi file, ad esempio \texttt{cns\_pdfs}.
+2. Trascina i file PDF (slide, dispense) al suo interno.
+3. Lancia lo script python per farli digerire al sistema. Il parametro \texttt{--course} ti permette di taggare quei documenti in modo che appartengano a uno specifico corso universitario:
+\begin{lstlisting}[language=bash]
+python scripts/index.py --pdf-dir cns_pdfs --course "Computer Network Security"
+\end{lstlisting}
+
+\textbf{Cosa succede dietro le quinte?}
+Il connettore PDF legge pagina per pagina. Invia il testo a un "Chunker" che lo taglia in paragrafi (es. 1000 caratteri) sovrapponendo leggermente le frasi finali per non tagliare concetti a metà (Sliding Window). Infine, calcola l'hash (checksum) del file per non ricaricarlo due volte se non è stato modificato.
+
+\subsection{Collegare Notion (Sincronizzazione Incrementale)}
+Vuoi che il sistema legga automaticamente i tuoi appunti presi su Notion? Segui questi passi millimetrici:
+\begin{enumerate}
+    \item Vai su \url{https://www.notion.so/my-integrations}.
+    \item Clicca "New integration", dalle il nome "Academic KB" e seleziona il tuo workspace.
+    \item Copia l'\textbf{Internal Integration Secret} e incollalo nel file \texttt{.env} sotto \texttt{NOTION\_API\_KEY}.
+    \item Vai sulla pagina principale dei tuoi appunti su Notion. In alto a destra clicca i tre pallini (Menu) $\rightarrow$ \textbf{Connect to} $\rightarrow$ cerca la tua integrazione "Academic KB" e aggiungila.
+    \item Copia il link della pagina Notion. L'ID del database è la sequenza di lettere e numeri lunghissima dopo l'ultimo \textit{slash} (/) e prima del punto interrogativo (\textit{?}). Incollalo in \texttt{NOTION\_ROOT\_DATABASE\_ID}.
+    \item Avvia la sincronizzazione:
+\end{enumerate}
+\begin{lstlisting}[language=bash]
+python scripts/index.py --notion
+\end{lstlisting}
+\textit{Il sistema confronterà la data di ultima modifica (\texttt{last\_edited\_time}) e aggiornerà solo i paragrafi che hai modificato o aggiunto, risparmiando tempo e chiamate API.}
+
+\section{Come Funziona la Ricerca (Il Cuore dell'IA)}
+Quando chiedi qualcosa a Pi Coding Agent, l'Academic Engine entra in gioco e compie una \textbf{Ricerca Ibrida (Hybrid Retrieval)}.
+
+1. \textbf{Ricerca Semantica Vettoriale:} Converte la tua domanda ("Come fa il WEP ad autenticare?") in un vettore matematico. Cerca nello spazio i vettori più vicini. Questo trova i concetti per \textit{significato}, non per parole esatte.
+2. \textbf{Ricerca Full-Text (BM25):} Molto spesso nel codice e nei concetti tecnici si cercano variabili esatte (\texttt{pthread\_mutex}). La ricerca semantica farebbe fatica, quindi entra in gioco la ricerca lessicale classica su Neo4j.
+3. \textbf{Reciprocal Rank Fusion (RRF):} È l'algoritmo matematico che fonde i risultati di (1) e (2). Prende le liste di risultati, calcola un punteggio fuso basato sulla loro posizione ($Score = 1 / (60 + Rank)$) e restituisce la Top 5 dei frammenti più rilevanti e perfetti.
+
+\section{Esplorazione Visiva del Grafo (Neo4j Browser)}
+Il modo più potente per comprendere i dati è guardarli.
+\begin{enumerate}
+    \item Apri \url{http://localhost:7474} nel browser.
+    \item Accedi (User: \texttt{neo4j}, Password: \texttt{academic\_secret\_password}).
+    \item Nella console superiore, esegui comandi \textbf{Cypher} (il linguaggio di Neo4j). Ecco i più utili:
+\end{enumerate}
+
+\textbf{Per vedere tutti i documenti e come sono divisi in chunk:}
+\begin{lstlisting}[language=SQL]
+MATCH (d:Document)-[r:HAS_CHUNK]->(c:Chunk) RETURN d, c LIMIT 50
+\end{lstlisting}
+
+\textbf{Per contare quanti paragrafi hai per ogni corso universitario:}
+\begin{lstlisting}[language=SQL]
+MATCH (d:Document)-[:HAS_CHUNK]->(c:Chunk)
+RETURN d.course as Corso, count(c) as Numero_Paragrafi
+\end{lstlisting}
+
+\textbf{Per cancellare tutto e ricominciare da zero (Attenzione!):}
+\begin{lstlisting}[language=SQL]
+MATCH (n) DETACH DELETE n
+\end{lstlisting}
+
+\section{Integrazione con Pi Coding Agent}
+Per far parlare Pi con la tua base di conoscenza, devi aggiornare la sua configurazione MCP.
+Nel file di configurazione del tuo client MCP (che si trova spesso nelle impostazioni dell'app o in un \texttt{mcp.json}), aggiungi il server:
+
+\begin{lstlisting}[language=json]
+{
+  "mcpServers": {
+    "academic-kb": {
+      "command": "/path/to/academic-kb/.venv/bin/python",
+      "args": ["/path/to/academic-kb/mcp_server/server.py"]
+    }
+  }
+}
+\end{lstlisting}
+
+Fatto ciò, Pi avrà uno strumento chiamato \texttt{academic\_context}. Quando formulerai domande del tipo \textit{"Aiutami a scrivere questo codice C basandoti sulle lezioni di Sistemi Operativi"}, Pi eseguirà segretamente \texttt{academic\_context}, riceverà il testo fuso estratto dai tuoi PDF, e ti fornirà un codice accompagnato da citazioni reali dei tuoi professori!
+
+\section{Risoluzione Problemi e Debugging}
+\begin{itemize}
+    \item \textbf{Errore di connessione (Errno 61):} Hai dimenticato di avviare il database con \texttt{brew services start neo4j}.
+    \item \textbf{ImportError / ModuleNotFoundError:} Hai dimenticato di eseguire \texttt{source .venv/bin/activate} prima di eseguire \texttt{python scripts/index.py}.
+    \item \textbf{L'IA non trova nulla di rilevante:} Hai lasciato \texttt{EMBEDDING\_PROVIDER=mock}. Questo crea vettori "finti". Assicurati di usare un vero provider di Embedding e reinizia l'ingestion pulendo prima il database.
+\end{itemize}
+
+\end{document}

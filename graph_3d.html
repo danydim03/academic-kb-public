@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Academic KB — 3D Knowledge Graph</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#050508; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; overflow:hidden; color:#e0e0e0; }
+  #graph { position:absolute; top:0; left:0; width:100vw; height:100vh; }
+
+  /* Glassmorphism */
+  .glass {
+    backdrop-filter: blur(40px) saturate(1.8);
+    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+
+  /* ——— SIDEBAR ——— */
+  #sidebar {
+    position:fixed; top:16px; left:16px; width:280px; max-height:calc(100vh - 32px); border-radius:24px;
+    display:flex; flex-direction:column; z-index:20; overflow-y:auto;
+    transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.3s ease;
+  }
+  #sidebar.hidden {
+    transform: translateX(-310px);
+    opacity: 0;
+    pointer-events: none;
+  }
+  #sidebar h1 {
+    font-size:13px; font-weight:600; color:#fff;
+    padding:16px 16px 10px; border-bottom:1px solid rgba(255,255,255,0.06);
+    letter-spacing:.5px;
+    display: flex; align-items: center;
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    background: rgba(8,8,20,0.85);
+  }
+  .section { padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .section-title { font-size:10px; color:#555; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+
+  /* Stats */
+  .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .stat-card {
+    background:rgba(255,255,255,0.04); border-radius:12px; padding:8px;
+    text-align:center;
+  }
+  .stat-card .val { font-size:18px; font-weight:700; color:#fff; }
+  .stat-card .lbl { font-size:9px; color:#555; margin-top:2px; }
+
+  /* Course dropdown */
+  .dropdown-details { position: relative; margin-bottom: 4px; }
+  .dropdown-summary {
+    background: rgba(255,255,255,0.06); padding: 10px 12px;
+    border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+    font-size: 12px; color: #fff; cursor: pointer; list-style: none;
+    display: flex; justify-content: space-between; align-items: center;
+    font-weight: 600; letter-spacing: 0.3px;
+  }
+  .dropdown-summary::-webkit-details-marker { display: none; }
+  .dropdown-summary:after { content: '▼'; font-size: 10px; color: #aaa; transition: transform 0.2s; }
+  .dropdown-details[open] .dropdown-summary:after { transform: rotate(180deg); }
+  .dropdown-content {
+    background: rgba(15,15,25,0.98); backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+    padding: 8px; margin-top: 6px; display: flex; flex-direction: column; gap: 4px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .course-dropdown-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 8px; cursor: pointer;
+    font-size: 12px; color: #ccc; transition: all 0.2s; font-weight: 500;
+  }
+  .course-dropdown-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .course-dropdown-item input[type="checkbox"] { 
+    accent-color: #7c5cfc; width: 14px; height: 14px; cursor: pointer;
+  }
+
+  /* Link type toggles */
+  .link-toggle {
+    display:flex; align-items:center; gap:8px;
+    padding:6px 0; cursor:pointer;
+  }
+  .link-toggle input { accent-color:#7c5cfc; width:14px; height:14px; }
+  .link-toggle label { font-size:12px; cursor:pointer; flex:1; }
+  .link-badge {
+    font-size:10px; padding:2px 6px; border-radius:4px; font-weight:600;
+  }
+
+  /* Search / Ego-Network */
+  #ego-search {
+    width:100%; padding:8px 10px; background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.1); border-radius:12px;
+    color:#fff; font-size:12px; outline:none; transition: border-color 0.2s;
+    flex: 1;
+  }
+  #ego-search:focus { border-color:rgba(124,92,252,.6); }
+  #ego-search-results { margin-top:6px; max-height:120px; overflow-y:auto; }
+  .search-item {
+    padding:5px 8px; border-radius:6px; font-size:11px; cursor:pointer;
+    color:#aaa; display:flex; align-items:center; gap:6px;
+  }
+  .search-item:hover { background:rgba(255,255,255,0.07); color:#fff; }
+
+  /* Physics controls */
+  .slider-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .slider-row label { font-size:11px; color:#666; width:90px; flex-shrink:0; }
+  .slider-row input { flex:1; accent-color:#7c5cfc; }
+  .slider-row span { font-size:10px; color:#aaa; width:28px; text-align:right; }
+
+  /* Action buttons */
+  .action-btn {
+    width:100%; padding:8px; border-radius:12px; border:1px solid rgba(255,255,255,0.1);
+    background:rgba(255,255,255,0.05); color:#ccc; font-size:11px;
+    cursor:pointer; transition:all .2s ease; margin-bottom:6px; text-align:center;
+  }
+  .action-btn:hover { background:rgba(124,92,252,.2); border-color:rgba(124,92,252,.4); color:#fff; transform:scale(1.02); }
+  .action-btn.primary { background:rgba(124,92,252,.25); border-color:rgba(124,92,252,.5); color:#c4b5fd; }
+
+  /* Sidebar Toggle Button */
+  #sidebar-toggle {
+    position: fixed; top: 24px; left: 24px; z-index: 25;
+    width: 44px; height: 44px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; border: none; cursor: pointer; font-size: 20px;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+  }
+  #sidebar-toggle.visible {
+    opacity: 1; pointer-events: auto;
+  }
+
+  /* ——— INFO PANEL ——— */
+  #info-panel {
+    position:fixed; bottom:16px; right:16px; width:340px;
+    border-radius:20px;
+    padding:16px; z-index:20; display:none; max-height:50vh; overflow-y:auto;
+  }
+  #info-panel h3 { font-size:13px; margin-bottom:10px; line-height:1.4; }
+  .info-row { font-size:11px; color:#999; margin-bottom:4px; }
+  .info-row b { color:#ddd; }
+  .tag { display:inline-block; padding:2px 7px; border-radius:4px; font-size:10px; margin:2px; font-weight:600; }
+  .close-info { float:right; cursor:pointer; color:#555; font-size:16px; line-height:1; }
+  .close-info:hover { color:#fff; }
+
+  /* ——— LOADING OVERLAY ——— */
+  #loader {
+    position:fixed; inset:0; background:#070710;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    z-index:50; transition:opacity .5s;
+  }
+  #loader h2 { font-size:20px; color:#fff; margin-bottom:16px; }
+  #loader-bar-wrap { width:300px; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; }
+  #loader-bar { height:100%; background:linear-gradient(90deg,#7c5cfc,#a78bfa); border-radius:2px; width:0%; transition:width .3s; }
+  #loader-sub { font-size:12px; color:#555; margin-top:10px; }
+
+  /* ——— MINI-MAP / LEGEND ——— */
+  .leg-row { display:flex; align-items:center; gap:6px; margin-bottom:3px; font-size:11px; }
+  .leg-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .leg-line { width:20px; height:2px; flex-shrink:0; border-radius:1px; }
+
+  /* Tooltip */
+  #tooltip {
+    position:fixed; pointer-events:none; z-index:30;
+    border-radius:7px; padding:6px 10px; font-size:11px; color:#ddd;
+    display:none; max-width:260px; line-height:1.5;
+  }
+  /* ——— LAUNCHER ——— */
+  #launcher {
+    position:fixed; inset:0; background:#050508;
+    display:flex; align-items:center; justify-content:center; z-index:60;
+  }
+  #launcher-card {
+    border-radius:28px; padding:32px 36px; width:520px; max-width:95vw;
+    text-align:center;
+  }
+  #launcher-card h2 { font-size:22px; color:#fff; }
+  .cfg-row { text-align:left; padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .cfg-label { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px; color:#ccc; }
+  .cfg-val { font-size:20px; font-weight:700; color:#a78bfa; }
+  .cfg-hint { font-size:11px; color:#555; margin-top:4px; }
+  .cfg-breakdown { font-size:11px; color:#7c5cfc; margin-top:4px; min-height:16px; }
+  .cfg-slider { width:100%; accent-color:#7c5cfc; cursor:pointer; margin-top:4px; }
+  .cfg-course-grid { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .cfg-course-check {
+    padding:6px 12px; border-radius:12px; border:1.5px solid transparent;
+    font-size:12px; cursor:pointer; transition:all .2s ease; font-weight:600;
+    background:rgba(255,255,255,0.04); color:#555; user-select:none;
+  }
+  .cfg-course-check.on { color:#fff; }
+  .cfg-course-check:hover { transform: scale(1.05); }
+  .cfg-check { display:flex; align-items:center; gap:6px; font-size:12px; color:#aaa; cursor:pointer; }
+  .cfg-check input { accent-color:#7c5cfc; }
+  #launch-btn {
+    width:100%; margin-top:24px; padding:14px; border-radius:16px;
+    border:none; background:linear-gradient(135deg,#7c5cfc,#a78bfa);
+    color:#fff; font-size:15px; font-weight:700; cursor:pointer;
+    transition:all .2s ease; letter-spacing:.5px; box-shadow: 0 8px 24px rgba(124,92,252,0.3);
+  }
+  #launch-btn:hover { filter:brightness(1.15); transform:scale(1.02); }
+</style>
+</head>
+<body>
+
+<button id="sidebar-toggle" class="glass">☰</button>
+
+<!-- Pre-launch config screen -->
+<div id="launcher">
+  <div id="launcher-card" class="glass">
+    <div style="font-size:40px; margin-bottom:12px;">🧠</div>
+    <h2>Academic Knowledge Graph</h2>
+    <p style="color:#666; font-size:13px; margin:8px 0 24px">Configura il grafo prima di caricarlo</p>
+
+    <div class="cfg-row">
+      <div class="cfg-label">
+        <span>Budget Nodi</span>
+        <span id="budget-val" class="cfg-val">10000</span>
+      </div>
+      <input type="range" id="cfg-budget" min="50" max="10000" value="10000" step="100" class="cfg-slider">
+      <div class="cfg-hint">Più nodi = più dettaglio, ma più lento</div>
+      <div id="budget-breakdown" class="cfg-breakdown">—</div>
+    </div>
+
+    <div class="cfg-row">
+      <div class="cfg-label"><span>Corsi da includere</span></div>
+      <div id="cfg-courses" class="cfg-course-grid"></div>
+    </div>
+
+    <div class="cfg-row">
+      <div class="cfg-label"><span>Tipi di relazioni</span></div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+        <label class="cfg-check"><input type="checkbox" id="cfg-sim" checked> <span>SIMILAR_TO</span></label>
+        <label class="cfg-check"><input type="checkbox" id="cfg-rel" checked> <span>RELATED_TO</span></label>
+        <label class="cfg-check"><input type="checkbox" id="cfg-has"> <span>HAS_CHUNK</span></label>
+      </div>
+    </div>
+
+    <div class="cfg-row" style="border:none; padding-bottom:0;">
+      <div class="cfg-label"><span>Pre-calcolo fisica</span></div>
+      <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap">
+        <label class="cfg-check"><input type="radio" name="warmup" value="40" checked> <span>Veloce (40 tick)</span></label>
+        <label class="cfg-check"><input type="radio" name="warmup" value="120"> <span>Bilanciato (120)</span></label>
+        <label class="cfg-check"><input type="radio" name="warmup" value="300"> <span>Ottimale (300, lento)</span></label>
+      </div>
+    </div>
+
+    <button id="launch-btn">🚀 Lancia il Grafo</button>
+  </div>
+</div>
+
+<!-- Loading overlay (shown after launch) -->
+<div id="loader" style="display:none;">
+  <h2>🧠 Academic Knowledge Graph</h2>
+  <div id="loader-bar-wrap"><div id="loader-bar"></div></div>
+  <div id="loader-sub">Calcolo layout 3D...</div>
+</div>
+
+<!-- Main sidebar -->
+<div id="sidebar" class="glass">
+  <h1>🧠 Academic KB <span id="sidebar-close" style="margin-left:auto;cursor:pointer;font-size:18px;opacity:0.4">×</span></h1>
+
+  <!-- Stats -->
+  <div class="section">
+    <div class="section-title">Statistiche</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="val" id="s-nodes">—</div><div class="lbl">Nodi visibili</div></div>
+      <div class="stat-card"><div class="val" id="s-links">—</div><div class="lbl">Link visibili</div></div>
+      <div class="stat-card"><div class="val" id="s-sim">—</div><div class="lbl">SIMILAR_TO</div></div>
+      <div class="stat-card"><div class="val" id="s-rel">—</div><div class="lbl">RELATED_TO</div></div>
+    </div>
+  </div>
+
+  <!-- Course multi-select -->
+  <div class="section">
+    <div class="section-title">Filtro Corsi (multi-selezione)</div>
+    <details class="dropdown-details" id="course-dropdown">
+      <summary class="dropdown-summary">Corsi Attivi (<span id="course-count">5</span>)</summary>
+      <div class="dropdown-content" id="course-list">
+        <!-- course items will be injected here -->
+      </div>
+    </details>
+    <div style="display:flex; gap:6px; margin-top:8px;">
+      <button class="action-btn" id="btn-all" style="margin-bottom:0">✓ Tutti</button>
+      <button class="action-btn" id="btn-none" style="margin-bottom:0">✗ Nessuno</button>
+      <button class="action-btn" id="btn-cross" style="margin-bottom:0; color:#ffa502">🔀 Solo Cross</button>
+    </div>
+  </div>
+
+  <!-- Link types -->
+  <div class="section">
+    <div class="section-title">Tipo di Relazioni</div>
+    <div class="link-toggle">
+      <input type="checkbox" id="t-sim" checked>
+      <label for="t-sim">SIMILAR_TO <span style="color:#888; font-size:10px">(chunk semantici)</span></label>
+      <span class="link-badge" style="background:rgba(124,92,252,.2); color:#a78bfa">SIM</span>
+    </div>
+    <div class="link-toggle">
+      <input type="checkbox" id="t-rel" checked>
+      <label for="t-rel">RELATED_TO <span style="color:#888; font-size:10px">(doc collegati)</span></label>
+      <span class="link-badge" style="background:rgba(255,165,2,.2); color:#ffa502">REL</span>
+    </div>
+    <div class="link-toggle">
+      <input type="checkbox" id="t-has">
+      <label for="t-has">HAS_CHUNK <span style="color:#888; font-size:10px">(doc→chunk)</span></label>
+      <span class="link-badge" style="background:rgba(255,255,255,.07); color:#666">HAS</span>
+    </div>
+  </div>
+
+  <!-- Ego-Network Search -->
+  <div class="section">
+    <div class="section-title">Esplora Rete Ego-Centrica</div>
+    <div style="display:flex; gap:6px; margin-bottom:8px">
+      <input type="text" id="ego-search" placeholder="Cerca nodo sorgente...">
+      <button class="action-btn" id="btn-ego-reset" style="width:auto; margin-bottom:0; padding:8px 12px; font-weight:bold;">Reset</button>
+    </div>
+    <div id="ego-search-results"></div>
+    <div class="slider-row" style="margin-top:8px">
+      <label style="width:75px">Gradi (Depth)</label>
+      <input type="range" id="sl-ego-degree" min="1" max="4" value="2" step="1">
+      <span id="v-ego-degree">2</span>
+    </div>
+  </div>
+
+  <!-- Physics -->
+  <div class="section">
+    <div class="section-title">Fisica &amp; Performance</div>
+    <div class="slider-row">
+      <label>Forza repuls.</label>
+      <input type="range" id="sl-repulse" min="-500" max="-20" value="-120" step="10">
+      <span id="v-repulse">-120</span>
+    </div>
+    <div class="slider-row">
+      <label>Link dist.</label>
+      <input type="range" id="sl-linkdist" min="10" max="200" value="60" step="5">
+      <span id="v-linkdist">60</span>
+    </div>
+    <button class="action-btn primary" id="btn-physics">⏸ Congela Fisica</button>
+    <div style="display:flex; gap:6px; margin-top:8px;">
+      <button class="action-btn" id="btn-reset-cam" style="margin-bottom:0">🎯 Reset Cam</button>
+      <button class="action-btn" id="btn-autorotate" style="margin-bottom:0">🔄 Auto-Rotazione</button>
+    </div>
+  </div>
+
+  <!-- Legend integrated into sidebar -->
+  <div class="section">
+    <div class="section-title">Legenda</div>
+    <div class="leg-row"><div class="leg-dot" style="background:#ff6b6b"></div> CNS</div>
+    <div class="leg-row"><div class="leg-dot" style="background:#4ecdc4"></div> SDCC</div>
+    <div class="leg-row"><div class="leg-dot" style="background:#ffe66d"></div> ML</div>
+    <div class="leg-row"><div class="leg-dot" style="background:#a29bfe"></div> SE</div>
+    <div class="leg-row"><div class="leg-dot" style="background:#fd79a8"></div> MAGISTRALE</div>
+    <div style="margin-top:6px; border-top:1px solid rgba(255,255,255,.05); padding-top:6px;">
+      <div class="leg-row"><div class="leg-line" style="background:rgba(124,92,252,.7)"></div> SIMILAR_TO</div>
+      <div class="leg-row"><div class="leg-line" style="background:rgba(255,165,2,.9)"></div> RELATED_TO</div>
+    </div>
+    <div style="margin-top:6px; border-top:1px solid rgba(255,255,255,.05); padding-top:6px; font-size:10px; color:#aaa;">
+      Sfera grande = Documento<br>Punto piccolo = Chunk
+    </div>
+  </div>
+</div>
+
+<!-- Node info -->
+<div id="info-panel" class="glass">
+  <span class="close-info" id="close-info">×</span>
+  <h3 id="info-title"></h3>
+  <div id="info-body"></div>
+</div>
+
+<!-- Tooltip -->
+<div id="tooltip" class="glass"></div>
+
+<!-- Graph container -->
+<div id="graph"></div>
+
+<script src="https://unpkg.com/3d-force-graph@1"></script>
+<script>
+// Sidebar toggle
+const sidebar = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebar-toggle');
+let sidebarVisible = true;
+
+sidebarToggle.addEventListener('click', () => {
+  sidebarVisible = !sidebarVisible;
+  sidebar.classList.toggle('hidden', !sidebarVisible);
+  sidebarToggle.classList.toggle('visible', !sidebarVisible);
+  sidebarToggle.textContent = sidebarVisible ? '' : '☰';
+});
+
+document.getElementById('sidebar-close').addEventListener('click', () => {
+  sidebarVisible = false;
+  sidebar.classList.add('hidden');
+  sidebarToggle.classList.add('visible');
+  sidebarToggle.textContent = '☰';
+});
+
+// ——————————————————————————————————————————
+// CONFIG
+// ——————————————————————————————————————————
+const COURSES = ['CNS','SDCC','ML','SE','MAGISTRALE'];
+const COLORS = {
+  CNS:'#ff6b6b', SDCC:'#4ecdc4', ML:'#ffe66d', SE:'#a29bfe', MAGISTRALE:'#fd79a8'
+};
+const LINK_COLOR = {
+  SIMILAR_TO: (c1,c2) => c1===c2 ? 'rgba(124,92,252,0.25)' : 'rgba(255,200,50,0.45)',
+  RELATED_TO: (c1,c2) => c1===c2 ? 'rgba(255,165,2,0.6)'  : 'rgba(255,100,50,0.8)',
+  HAS_CHUNK: () => 'rgba(255,255,255,0.04)'
+};
+
+// ——————————————————————————————————————————
+// STATE
+// ——————————————————————————————————————————
+let rawData = null;
+let Graph = null;
+let selectedCourses = new Set(COURSES);
+let showSIM = true, showREL = true, showHAS = false;
+let physicsFrozen = false;
+let highlightNodes = new Set();
+let highlightLinks = new Set();
+let hoverNode = null;
+let crossOnly = false;
+
+// ——————————————————————————————————————————
+// EGO-NETWORK STATE & RENDERING FUNCTIONS
+// ——————————————————————————————————————————
+let egoMode = false;
+let litNodes = new Set();
+let litLinks = new Set();
+let waveFrontNodes = new Set();
+let egoInterval = null;
+
+const colorToRgba = (color, alpha) => {
+  if (!color || typeof color !== 'string') {
+    const a = (typeof alpha === 'number' && !isNaN(alpha)) ? Math.max(0, Math.min(1, alpha)) : 1.0;
+    return `rgba(136,136,136,${a})`;
+  }
+
+  const str = color.trim().toLowerCase();
+
+  // If already rgb(...) or rgba(...)
+  const rgbMatch = str.match(/^rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)$/);
+  if (rgbMatch) {
+    const r = Math.min(255, Math.max(0, parseInt(rgbMatch[1], 10)));
+    const g = Math.min(255, Math.max(0, parseInt(rgbMatch[2], 10)));
+    const b = Math.min(255, Math.max(0, parseInt(rgbMatch[3], 10)));
+    let a;
+    if (typeof alpha === 'number' && !isNaN(alpha)) {
+      a = Math.max(0, Math.min(1, alpha));
+    } else if (rgbMatch[4] !== undefined) {
+      a = Math.max(0, Math.min(1, parseFloat(rgbMatch[4])));
+    } else {
+      a = 1.0;
+    }
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  // Handle common named colors
+  const defaultAlpha = (typeof alpha === 'number' && !isNaN(alpha)) ? Math.max(0, Math.min(1, alpha)) : 1.0;
+  if (str === 'white') return `rgba(255,255,255,${defaultAlpha})`;
+  if (str === 'black') return `rgba(0,0,0,${defaultAlpha})`;
+  if (str === 'transparent') return 'rgba(0,0,0,0)';
+
+  // Handle hex codes
+  let hex = str.startsWith('#') ? str.slice(1) : str;
+  let embeddedAlpha = null;
+
+  if (hex.length === 3) {
+    hex = hex.split('').map(c => c + c).join('');
+  } else if (hex.length === 4) {
+    embeddedAlpha = parseInt(hex[3] + hex[3], 16) / 255;
+    hex = hex.slice(0, 3).split('').map(c => c + c).join('');
+  } else if (hex.length === 8) {
+    embeddedAlpha = parseInt(hex.slice(6, 8), 16) / 255;
+    hex = hex.slice(0, 6);
+  }
+
+  if (hex.length === 6 && /^[0-9a-f]{6}$/.test(hex)) {
+    const num = parseInt(hex, 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    const a = (typeof alpha === 'number' && !isNaN(alpha))
+      ? Math.max(0, Math.min(1, alpha))
+      : (embeddedAlpha !== null ? Math.max(0, Math.min(1, embeddedAlpha)) : 1.0);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  return `rgba(136,136,136,${defaultAlpha})`;
+};
+const hexToRgba = colorToRgba;
+
+const nodeOpacityFn = n => {
+  if (!n) return 0.6;
+  if (egoMode) {
+    if (waveFrontNodes.has(n.id)) return 1.0;
+    if (litNodes.has(n.id)) return 0.9;
+    return 0.02; // Quasi invisibili
+  }
+  
+  if (highlightNodes.size > 0) {
+    // In hover (non in ricerca), se è il nodo selezionato lo illuminiamo al 100%, 
+    // ma NON tocchiamo assolutamente l'opacità degli altri nodi, lasciandola intatta!
+    if (highlightNodes.has(n.id)) return 1.0;
+  }
+  
+  // Normal mode: Docs solid, Chunks partially transparent per distinguere
+  return n.type === 'document' ? 1.0 : 0.6;
+};
+
+const nodeColorFn = n => {
+  if (!n) return 'rgba(136,136,136,0.6)';
+  const base = (n.course && COLORS[n.course]) ? COLORS[n.course] : '#888888';
+  let hex = base;
+  
+  if (egoMode) {
+    if (waveFrontNodes.has(n.id)) hex = '#ffffff';
+    else if (litNodes.has(n.id)) hex = base;
+    else hex = '#1a1a24'; // Sfondo nerastro
+  }
+  // Rimosso l'oscuramento hex in hover, manteniamo i colori base e giochiamo solo con l'opacità
+  
+  const opacity = nodeOpacityFn(n);
+  return colorToRgba(hex, opacity);
+};
+
+const linkVisibilityFn = l => {
+  // Torniamo sempre true in modalità normale per permettere alle PARTICELLE di esistere!
+  // Nasconderemo le *linee statiche* agendo sull'alpha (0) in linkColorFn.
+  if (egoMode && !litLinks.has(l)) return false; 
+  return true;
+};
+
+const linkColorFn = l => {
+  const s = typeof l.source === 'object' ? l.source.id : l.source;
+  const t = typeof l.target === 'object' ? l.target.id : l.target;
+  
+  if (egoMode) {
+    if (litLinks.has(l)) {
+        const fn = LINK_COLOR[l.type];
+        return fn ? fn(l.c1, l.c2) : '#fff';
+    }
+    return 'rgba(60,60,80,0.04)';
+  }
+  
+  // Hover su un nodo: evidenzia i link adiacenti, nascondi gli altri
+  if (highlightLinks.size > 0 && !highlightLinks.has(`${s}-${t}`)) return 'rgba(255,255,255,0.02)';
+  
+  // Rendiamo VISIBILI tutti gli archi!
+  const fn = LINK_COLOR[l.type];
+  return fn ? fn(l.c1, l.c2) : 'rgba(255,255,255,0.05)';
+};
+
+const linkWidthFn = l => {
+  if (egoMode && litLinks.has(l)) return 0.8; // Link spessi quando illuminati dall'onda
+  if (l.type === 'RELATED_TO') return (l.value || 1) * 0.5;
+  return 0; // SIMILAR_TO hanno spessore 0 (usano WebGL GL_LINES 1px se visibili)
+};
+
+const linkParticlesFn = l => {
+  if (egoMode) {
+     return litLinks.has(l) ? 2 : 0;
+  }
+  return l.type === 'RELATED_TO' ? 2 : l.type === 'SIMILAR_TO' ? 1 : 0;
+};
+
+const linkParticleWidthFn = l => {
+  if (egoMode) {
+    return litLinks.has(l) ? 4 : 0;
+  }
+  return l.type === 'RELATED_TO' ? 3 : 1.5;
+};
+
+const linkParticleSpeedFn = l => {
+  if (egoMode) {
+    return litLinks.has(l) ? 0.015 : 0; 
+  }
+  return l.type === 'RELATED_TO' ? 0.008 : 0.003;
+};
+
+const linkParticleColorFn = l => {
+  if (egoMode) {
+    return litLinks.has(l) ? '#ffffff' : 'rgba(0,0,0,0)';
+  }
+  const fn = LINK_COLOR[l.type];
+  return fn ? fn(l.c1, l.c2) : '#fff';
+};
+
+function updateGraphRendering() {
+  if (!Graph) return;
+  Graph.nodeColor(nodeColorFn)
+       .nodeOpacity(1.0)
+       .linkVisibility(linkVisibilityFn)
+       .linkColor(linkColorFn)
+       .linkWidth(linkWidthFn)
+       .linkDirectionalParticles(linkParticlesFn)
+       .linkDirectionalParticleWidth(linkParticleWidthFn)
+       .linkDirectionalParticleSpeed(linkParticleSpeedFn)
+       .linkDirectionalParticleColor(linkParticleColorFn);
+}
+
+function resetEgoMode() {
+  egoMode = false;
+  litNodes.clear();
+  litLinks.clear();
+  waveFrontNodes.clear();
+  if (egoInterval) {
+    clearInterval(egoInterval);
+    egoInterval = null;
+  }
+}
+
+function focusCameraOnNodes(nodeIds) {
+  if (!Graph || !nodeIds || nodeIds.size === 0) return;
+  
+  let nodes = Graph.graphData().nodes.filter(n => nodeIds.has(n.id));
+  if (nodes.length === 0) return;
+  
+  let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity, minZ=Infinity, maxZ=-Infinity;
+  let hasValidCoords = false;
+  for (let n of nodes) {
+    if (typeof n.x === 'number' && !isNaN(n.x) &&
+        typeof n.y === 'number' && !isNaN(n.y) &&
+        typeof n.z === 'number' && !isNaN(n.z)) {
+      minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x);
+      minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y);
+      minZ = Math.min(minZ, n.z); maxZ = Math.max(maxZ, n.z);
+      hasValidCoords = true;
+    }
+  }
+  
+  if (!hasValidCoords) return;
+
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  const cz = (minZ + maxZ) / 2;
+  
+  const dx = maxX - minX;
+  const dy = maxY - minY;
+  const dz = maxZ - minZ;
+  
+  let maxDim = Math.max(dx, dy, dz);
+  if (maxDim === 0) maxDim = 50; 
+  
+  let dist = maxDim * 1.5 + 80;
+  
+  Graph.cameraPosition({ x: cx, y: cy, z: cz + dist }, { x: cx, y: cy, z: cz }, 800);
+}
+
+function startEgoWave(sourceNodeId, maxDegree) {
+  resetEgoMode();
+  if (!Graph || !sourceNodeId) return;
+
+  const activeNodes = Graph.graphData().nodes;
+  const sourceNode = activeNodes.find(n => n.id === sourceNodeId);
+  if (!sourceNode) {
+    console.warn(`Source node ${sourceNodeId} not found in active graph dataset.`);
+    return;
+  }
+
+  egoMode = true;
+  
+  const adj = {};
+  activeNodes.forEach(n => adj[n.id] = []);
+  Graph.graphData().links.forEach(l => {
+    const s = typeof l.source === 'object' ? l.source.id : l.source;
+    const t = typeof l.target === 'object' ? l.target.id : l.target;
+    if (adj[s]) adj[s].push({ to: t, link: l });
+    if (adj[t]) adj[t].push({ to: s, link: l });
+  });
+
+  let currentFront = [sourceNodeId];
+  let currentDegree = 0;
+  
+  litNodes.add(sourceNodeId);
+  waveFrontNodes.add(sourceNodeId);
+  
+  updateGraphRendering();
+  focusCameraOnNodes(litNodes);
+  
+  egoInterval = setInterval(() => {
+    if (currentDegree >= maxDegree || currentFront.length === 0) {
+      clearInterval(egoInterval);
+      egoInterval = null;
+      waveFrontNodes.clear();
+      updateGraphRendering();
+      return;
+    }
+    
+    currentDegree++;
+    let nextFront = [];
+    let nextFrontSet = new Set();
+    
+    for (let nodeId of currentFront) {
+      if (!adj[nodeId]) continue;
+      for (let edge of adj[nodeId]) {
+        if (!litNodes.has(edge.to)) {
+          litNodes.add(edge.to);
+          litLinks.add(edge.link);
+          if (!nextFrontSet.has(edge.to)) {
+            nextFrontSet.add(edge.to);
+            nextFront.push(edge.to);
+          }
+        } else {
+          litLinks.add(edge.link);
+        }
+      }
+    }
+    
+    waveFrontNodes = new Set(nextFront);
+    currentFront = nextFront;
+    
+    updateGraphRendering();
+    focusCameraOnNodes(litNodes);
+    
+  }, 800);
+}
+
+
+// ——————————————————————————————————————————
+// BUILD COURSE BUTTONS
+// ——————————————————————————————————————————
+function setCrossOnly(val) {
+  crossOnly = !!val;
+  const btn = document.getElementById('btn-cross');
+  if (btn) {
+    btn.style.background = crossOnly ? 'rgba(255,165,2,.2)' : '';
+    btn.style.borderColor = crossOnly ? '#ffa502' : 'rgba(255,255,255,0.1)';
+  }
+}
+
+const courseList = document.getElementById('course-list');
+const courseCountSpan = document.getElementById('course-count');
+
+function updateCourseCount() {
+  courseCountSpan.textContent = selectedCourses.size;
+}
+
+COURSES.forEach(c => {
+  const item = document.createElement('label');
+  item.className = 'course-dropdown-item';
+  
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.checked = true;
+  checkbox.dataset.course = c;
+  
+  const colorDot = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COLORS[c]};vertical-align:middle"></span>`;
+  
+  const textSpan = document.createElement('span');
+  textSpan.innerHTML = `${colorDot} ${c}`;
+  
+  item.appendChild(checkbox);
+  item.appendChild(textSpan);
+  
+  checkbox.addEventListener('change', (e) => {
+    setCrossOnly(false);
+    if (e.target.checked) {
+      selectedCourses.add(c);
+    } else {
+      selectedCourses.delete(c);
+    }
+    updateCourseCount();
+    refreshGraph();
+  });
+  
+  courseList.appendChild(item);
+});
+updateCourseCount();
+
+document.getElementById('btn-all').addEventListener('click', () => {
+  setCrossOnly(false);
+  COURSES.forEach(c => selectedCourses.add(c));
+  document.querySelectorAll('.course-dropdown-item input').forEach(cb => cb.checked = true);
+  updateCourseCount();
+  refreshGraph();
+});
+
+document.getElementById('btn-none').addEventListener('click', () => {
+  setCrossOnly(false);
+  selectedCourses.clear();
+  document.querySelectorAll('.course-dropdown-item input').forEach(cb => cb.checked = false);
+  updateCourseCount();
+  refreshGraph();
+});
+
+document.getElementById('btn-cross').addEventListener('click', () => {
+  setCrossOnly(!crossOnly);
+  refreshGraph();
+});
+
+// ——————————————————————————————————————————
+// LINK TOGGLES
+// ——————————————————————————————————————————
+document.getElementById('t-sim').addEventListener('change', e => { showSIM = e.target.checked; refreshGraph(); });
+document.getElementById('t-rel').addEventListener('change', e => { showREL = e.target.checked; refreshGraph(); });
+document.getElementById('t-has').addEventListener('change', e => { showHAS = e.target.checked; refreshGraph(); });
+
+// ——————————————————————————————————————————
+// FILTER DATA
+// ——————————————————————————————————————————
+function getFilteredData(priorityNodeId = null) {
+  const source = fullRawData || rawData;
+  if (!source || !source.nodes) return { nodes: [], links: [] };
+
+  const budget = (launchConfig && launchConfig.budget) ? launchConfig.budget : 10000;
+  const { nodes } = sliceByBudget(source, budget, selectedCourses, priorityNodeId);
+  const nodeIds = new Set(nodes.map(n => n.id));
+
+  const links = source.links.filter(l => {
+    const s = typeof l.source === 'object' ? l.source.id : l.source;
+    const t = typeof l.target === 'object' ? l.target.id : l.target;
+    if (!nodeIds.has(s) || !nodeIds.has(t)) return false;
+    if (l.type === 'SIMILAR_TO' && !showSIM) return false;
+    if (l.type === 'RELATED_TO' && !showREL) return false;
+    if (l.type === 'HAS_CHUNK' && !showHAS) return false;
+    if (crossOnly && l.type !== 'HAS_CHUNK' && l.c1 === l.c2) return false;
+    return true;
+  });
+
+  return { nodes, links };
+}
+
+function updateStats(filtered) {
+  document.getElementById('s-nodes').textContent = filtered.nodes.length;
+  document.getElementById('s-links').textContent = filtered.links.length;
+  document.getElementById('s-sim').textContent = filtered.links.filter(l => l.type === 'SIMILAR_TO').length;
+  document.getElementById('s-rel').textContent = filtered.links.filter(l => l.type === 'RELATED_TO').length;
+}
+
+function refreshGraph(priorityNodeId = null) {
+  if (!Graph) return;
+  if (egoMode) {
+    resetEgoMode();
+  }
+  const filtered = getFilteredData(priorityNodeId);
+  updateStats(filtered);
+  Graph.graphData(filtered);
+  updateGraphRendering();
+  // Unfreeze briefly to re-layout
+  if (physicsFrozen) { Graph.resumeAnimation(); setTimeout(() => { Graph.pauseAnimation(); }, 2500); }
+}
+
+// ——————————————————————————————————————————
+// GRAPH INIT
+// ——————————————————————————————————————————
+function initGraph(data, warmupTicks = 40) {
+  rawData = fullRawData || data;
+
+  // Pre-warm physics in a worker-like manner (warmupTicks) before rendering
+  const loader = document.getElementById('loader');
+  let progress = 0;
+  const progressInterval = setInterval(() => {
+    progress = Math.min(progress + 8, 90);
+    document.getElementById('loader-bar').style.width = progress + '%';
+    document.getElementById('loader-sub').textContent = `Pre-calcolo fisica... (${progress}%)`;
+  }, 100);
+
+  const filtered = getFilteredData();
+  updateStats(filtered);
+
+  Graph = ForceGraph3D({ controlType: 'trackball', antialias: false /* perf */ })
+    (document.getElementById('graph'))
+    .graphData(filtered)
+    .backgroundColor('#050508')
+    .width(window.innerWidth)
+    .height(window.innerHeight)
+    // Nodes
+    .nodeVal(n => n.type === 'document' ? (n.size || 8) : 2.5) // Chunk leggermente più grandi
+    .nodeColor(nodeColorFn)
+    .nodeOpacity(1.0)
+    .nodeResolution(5)
+    // Links
+    .linkVisibility(linkVisibilityFn)
+    .linkColor(linkColorFn)
+    .linkWidth(linkWidthFn)
+    .linkDirectionalParticles(linkParticlesFn)
+    .linkDirectionalParticleWidth(linkParticleWidthFn)
+    .linkDirectionalParticleSpeed(linkParticleSpeedFn)
+    .linkDirectionalParticleColor(linkParticleColorFn)
+    .linkResolution(2)
+    // Physics
+    .d3AlphaDecay(0.04)
+    .d3VelocityDecay(0.35)
+    .warmupTicks(warmupTicks)
+    .cooldownTicks(0)
+    // Interactions
+    .onNodeHover(node => {
+      document.body.style.cursor = node ? 'pointer' : 'default';
+      hoverNode = node;
+      if (node) {
+        // tooltip
+        const tt = document.getElementById('tooltip');
+        tt.style.display = 'block';
+        const courseColor = (node.course && COLORS[node.course]) ? COLORS[node.course] : '#888888';
+        const courseName = node.course || '?';
+        const labelText = node.label || 'Untitled';
+        tt.innerHTML = `<b style="color:${courseColor}">[${courseName}]</b> ${labelText.substring(0,80)}`;
+      } else {
+        document.getElementById('tooltip').style.display = 'none';
+      }
+
+      if (!egoMode) {
+        if (node) {
+          highlightNodes = new Set([node.id]);
+          const currentLinks = (Graph && Graph.graphData() && Graph.graphData().links) || filtered.links;
+          highlightLinks = new Set(
+            currentLinks
+              .filter(l => {
+                const s = typeof l.source === 'object' ? l.source.id : l.source;
+                const t = typeof l.target === 'object' ? l.target.id : l.target;
+                return s === node.id || t === node.id;
+              })
+              .map(l => {
+                const s = typeof l.source === 'object' ? l.source.id : l.source;
+                const t = typeof l.target === 'object' ? l.target.id : l.target;
+                return `${s}-${t}`;
+              })
+          );
+        } else {
+          highlightNodes = new Set();
+          highlightLinks = new Set();
+        }
+        if (Graph) {
+          Graph.nodeColor(nodeColorFn)
+               .linkColor(linkColorFn);
+        }
+      }
+    })
+    .onNodeClick(node => {
+      showInfo(node);
+      // zoom
+      if (node && typeof node.x === 'number' && !isNaN(node.x) &&
+          typeof node.y === 'number' && !isNaN(node.y) &&
+          typeof node.z === 'number' && !isNaN(node.z)) {
+        const d = 120;
+        const dist = Math.hypot(node.x, node.y, node.z);
+        let camX, camY, camZ;
+        if (dist < 1e-3) {
+          camX = node.x;
+          camY = node.y;
+          camZ = node.z + d;
+        } else {
+          const ratio = 1 + d / dist;
+          camX = node.x * ratio;
+          camY = node.y * ratio;
+          camZ = node.z * ratio;
+        }
+        Graph.cameraPosition({ x: camX, y: camY, z: camZ }, { x: node.x, y: node.y, z: node.z }, 800);
+      }
+    })
+    .onEngineStop(() => {
+      clearInterval(progressInterval);
+      document.getElementById('loader-bar').style.width = '100%';
+      setTimeout(() => { loader.style.opacity = 0; setTimeout(() => loader.style.display = 'none', 500); }, 300);
+    });
+
+  // Fallback: nascondi il loader dopo max 6 secondi comunque
+  setTimeout(() => {
+    clearInterval(progressInterval);
+    loader.style.opacity = 0;
+    setTimeout(() => loader.style.display = 'none', 500);
+  }, 6000);
+
+  // Force tweaks
+  Graph.d3Force('charge').strength(parseFloat(document.getElementById('sl-repulse').value));
+  Graph.d3Force('link').distance(parseFloat(document.getElementById('sl-linkdist').value));
+  Graph.d3Force('center', null); // disattiva centro (più organico)
+}
+
+// ——————————————————————————————————————————
+// INFO PANEL
+// ——————————————————————————————————————————
+function showInfo(node) {
+  if (!node) return;
+  const panel = document.getElementById('info-panel');
+  const course = node.course;
+  const color = (course && COLORS[course]) ? COLORS[course] : '#888888';
+  const label = node.label || 'Untitled';
+  document.getElementById('info-title').innerHTML =
+    `<span style="color:${color}">●</span> ${label}`;
+
+  const currentLinks = (Graph && Graph.graphData() && Graph.graphData().links) || [];
+  const nodeId = node.id;
+
+  const getId = x => typeof x === 'object' ? x.id : x;
+  const simL = currentLinks.filter(l => l.type==='SIMILAR_TO' && (getId(l.source)===nodeId || getId(l.target)===nodeId));
+  const relL = currentLinks.filter(l => l.type==='RELATED_TO' && (getId(l.source)===nodeId || getId(l.target)===nodeId));
+
+  // Find related docs by name
+  const sourceNodes = (fullRawData || rawData || {}).nodes || [];
+  const relNames = relL.map(l => {
+    const othId = getId(l.source)===nodeId ? getId(l.target) : getId(l.source);
+    const other = sourceNodes.find(n => n.id === othId);
+    if (!other) return '';
+    const otherColor = (other.course && COLORS[other.course]) ? COLORS[other.course] : '#888888';
+    const otherCourse = other.course || '?';
+    return `<span class="tag" style="background:${colorToRgba(otherColor, 0.13)};color:${otherColor}">[${otherCourse}] ${(other.label || '').substring(0,35)}</span>`;
+  }).join('');
+
+  document.getElementById('info-body').innerHTML = `
+    <div style="margin-bottom:8px;">
+      <span class="tag" style="background:${color}22;color:${color}">${course || 'N/A'}</span>
+      <span class="tag" style="background:rgba(255,255,255,.07);color:#aaa">${node.type==='document'?'Documento':'Chunk'}</span>
+      ${node.source ? `<span class="tag" style="background:rgba(255,255,255,.07);color:#777">${node.source}</span>` : ''}
+    </div>
+    ${simL.length ? `<div class="info-row">🔗 SIMILAR_TO: <b>${simL.length} link</b></div>` : ''}
+    ${relL.length ? `<div class="info-row" style="margin-bottom:6px;">📎 RELATED_TO: <b>${relL.length} documenti</b></div>${relNames}` : ''}
+    ${node.type==='chunk' ? `<div style="margin-top:8px;font-size:10px;color:#666;border-top:1px solid rgba(255,255,255,.05);padding-top:8px;line-height:1.5">${label}</div>` : ''}
+  `;
+  panel.style.display = 'block';
+}
+
+document.getElementById('close-info').addEventListener('click', () => {
+  document.getElementById('info-panel').style.display = 'none';
+});
+
+// ——————————————————————————————————————————
+// EGO-NETWORK SEARCH
+// ——————————————————————————————————————————
+document.getElementById('ego-search').addEventListener('input', e => {
+  const q = e.target.value.trim().toLowerCase();
+  const res = document.getElementById('ego-search-results');
+  if (!q) { res.innerHTML = ''; return; }
+  const source = fullRawData || rawData;
+  if (!source || !source.nodes) { res.innerHTML = ''; return; }
+  const matches = source.nodes
+    .filter(n => n.type === 'document' && (n.label || '').toLowerCase().includes(q))
+    .slice(0, 8);
+  res.innerHTML = matches.map(n =>
+    `<div class="search-item" data-id="${n.id}">
+      <span style="width:8px;height:8px;border-radius:50%;background:${COLORS[n.course] || '#888'};display:inline-block;flex-shrink:0"></span>
+      <span>[${n.course || '?'}] ${(n.label || '').substring(0,50)}</span>
+    </div>`
+  ).join('');
+  res.querySelectorAll('.search-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const nodeId = el.dataset.id;
+      const allNodes = (fullRawData || rawData || {}).nodes || [];
+      const node = allNodes.find(n => n.id === nodeId);
+      if (node) {
+        showInfo(node);
+        let needRefresh = false;
+        // If course is currently filtered out, re-enable it so the node is visible in the graph
+        if (!selectedCourses.has(node.course)) {
+          selectedCourses.add(node.course);
+          const btn = document.querySelector(`.course-btn[data-course="${node.course}"]`);
+          if (btn) {
+            btn.classList.add('selected');
+            btn.style.background = COLORS[node.course] + '22';
+            btn.style.color = COLORS[node.course];
+            btn.style.borderColor = COLORS[node.course];
+          }
+          needRefresh = true;
+        }
+        // Ensure node is present in graph data even under tight budget constraints
+        const activeNodes = (Graph && Graph.graphData() && Graph.graphData().nodes) || [];
+        if (needRefresh || !activeNodes.some(n => n.id === nodeId)) {
+          refreshGraph(nodeId);
+        }
+      }
+      const maxDegree = parseInt(document.getElementById('sl-ego-degree').value) || 2;
+      startEgoWave(nodeId, maxDegree);
+      res.innerHTML = '';
+      document.getElementById('ego-search').value = '';
+    });
+  });
+});
+
+document.getElementById('ego-search').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const firstItem = document.querySelector('#ego-search-results .search-item');
+    if (firstItem) firstItem.click();
+  }
+});
+
+document.getElementById('sl-ego-degree').addEventListener('input', e => {
+  document.getElementById('v-ego-degree').textContent = e.target.value;
+});
+
+document.getElementById('btn-ego-reset').addEventListener('click', () => {
+  resetEgoMode();
+  updateGraphRendering();
+  document.getElementById('ego-search').value = '';
+  document.getElementById('ego-search-results').innerHTML = '';
+});
+
+// ——————————————————————————————————————————
+// PHYSICS CONTROLS
+// ——————————————————————————————————————————
+document.getElementById('btn-physics').addEventListener('click', () => {
+  if (!Graph) return;
+  physicsFrozen = !physicsFrozen;
+  physicsFrozen ? Graph.pauseAnimation() : Graph.resumeAnimation();
+  document.getElementById('btn-physics').textContent = physicsFrozen ? '▶ Sblocca Fisica' : '⏸ Congela Fisica';
+  document.getElementById('btn-physics').style.background = physicsFrozen ? 'rgba(255,100,50,.2)' : 'rgba(124,92,252,.25)';
+});
+
+document.getElementById('btn-reset-cam').addEventListener('click', () => {
+  if (Graph) Graph.cameraPosition({ x: 0, y: 0, z: 400 }, { x:0,y:0,z:0 }, 1000);
+});
+
+document.getElementById('sl-repulse').addEventListener('input', e => {
+  document.getElementById('v-repulse').textContent = e.target.value;
+  if (Graph) { Graph.d3Force('charge').strength(parseFloat(e.target.value)); Graph.d3ReheatSimulation(); }
+});
+document.getElementById('sl-linkdist').addEventListener('input', e => {
+  document.getElementById('v-linkdist').textContent = e.target.value;
+  if (Graph) { Graph.d3Force('link').distance(parseFloat(e.target.value)); Graph.d3ReheatSimulation(); }
+});
+
+// ——————————————————————————————————————————
+// TOOLTIP FOLLOW MOUSE
+// ——————————————————————————————————————————
+document.addEventListener('mousemove', e => {
+  const tt = document.getElementById('tooltip');
+  if (tt.style.display === 'block') {
+    tt.style.left = (e.clientX + 14) + 'px';
+    tt.style.top = (e.clientY - 10) + 'px';
+  }
+});
+
+document.addEventListener('touchmove', e => {
+  const tt = document.getElementById('tooltip');
+  if (tt.style.display === 'block' && e.touches && e.touches.length > 0) {
+    tt.style.left = (e.touches[0].clientX + 14) + 'px';
+    tt.style.top = (e.touches[0].clientY - 10) + 'px';
+  }
+}, { passive: true });
+
+// ——————————————————————————————————————————
+// RESIZE
+// ——————————————————————————————————————————
+window.addEventListener('resize', () => {
+  if (Graph) { Graph.width(window.innerWidth).height(window.innerHeight); }
+});
+
+// ——————————————————————————————————————————
+// LAUNCHER LOGIC
+// ——————————————————————————————————————————
+let fullRawData = null;
+let launchConfig = {
+  budget: 10000,
+  courses: new Set(COURSES),
+  sim: true, rel: true, has: false,
+  warmup: 40
+};
+
+// Build course checkboxes in launcher
+const cfgCourseGrid = document.getElementById('cfg-courses');
+COURSES.forEach(c => {
+  const el = document.createElement('div');
+  el.className = 'cfg-course-check on';
+  el.dataset.course = c;
+  el.style.borderColor = COLORS[c];
+  el.style.background = COLORS[c] + '22';
+  el.style.color = COLORS[c];
+  el.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${COLORS[c]};margin-right:4px;vertical-align:middle"></span>${c}`;
+  el.addEventListener('click', () => {
+    if (launchConfig.courses.has(c)) {
+      launchConfig.courses.delete(c);
+      el.classList.remove('on');
+      el.style.background = 'rgba(255,255,255,0.04)';
+      el.style.color = '#555';
+      el.style.borderColor = 'transparent';
+    } else {
+      launchConfig.courses.add(c);
+      el.classList.add('on');
+      el.style.background = COLORS[c] + '22';
+      el.style.color = COLORS[c];
+      el.style.borderColor = COLORS[c];
+    }
+    updateBudgetBreakdown();
+  });
+  cfgCourseGrid.appendChild(el);
+});
+
+// Budget slider
+document.getElementById('cfg-budget').addEventListener('input', e => {
+  launchConfig.budget = parseInt(e.target.value);
+  document.getElementById('budget-val').textContent = launchConfig.budget;
+  updateBudgetBreakdown();
+});
+
+function updateBudgetBreakdown() {
+  if (!fullRawData) return;
+  const { nodes } = sliceByBudget(fullRawData, launchConfig.budget, launchConfig.courses);
+  const docs = nodes.filter(n => n.type === 'document').length;
+  const chunks = nodes.filter(n => n.type === 'chunk').length;
+  document.getElementById('budget-breakdown').textContent =
+    `→ ${docs} documenti + ${chunks} chunk (tot: ${nodes.length} nodi)`;
+}
+
+// Warmup radio
+document.querySelectorAll('input[name="warmup"]').forEach(r => {
+  r.addEventListener('change', e => { launchConfig.warmup = parseInt(e.target.value); });
+});
+
+// Link type checkboxes in launcher
+document.getElementById('cfg-sim').addEventListener('change', e => { launchConfig.sim = e.target.checked; });
+document.getElementById('cfg-rel').addEventListener('change', e => { launchConfig.rel = e.target.checked; });
+document.getElementById('cfg-has').addEventListener('change', e => { launchConfig.has = e.target.checked; });
+
+// ——————————————————————————————————————————
+// NODE BUDGET SLICER
+// Priorità: 1) Documenti dei corsi selezionati
+//            2) Chunk più connessi (più link SIMILAR_TO)
+// ——————————————————————————————————————————
+function sliceByBudget(data, budget, courses, priorityNodeId = null) {
+  // Filter by selected courses
+  const allNodes = data.nodes.filter(n => courses.has(n.course));
+  const nodeIds = new Set(allNodes.map(n => n.id));
+
+  // Count connections per chunk
+  const connCount = {};
+  data.links.forEach(l => {
+    if (l.type !== 'SIMILAR_TO') return;
+    const s = typeof l.source === 'object' ? l.source.id : l.source;
+    const t = typeof l.target === 'object' ? l.target.id : l.target;
+    if (nodeIds.has(s)) connCount[s] = (connCount[s] || 0) + 1;
+    if (nodeIds.has(t)) connCount[t] = (connCount[t] || 0) + 1;
+  });
+
+  // Separate docs and chunks
+  let docs = allNodes.filter(n => n.type === 'document');
+  let chunks = allNodes.filter(n => n.type === 'chunk')
+    .sort((a, b) => (connCount[b.id] || 0) - (connCount[a.id] || 0)); // most connected first
+
+  // If a priority node is requested, prioritize it to ensure inclusion within budget
+  if (priorityNodeId) {
+    const pDocIdx = docs.findIndex(n => n.id === priorityNodeId);
+    if (pDocIdx > 0) {
+      const pDoc = docs.splice(pDocIdx, 1)[0];
+      docs.unshift(pDoc);
+    } else if (pDocIdx === -1) {
+      const pChkIdx = chunks.findIndex(n => n.id === priorityNodeId);
+      if (pChkIdx > 0) {
+        const pChk = chunks.splice(pChkIdx, 1)[0];
+        chunks.unshift(pChk);
+      }
+    }
+  }
+
+  // Always include all docs, fill remaining with top chunks
+  const docBudget = Math.min(docs.length, budget);
+  const chunkBudget = Math.max(0, budget - docBudget);
+  const selectedDocs = docs.slice(0, docBudget);
+  const selectedChunks = chunks.slice(0, chunkBudget);
+  const nodes = [...selectedDocs, ...selectedChunks];
+  const selectedIds = new Set(nodes.map(n => n.id));
+
+  // Filter links
+  const links = data.links.filter(l => {
+    const s = typeof l.source === 'object' ? l.source.id : l.source;
+    const t = typeof l.target === 'object' ? l.target.id : l.target;
+    if (!selectedIds.has(s) || !selectedIds.has(t)) return false;
+    if (l.type === 'SIMILAR_TO' && !launchConfig.sim) return false;
+    if (l.type === 'RELATED_TO' && !launchConfig.rel) return false;
+    if (l.type === 'HAS_CHUNK' && !launchConfig.has) return false;
+    return true;
+  });
+
+  return { nodes, links };
+}
+
+// ——————————————————————————————————————————
+// LAUNCH BUTTON
+// ——————————————————————————————————————————
+document.getElementById('launch-btn').addEventListener('click', () => {
+  if (!fullRawData) return;
+
+  // Hide launcher, show loader
+  document.getElementById('launcher').style.display = 'none';
+  const loader = document.getElementById('loader');
+  loader.style.display = 'flex';
+
+  // Apply initial state from launcher config
+  selectedCourses = new Set(launchConfig.courses);
+  showSIM = launchConfig.sim;
+  showREL = launchConfig.rel;
+  showHAS = launchConfig.has;
+
+  // Sync sidebar checkboxes
+  document.getElementById('t-sim').checked = showSIM;
+  document.getElementById('t-rel').checked = showREL;
+  document.getElementById('t-has').checked = showHAS;
+
+  // Slice data by budget
+  const sliced = sliceByBudget(fullRawData, launchConfig.budget, launchConfig.courses);
+  rawData = fullRawData; // keep full data for sidebar filters
+  updateStats(sliced);
+
+  // Init graph with configured warmup
+  setTimeout(() => initGraph(sliced, launchConfig.warmup), 50);
+});
+
+// ——————————————————————————————————————————
+// LOAD DATA (pre-load JSON, show launcher)
+// ——————————————————————————————————————————
+fetch('graph_3d_data.json')
+  .then(r => r.json())
+  .then(data => {
+    fullRawData = data;
+    rawData = data;
+    // Update breakdown with default values
+    updateBudgetBreakdown();
+  })
+  .catch(e => {
+    document.getElementById('launcher-card').innerHTML += `<p style="color:#ff6b6b; margin-top:16px">❌ Errore caricamento: ${e.message}</p>`;
+  });
+
+// Auto-Rotation logic
+let isAutoRotating = false;
+
+document.getElementById('btn-autorotate').addEventListener('click', (e) => {
+  isAutoRotating = !isAutoRotating;
+  const btn = e.target;
+  
+  if (!Graph || !Graph.controls) return;
+  
+  const controls = Graph.controls();
+  
+  if (isAutoRotating) {
+    btn.style.color = '#ffa502';
+    btn.style.borderColor = '#ffa502';
+    
+    // Attiviamo l'autorotazione nativa di Three.js (OrbitControls)
+    // Questo permette all'utente di zoomare col mouse senza conflitti, rendendola fluidissima.
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.8; // Velocità fluida e cinematografica
+    
+  } else {
+    btn.style.color = '#fff';
+    btn.style.borderColor = 'rgba(255,255,255,0.1)';
+    controls.autoRotate = false;
+  }
+});
+
+</script>
+</body>
+</html>

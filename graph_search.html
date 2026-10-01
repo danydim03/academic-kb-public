@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Academic KB — Network Search Glow</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#030305; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; overflow:hidden; color:#fff; }
+  #graph { position:absolute; inset:0; width:100vw; height:100vh; }
+
+  #ui-layer {
+    position:absolute; top:40px; left:50%; transform:translateX(-50%);
+    width:500px; z-index:20; text-align:center; pointer-events:none;
+  }
+  h1 { font-size:24px; font-weight:800; letter-spacing:1px; text-shadow:0 2px 20px rgba(0,0,0,0.8); margin-bottom:16px; pointer-events:auto; }
+
+  .search-container {
+    background:rgba(15,15,25,0.85); backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.1); border-radius:16px;
+    padding:8px 12px; box-shadow:0 10px 40px rgba(0,0,0,0.6);
+    position:relative; pointer-events:auto;
+  }
+  #search {
+    width:100%; background:transparent; border:none; outline:none;
+    color:#fff; font-size:18px; padding:8px; font-weight:500;
+  }
+  #search::placeholder { color:#666; }
+
+  #results {
+    position:absolute; top:110%; left:0; right:0;
+    background:rgba(15,15,25,0.95); backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.1); border-radius:12px;
+    max-height:300px; overflow-y:auto; text-align:left;
+    display:none; box-shadow:0 10px 40px rgba(0,0,0,0.8);
+  }
+  .res-item {
+    padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.05);
+    cursor:pointer; display:flex; flex-direction:column; gap:4px;
+  }
+  .res-item:hover { background:rgba(255,255,255,0.08); }
+  .res-title { font-size:14px; font-weight:600; color:#fff; }
+  .res-meta { font-size:11px; color:#888; }
+
+  #active-network {
+    position:absolute; top:130px; left:30px; width:320px;
+    background:rgba(15,15,25,0.85); backdrop-filter:blur(20px);
+    border:1px solid rgba(124,92,252,0.4); border-radius:16px;
+    padding:20px; z-index:20; display:none; box-shadow:0 10px 40px rgba(124,92,252,0.15);
+  }
+  #net-title { font-size:16px; font-weight:700; margin-bottom:12px; line-height:1.3; }
+  .net-stat { font-size:13px; color:#aaa; margin-bottom:6px; display:flex; justify-content:space-between; }
+  .net-val { font-weight:700; color:#fff; }
+
+  .degree-toggles { display:flex; gap:8px; margin-top:16px; }
+  .deg-btn {
+    flex:1; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);
+    background:transparent; color:#888; cursor:pointer; font-size:11px; font-weight:600;
+  }
+  .deg-btn.active { background:rgba(124,92,252,0.2); border-color:#7c5cfc; color:#fff; }
+
+  .speed-toggles { display:flex; gap:6px; margin-top:12px; }
+  .speed-btn {
+    flex:1; padding:6px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);
+    background:transparent; color:#666; cursor:pointer; font-size:10px; font-weight:600;
+    text-align:center;
+  }
+  .speed-btn.active { background:rgba(255,165,2,0.15); border-color:rgba(255,165,2,0.4); color:#ffa502; }
+
+  #btn-clear {
+    width:100%; margin-top:16px; padding:10px; border-radius:8px; border:none;
+    background:rgba(255,255,255,0.05); color:#fff; cursor:pointer; font-size:12px; font-weight:600;
+  }
+  #btn-clear:hover { background:rgba(255,255,255,0.1); }
+
+  /* Wave HUD */
+  #wave-hud {
+    position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+    background:rgba(10,10,20,0.85); backdrop-filter:blur(16px);
+    border:1px solid rgba(124,92,252,0.3); border-radius:16px;
+    padding:14px 28px; z-index:20; display:none;
+    text-align:center; box-shadow:0 10px 40px rgba(124,92,252,0.2);
+  }
+  #wave-hud .wave-num {
+    font-size:36px; font-weight:800;
+    background:linear-gradient(135deg, #7c5cfc, #a78bfa, #fff);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    line-height:1;
+  }
+  #wave-hud .wave-label { font-size:11px; color:#666; margin-top:4px; }
+  #wave-ring {
+    position:fixed; bottom:25px; left:50%; transform:translateX(-50%);
+    width:150px; height:6px; border-radius:3px;
+    background:rgba(255,255,255,0.05); z-index:19; display:none;
+    margin-bottom: -8px;
+  }
+  #wave-ring-fill {
+    height:100%; border-radius:3px; width:0%;
+    background:linear-gradient(90deg, #7c5cfc, #a78bfa, #c4b5fd, #fff);
+    box-shadow:0 0 12px #7c5cfc;
+    transition: width 0.1s linear;
+  }
+</style>
+</head>
+<body>
+
+<div id="ui-layer">
+  <a href="graph_3d.html" style="position:absolute; left:-350px; top:0; color:#fff; text-decoration:none; background:rgba(255,255,255,0.05); padding:8px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); pointer-events:auto; font-size:13px; font-weight:600;">
+    ← Grafo Principale
+  </a>
+  <h1>🔍 Esploratore Rete Semantica</h1>
+  <div class="search-container">
+    <input type="text" id="search" placeholder="Cerca un documento o un concetto..." autocomplete="off">
+    <div id="results"></div>
+  </div>
+</div>
+
+<div id="active-network">
+  <div id="net-course" style="font-size:10px; font-weight:700; letter-spacing:1px; margin-bottom:4px; text-transform:uppercase;"></div>
+  <div id="net-title">Titolo</div>
+  <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:12px 0;">
+  <div class="net-stat"><span>Nodi nella rete:</span> <span class="net-val" id="net-size">0</span></div>
+  <div class="net-stat"><span>Connessioni dirette:</span> <span class="net-val" id="net-links">0</span></div>
+
+  <div class="degree-toggles">
+    <button class="deg-btn active" data-deg="1">Grado 1</button>
+    <button class="deg-btn" data-deg="2">Grado 2</button>
+    <button class="deg-btn" data-deg="3">Grado 3</button>
+  </div>
+  <div style="font-size:10px; color:#555; margin-top:6px;">Velocità onda</div>
+  <div class="speed-toggles">
+    <button class="speed-btn" data-speed="0.15">🐢 Lenta</button>
+    <button class="speed-btn active" data-speed="0.4">⚡ Normale</button>
+    <button class="speed-btn" data-speed="1.2">🚀 Rapida</button>
+  </div>
+
+  <button id="btn-clear">❌ Azzera Ricerca</button>
+</div>
+
+<div id="wave-ring"><div id="wave-ring-fill"></div></div>
+<div id="wave-hud">
+  <div class="wave-num" id="wave-lit">0</div>
+  <div class="wave-label">nodi illuminati</div>
+</div>
+
+<div id="graph"></div>
+
+<script src="https://unpkg.com/3d-force-graph@1"></script>
+<script>
+const COLORS = { CNS:'#ff6b6b', SDCC:'#4ecdc4', ML:'#ffe66d', SE:'#a29bfe', MAGISTRALE:'#fd79a8' };
+
+let rawData = null;
+let Graph = null;
+let adjacency = {};
+let nodeMap = {};  // id -> node object (for fast 3D position lookups)
+
+// ======== SEARCH STATE ========
+let activeNodeId = null;
+let networkDegree = 1;
+let waveSpeed = 0.4;  // 3D units per millisecond
+
+// ======== WAVE ANIMATION STATE ========
+let waveAnimId = null;
+let waveStartTime = 0;
+let lastRenderTime = 0;
+
+// activationDist[nodeId] = cumulative 3D distance along BFS path from source
+let activationDist = {};
+let maxActivationDist = 0;
+
+// Currently lit (grows during animation)
+let litNodes = new Set();
+let litLinks = new Set();
+// Full network (all nodes/links that WILL be lit)
+let fullNetworkNodes = new Set();
+let fullNetworkLinks = new Set();
+// Wavefront: nodes being activated RIGHT NOW (for glow)
+let wavefrontNodes = new Set();
+
+// Current wave radius (animated)
+let currentWaveRadius = 0;
+
+// ======== LOAD ========
+fetch('graph_3d_data.json').then(r => r.json()).then(data => {
+  rawData = data;
+  data.nodes.forEach(n => {
+    adjacency[n.id] = new Set();
+    nodeMap[n.id] = n;
+  });
+  data.links.forEach(l => {
+    const s = typeof l.source === 'object' ? l.source.id : l.source;
+    const t = typeof l.target === 'object' ? l.target.id : l.target;
+    if (adjacency[s] && adjacency[t]) {
+      adjacency[s].add(t);
+      adjacency[t].add(s);
+    }
+  });
+  initGraph(data);
+});
+
+// ======== GRAPH INIT ========
+function initGraph(data) {
+  Graph = ForceGraph3D({ controlType: 'trackball', antialias: true })
+    (document.getElementById('graph'))
+    .graphData(data)
+    .backgroundColor('#030305')
+    .nodeColor(n => getNodeColor(n))
+    .nodeOpacity(1)
+    .nodeResolution(8)
+    .nodeVal(n => getNodeSize(n))
+    .linkColor(l => getLinkColor(l))
+    .linkWidth(l => getLinkWidth(l))
+    .linkDirectionalParticles(l => getLinkParticles(l))
+    .linkDirectionalParticleWidth(l => wavefrontLinks.has(lk(l)) ? 5 : 2.5)
+    .linkDirectionalParticleSpeed(l => wavefrontLinks.has(lk(l)) ? 0.025 : 0.008)
+    .linkDirectionalParticleColor(l => wavefrontLinks.has(lk(l)) ? '#ffffff' : '#a78bfa')
+    .linkResolution(3)
+    .d3AlphaDecay(0.04)
+    .d3VelocityDecay(0.4)
+    .warmupTicks(60)
+    .cooldownTicks(0)
+    .onNodeClick(node => focusNode(node.id));
+}
+
+// Wavefront links (links whose target just activated)
+let wavefrontLinks = new Set();
+
+function lk(l) {
+  const s = typeof l.source === 'object' ? l.source.id : l.source;
+  const t = typeof l.target === 'object' ? l.target.id : l.target;
+  return `${s}-${t}`;
+}
+
+// ======== RENDER FUNCTIONS ========
+function getNodeColor(n) {
+  const base = COLORS[n.course] || '#888';
+  if (!activeNodeId) return n.type === 'document' ? base : base + '55';
+
+  if (n.id === activeNodeId) return '#ffffff';
+  if (wavefrontNodes.has(n.id)) return '#ffffff';
+  if (litNodes.has(n.id)) return base;
+  if (fullNetworkNodes.has(n.id)) return base + '12';
+  return 'rgba(35,35,50,0.05)';
+}
+
+function getNodeSize(n) {
+  if (!activeNodeId) return n.size || 1.5;
+  if (n.id === activeNodeId) return (n.size || 2) * 3;
+  if (wavefrontNodes.has(n.id)) return (n.size || 1.5) * 2;
+  if (litNodes.has(n.id)) return (n.size || 1.5) * 1.3;
+  return (n.size || 1.5) * 0.6;
+}
+
+function getLinkColor(l) {
+  if (!activeNodeId) {
+    if (l.type === 'RELATED_TO') return 'rgba(255,165,2,0.35)';
+    if (l.type === 'SIMILAR_TO') return 'rgba(124,92,252,0.08)';
+    return 'rgba(255,255,255,0.015)';
+  }
+  const key = lk(l);
+  if (wavefrontLinks.has(key)) return '#ffffff';
+  if (litLinks.has(key)) {
+    if (l.type === 'SIMILAR_TO') return 'rgba(124,92,252,0.8)';
+    if (l.type === 'RELATED_TO') return 'rgba(255,165,2,0.9)';
+    return 'rgba(255,255,255,0.5)';
+  }
+  if (fullNetworkLinks.has(key)) return 'rgba(60,60,90,0.03)';
+  return 'rgba(255,255,255,0.005)';
+}
+
+function getLinkWidth(l) {
+  const key = lk(l);
+  if (wavefrontLinks.has(key)) return 4;
+  if (litLinks.has(key)) return l.type === 'RELATED_TO' ? 2.5 : 1;
+  return 0;
+}
+
+function getLinkParticles(l) {
+  const key = lk(l);
+  if (wavefrontLinks.has(key)) return 5;
+  if (litLinks.has(key)) return 2;
+  return 0;
+}
+
+// ======== BFS with 3D distance accumulation ========
+function computeActivationDistances(sourceId, maxDegree) {
+  activationDist = {};
+  fullNetworkNodes.clear();
+  fullNetworkLinks.clear();
+
+  const sourceNode = nodeMap[sourceId];
+  if (!sourceNode) return;
+
+  activationDist[sourceId] = 0;
+  fullNetworkNodes.add(sourceId);
+
+  // BFS with degree limit, accumulating 3D euclidean distance along path
+  let visited = new Set([sourceId]);
+  // queue items: { id, bfsLevel }
+  let queue = [{ id: sourceId, level: 0 }];
+
+  while (queue.length > 0) {
+    const { id: currentId, level } = queue.shift();
+    if (level >= maxDegree) continue;
+
+    const currentNode = nodeMap[currentId];
+    const currentDist = activationDist[currentId];
+    const cx = currentNode.x || 0, cy = currentNode.y || 0, cz = currentNode.z || 0;
+
+    const neighbors = adjacency[currentId] || new Set();
+    neighbors.forEach(neighborId => {
+      fullNetworkLinks.add(`${currentId}-${neighborId}`);
+      fullNetworkLinks.add(`${neighborId}-${currentId}`);
+
+      if (!visited.has(neighborId)) {
+        visited.add(neighborId);
+        fullNetworkNodes.add(neighborId);
+
+        const nn = nodeMap[neighborId];
+        const nx = nn.x || 0, ny = nn.y || 0, nz = nn.z || 0;
+        const dist3d = Math.sqrt((nx-cx)**2 + (ny-cy)**2 + (nz-cz)**2);
+        activationDist[neighborId] = currentDist + dist3d;
+
+        queue.push({ id: neighborId, level: level + 1 });
+      }
+    });
+  }
+
+  maxActivationDist = Math.max(...Object.values(activationDist), 1);
+}
+
+// ======== WAVE ANIMATION ========
+function startWaveAnimation() {
+  if (waveAnimId) cancelAnimationFrame(waveAnimId);
+
+  litNodes.clear();
+  litLinks.clear();
+  wavefrontNodes.clear();
+  wavefrontLinks.clear();
+  currentWaveRadius = 0;
+  waveStartTime = performance.now();
+  lastRenderTime = 0;
+
+  document.getElementById('wave-hud').style.display = 'block';
+  document.getElementById('wave-ring').style.display = 'block';
+  document.getElementById('wave-ring-fill').style.width = '0%';
+  document.getElementById('wave-lit').textContent = '0';
+
+  // Immediately light the source
+  litNodes.add(activeNodeId);
+  wavefrontNodes.add(activeNodeId);
+
+  waveAnimId = requestAnimationFrame(waveFrame);
+}
+
+function waveFrame(timestamp) {
+  const elapsed = timestamp - waveStartTime;
+  currentWaveRadius = elapsed * waveSpeed;
+
+  const prevLitCount = litNodes.size;
+  const WAVEFRONT_THICKNESS = 30; // 3D units - how "wide" the glowing front is
+
+  // Clear wavefront
+  wavefrontNodes.clear();
+  wavefrontLinks.clear();
+
+  // Check all network nodes: light up those within current radius
+  for (const [nodeId, dist] of Object.entries(activationDist)) {
+    if (dist <= currentWaveRadius) {
+      litNodes.add(nodeId);
+
+      // Is this node at the wavefront? (within thickness of the wave edge)
+      if (currentWaveRadius - dist < WAVEFRONT_THICKNESS) {
+        wavefrontNodes.add(nodeId);
+      }
+
+      // Light links to already-lit neighbors
+      const neighbors = adjacency[nodeId] || new Set();
+      neighbors.forEach(neighbor => {
+        if (litNodes.has(neighbor) && fullNetworkNodes.has(neighbor)) {
+          const k1 = `${nodeId}-${neighbor}`;
+          const k2 = `${neighbor}-${nodeId}`;
+          litLinks.add(k1);
+          litLinks.add(k2);
+
+          // Wavefront links: if either endpoint is in wavefront
+          if (wavefrontNodes.has(nodeId) || wavefrontNodes.has(neighbor)) {
+            wavefrontLinks.add(k1);
+            wavefrontLinks.add(k2);
+          }
+        }
+      });
+    }
+  }
+
+  // Throttled re-render (~15fps for color updates, graph itself runs at 60fps)
+  if (elapsed - lastRenderTime > 66) {
+    lastRenderTime = elapsed;
+
+    Graph.nodeColor(Graph.nodeColor())
+         .nodeVal(Graph.nodeVal())
+         .linkColor(Graph.linkColor())
+         .linkWidth(Graph.linkWidth())
+         .linkDirectionalParticles(Graph.linkDirectionalParticles())
+         .linkDirectionalParticleWidth(Graph.linkDirectionalParticleWidth())
+         .linkDirectionalParticleSpeed(Graph.linkDirectionalParticleSpeed())
+         .linkDirectionalParticleColor(Graph.linkDirectionalParticleColor());
+
+    // Update HUD
+    document.getElementById('wave-lit').textContent = litNodes.size;
+    const progress = Math.min((currentWaveRadius / maxActivationDist) * 100, 100);
+    document.getElementById('wave-ring-fill').style.width = progress + '%';
+  }
+
+  // Continue if wave hasn't reached all nodes
+  if (currentWaveRadius < maxActivationDist + WAVEFRONT_THICKNESS) {
+    waveAnimId = requestAnimationFrame(waveFrame);
+  } else {
+    // Animation complete
+    wavefrontNodes.clear();
+    wavefrontLinks.clear();
+    Graph.nodeColor(Graph.nodeColor())
+         .nodeVal(Graph.nodeVal())
+         .linkColor(Graph.linkColor())
+         .linkWidth(Graph.linkWidth())
+         .linkDirectionalParticles(Graph.linkDirectionalParticles())
+         .linkDirectionalParticleWidth(Graph.linkDirectionalParticleWidth())
+         .linkDirectionalParticleColor(Graph.linkDirectionalParticleColor());
+    document.getElementById('wave-ring-fill').style.width = '100%';
+  }
+}
+
+// ======== FOCUS NODE ========
+function focusNode(nodeId) {
+  activeNodeId = nodeId;
+  computeActivationDistances(nodeId, networkDegree);
+
+  const node = nodeMap[nodeId];
+  if (node) {
+    const panel = document.getElementById('active-network');
+    panel.style.display = 'block';
+    document.getElementById('ui-layer').style.top = '20px';
+    document.getElementById('net-title').textContent = node.label.substring(0, 60) + (node.label.length > 60 ? '...' : '');
+    document.getElementById('net-course').textContent = `${node.course} • ${node.type.toUpperCase()}`;
+    document.getElementById('net-course').style.color = COLORS[node.course];
+    panel.style.borderColor = COLORS[node.course];
+    document.getElementById('net-size').textContent = fullNetworkNodes.size;
+    document.getElementById('net-links').textContent = adjacency[nodeId]?.size || 0;
+
+    // Camera fly
+    const dist = 200 + Math.min(fullNetworkNodes.size * 0.25, 250);
+    const ratio = 1 + dist / Math.hypot(node.x || 1, node.y || 1, node.z || 1);
+    Graph.cameraPosition(
+      { x: node.x * ratio, y: node.y * ratio, z: node.z * ratio },
+      node, 2000
+    );
+  }
+
+  // 🌊 FIRE WAVE
+  startWaveAnimation();
+}
+
+// ======== SEARCH ========
+const input = document.getElementById('search');
+const resBox = document.getElementById('results');
+
+input.addEventListener('input', e => {
+  const q = e.target.value.toLowerCase().trim();
+  if (!q || !rawData) { resBox.style.display = 'none'; return; }
+  const matches = rawData.nodes.filter(n => n.label.toLowerCase().includes(q)).slice(0, 8);
+  if (matches.length > 0) {
+    resBox.innerHTML = matches.map(n => `
+      <div class="res-item" data-id="${n.id}">
+        <div class="res-title"><span style="color:${COLORS[n.course]}">●</span> ${n.label.substring(0, 55)}${n.label.length > 55 ? '...' : ''}</div>
+        <div class="res-meta">${n.course} • ${n.type} • ${adjacency[n.id]?.size || 0} connessioni</div>
+      </div>
+    `).join('');
+    resBox.style.display = 'block';
+  } else {
+    resBox.innerHTML = '<div style="padding:16px;color:#666;font-size:12px;text-align:center">Nessun risultato</div>';
+    resBox.style.display = 'block';
+  }
+});
+
+resBox.addEventListener('click', e => {
+  const item = e.target.closest('.res-item');
+  if (item) { resBox.style.display = 'none'; input.value = ''; focusNode(item.dataset.id); }
+});
+
+// ======== DEGREE BUTTONS ========
+document.querySelectorAll('.deg-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.deg-btn').forEach(btn => btn.classList.remove('active'));
+    b.classList.add('active');
+    networkDegree = parseInt(b.dataset.deg);
+    if (activeNodeId) focusNode(activeNodeId);
+  });
+});
+
+// ======== SPEED BUTTONS ========
+document.querySelectorAll('.speed-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.speed-btn').forEach(btn => btn.classList.remove('active'));
+    b.classList.add('active');
+    waveSpeed = parseFloat(b.dataset.speed);
+    if (activeNodeId) focusNode(activeNodeId);
+  });
+});
+
+// ======== CLEAR ========
+document.getElementById('btn-clear').addEventListener('click', () => {
+  activeNodeId = null;
+  if (waveAnimId) cancelAnimationFrame(waveAnimId);
+  litNodes.clear(); litLinks.clear();
+  wavefrontNodes.clear(); wavefrontLinks.clear();
+  fullNetworkNodes.clear(); fullNetworkLinks.clear();
+  activationDist = {};
+
+  document.getElementById('active-network').style.display = 'none';
+  document.getElementById('wave-hud').style.display = 'none';
+  document.getElementById('wave-ring').style.display = 'none';
+  document.getElementById('ui-layer').style.top = '40px';
+
+  Graph.nodeColor(Graph.nodeColor())
+       .nodeVal(Graph.nodeVal())
+       .linkColor(Graph.linkColor())
+       .linkWidth(Graph.linkWidth())
+       .linkDirectionalParticles(Graph.linkDirectionalParticles())
+       .linkDirectionalParticleWidth(Graph.linkDirectionalParticleWidth())
+       .linkDirectionalParticleColor(Graph.linkDirectionalParticleColor())
+       .cameraPosition({ x: 0, y: 0, z: 800 }, { x: 0, y: 0, z: 0 }, 2000);
+});
+
+window.addEventListener('resize', () => { if (Graph) Graph.width(window.innerWidth).height(window.innerHeight); });
+</script>
+</body>
+</html>
