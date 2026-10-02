@@ -73,6 +73,27 @@ Cliccando su un qualsiasi nodo del grafo, la telecamera si focalizza sull'elemen
 
 ---
 
+### 6. Retrieval MCP in Azione: Cross-Correlazione & Efficienza di Cache (96.2% Hit Rate)
+Grazie al server **FastMCP** integrato (`mcp_server/server.py`), qualsiasi assistente AI (come Antigravity, Claude, DeepSeek) interroga direttamente la Knowledge Base tramite **Retrieval Ibrido** (Embedding vettoriali + Ricerca Full-Text su Neo4j) **in locale e senza bisogno di accedere a Internet**.
+
+<p align="center">
+  <img src="docs/images/mcp_retrieval_example.png" alt="Esempio di Retrieval MCP e Cross-Correlazione Fonti con Cache Hit 96.2%" width="90%">
+</p>
+
+#### 🔗 1. Cross-Correlazione Multi-Sorgente
+Il motore semantico non si limita a trovare keyword, ma unisce tre livelli eterogenei di materiale didattico:
+- **Slide dei Corsi (PDF)**: estrae formule, diagrammi e definizioni precise (es. `02_prng-symcrydef.pdf`, `03_stream_wep.pdf`).
+- **Appunti Personali (Notion)**: recupera il flusso concettuale spiegato a lezione (es. `LEZIONE 2: § su random/PRNG/TRNG`, `LEZIONE 3`).
+- **Letteratura Scientifica & Manuali**: cita i capitoli esatti dei testi accademici indicizzati (*Boneh–Shoup*, *Aumasson – Serious Cryptography*, *Stallings*).
+- **Incrocio Interdisciplinare**: permette di collegare argomenti di Crittografia e Reti (**CNS**) con concetti di Sistemi Distribuiti (**SDCC**) o **Machine Learning** senza dispersione.
+
+#### ⚡ 2. Efficienza Computazionale & Prompt Caching (96.2% Cache Hit)
+Come visibile nella barra di telemetria dell'esempio reale:
+- **Cache Hit del 96.2%**: L'architettura del grafo e la serializzazione deterministica dei contesti MCP garantiscono che i blocchi di conoscenza estratti rimangano stabili nella memoria di contesto (Prompt Cache).
+- **Costi e Latenza Minimi**: Anche all'interno di conversazioni estese da centinaia di turni (`233 messaggi`, context window fino a `1000K`), il riuso della cache riduce la latenza a millisecondi e i costi operativi a pochi centesimi (`$0.39` complessivi).
+
+---
+
 ## 🚀 Avvio Rapido (Mock Mode)
 
 Non è necessario installare Docker o configurare Neo4j per visualizzare ed esplorare l'interfaccia 3D: il repository include un dataset statico mock pre-calcolato (`graph_3d_data.json`).
