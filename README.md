@@ -22,7 +22,96 @@ Il sistema aggrega slide accademiche, dispense, libri di testo, paper scientific
 
 ## 📸 Galleria Interfaccia & Funzionalità
 
-### 1. Visualizzatore 3D a Costellazione (`graph_3d.html`)
+### 1. Portale d'Accesso Unificato (`index.html`)
+Il punto di ingresso principale dell'ecosistema accademico, con design coordinato Apple Liquid Glass e navigazione rapida verso il visualizzatore 3D, lo Study Engine e il Cockpit avanzato.
+
+<p align="center">
+  <img src="docs/images/portal_home.jpg" alt="Portale Principale Academic KB" width="95%">
+</p>
+
+* **Schede di Navigazione Modulari**: Accesso diretto a Knowledge Graph 3D, Study Engine e DIMEOGPT Cockpit.
+* **Banner Istituzionale**: Integrazione della testata accademica e selezione della lingua.
+
+---
+
+### 2. Dashboard Study Studio (`study.html`)
+La suite interattiva per la preparazione agli esami con telemetria in tempo reale sulle risposte, accuratezza e stato del recupero errori:
+
+<p align="center">
+  <img src="docs/images/study_dashboard.png" alt="Dashboard Study Studio DIMEOGPT" width="95%">
+</p>
+
+* **Indicatori di Performance**: Monitoraggio immediato di quiz completati (es. `22 fatte`), accuratezza complessiva (`68%`), carte da ripassare (`56`) ed errori attivi (`14`).
+* **Ripartizione per Corso di Laurea**: Stato di preparazione specifico per ciascuna materia magistrale (**CNS**, **SDCC**, **ML**, **SE**, **GEOMETRIA**, **SERT**, **MAGISTRALE**).
+* **Azioni Rapide**: Avvio immediato di quiz mirati (TLS 1.3, Consenso Raft), recupero errori salvati nella banca e analisi di copertura del grafo.
+
+---
+
+### 3. Generatore Quiz & Quesiti d'Esame
+Motore di autovalutazione intelligente che formula quesiti a risposta multipla e a risposta aperta estraendo frammenti didattici dal database a grafo:
+
+<p align="center">
+  <img src="docs/images/quiz_generator.png" alt="Generatore Quiz Accademici" width="95%">
+</p>
+
+* **Filtro Materia & Concetto**: Selezione rapida tramite pillole di argomenti chiave (*Consensus Raft, TLS 1.3 Handshake, Backpropagation, SAGA Pattern, WEP FMS Attack, Diffie-Hellman PFS, Buffer Overflow & Canary, Forme Bilineari*).
+* **Controllo Granulare**: Regolazione della difficoltà (*Facile, Media, Esame*), tipologia di quesito (*Scelta Multipla a 4 opzioni o Aperta*) e quantità di domande da generare.
+* **Modalità "Allenati Solo Sugli Errori"**: Generazione prioritaria di domande focalizzate sui concetti falliti in precedenza.
+
+---
+
+### 4. Percorso Propedeutico di Studio (DAG)
+Visualizzazione e pianificazione dell'apprendimento strutturato come **Grafo Aciclico Diretto (DAG)**:
+
+<p align="center">
+  <img src="docs/images/learning_path_dag.png" alt="Percorso Propedeutico di Studio DAG" width="95%">
+</p>
+
+* **Sequenza Logica senza Cicli**: Ordinamento topologico dei concetti per garantire che ogni tema sia affrontato solo dopo aver acquisito i rispettivi prerequisiti.
+* **Percorsi Concettuali Esemplificativi**: Da *Algebra lineare di base* e *Calcolo differenziale*, passando per *Probabilità & Statistica* e *Programmazione NumPy*, fino ad *Apprendimento supervisionato*, *Regressione logistica*, *Percettrone* e *Funzioni di attivazione non lineari*.
+* **Workspace Dedicato per Ogni Step**: Cliccando su uno step si accede direttamente alla sessione di approfondimento.
+
+---
+
+### 5. Workspace Concettuale & Step Assistant
+Ambiente di lavoro focalizzato sul singolo concetto didattico con tutor virtuale in-page:
+
+<p align="center">
+  <img src="docs/images/study_step_workspace.png" alt="Workspace Step Attivo e Tutor" width="95%">
+</p>
+
+* **Obiettivi Didattici & Stato**: Descrizione rigorosa dell'argomento con badge di avanzamento (*Da fare, In studio, Completato*) e verifica dei prerequisiti necessari.
+* **Tutor Accademico Dedicato**: Chat interattiva per simulare domande d'esame, illustrare scenari di guasto/attacco o confrontare il concetto con altre soluzioni.
+* **Pulsanti di Approfondimento Istantaneo**: `💡 Spiegazione Dettagliata`, `⚡ Guasti & Edge Cases`, `🎓 Tipica Domanda d'Esame`, `🔬 Esempio Pratico`.
+
+---
+
+### 6. Gemini Live Voice Studio (`engine/voice/`)
+Assistente vocale interattivo bidirezionale a bassissima latenza integrato direttamente nel browser:
+
+<p align="center">
+  <img src="docs/images/voice_studio_live.png" alt="Gemini Live Voice Studio con Trascrizione e Citazioni" width="95%">
+</p>
+
+* **Streaming Vocale Bidirezionale**: Connessione WebSocket real-time con Gemini Live API (`gemini-3.8-live`) con profilo vocale maschile autorevole (`Charon`).
+* **Trascrizione Sincronizzata & Barge-In**: Trascrizione immediata del parlato dell'utente e delle risposte del tutor con possibilità di interruzione vocale istantanea.
+* **Grounding Accademico Puntuale**: Ogni affermazione della voce è accompagnata dall'elenco delle fonti didattiche interrogate e citate dal grafo (es. `[ML | 7_bagging.pdf, p. 37]`, `[ML | 14_cnn.pdf, p. 38]`).
+
+---
+
+### 7. DIMEOGPT Cockpit & Prompt Templates Hub
+Ambiente operativo per lo sviluppo software, revisione codice e refactoring accademico:
+
+<p align="center">
+  <img src="docs/images/dimeogpt_cockpit.png" alt="DIMEOGPT Cockpit e Prompt Templates" width="95%">
+</p>
+
+* **Libreria di Prompt Templates Specializzati**: *Repo setup, Skill navigator, Grill & record, To spec, To tickets, Implement spec, Code review, Architecture review, Diagnose bugs, Resolve merge conflicts, Triage, Setup wizard*.
+* **Selettore Modelli Multi-Provider**: Supporto flessibile per modelli di ragionamento profondo (*DeepSeek V4.1 Flash, Gemini 2.0 Flash, Claude 3.5 Sonnet, GPT-4o*).
+
+---
+
+### 8. Visualizzatore 3D a Costellazione (`graph_3d.html`)
 L'interfaccia 3D adotta un'estetica **Apple Liquid Glass** con un HUD semitrasparente e non invasivo, visualizzando decine di migliaia di nodi concettuali e relazioni semantiche nello spazio tridimensionale.
 
 <p align="center">
@@ -35,7 +124,7 @@ L'interfaccia 3D adotta un'estetica **Apple Liquid Glass** con un HUD semitraspa
 
 ---
 
-### 2. Filtro Corsi & Isolamento Interdisciplinare ("Solo Cross")
+### 9. Filtro Corsi & Isolamento Interdisciplinare ("Solo Cross")
 La barra laterale permette di isolare specifici corsi di laurea magistrale con codifica a colori nativa:
 
 <p align="center">
@@ -47,7 +136,7 @@ La barra laterale permette di isolare specifici corsi di laurea magistrale con c
 
 ---
 
-### 3. Ontologia Semantica del Grafo
+### 10. Ontologia Semantica del Grafo
 Il grafo modella tre livelli distinti di connessione, filtrabili tramite gli interruttori dedicati dell'HUD:
 
 <p align="center">
@@ -62,49 +151,7 @@ Il grafo modella tre livelli distinti di connessione, filtrabili tramite gli int
 
 ---
 
-### 4. Esplorazione Focus & Scheda Dettaglio Documento
-Cliccando su un qualsiasi nodo del grafo, la telecamera Three.js esegue uno zoom fluido centrando l'elemento e aprendo una scheda di dettaglio con metadati e correlazioni:
-
-<p align="center">
-  <img src="docs/images/course_focus_details.png" alt="Focus Corso ed Esplorazione Rete" width="90%">
-</p>
-
-<p align="center">
-  <img src="docs/images/document_card.png" alt="Dettaglio Scheda Documento" width="50%">
-</p>
-
----
-
-### 5. Study Studio & DIMEOGPT (`study.html`)
-Una dashboard interattiva pensata per la preparazione intensiva degli esami universitari:
-
-* **Generatore Quiz Multimodale**: Quiz a risposta multipla a 4 opzioni e domande aperte generate dinamicamente estraendo chunk reali dal database Neo4j.
-* **Rendering Matematico KaTeX**: Formule crittografiche, equazioni differenziali, matrici e funzioni di costo renderizzate in LaTeX in tempo reale.
-* **Banca Errori & Spiegazione Rigorosa**: Registrazione automatica delle risposte errate con possibilità di richiedere all'LLM l'analisi dettagliata del ragionamento fallace.
-* **Flashcard con Algoritmo SuperMemo-2 (SM-2)**: Ripetizione spaziata intelligente basata sulla difficoltà di richiamo (`Facile`, `Buono`, `Difficile`, `Ripeti`).
-* **Learning Path & Gap Detector**: Individuazione proattiva dei concetti mancanti (lacune) e generazione di un percorso sequenziale con prerequisiti.
-
----
-
-### 6. Gemini Live Voice Studio (`engine/voice/`)
-Un assistente vocale conversazionale real-time collegato direttamente al Knowledge Graph:
-
-<p align="center">
-  <img src="static/voice_chat_text_feature.png" alt="Voice Studio - Chat Vocale e Streaming Testuale" width="95%">
-</p>
-
-<p align="center">
-  <img src="static/voice_avatar_architecture.png" alt="Architettura Gemini Live Voice Studio" width="85%">
-</p>
-
-* **Streaming Bidirezionale a Bassa Latenza**: Connessione WebSocket persistente con Gemini Live API (`gemini-3.8-live`).
-* **Interruzione Fluida (Barge-In)**: Interrompi l'assistente vocale in qualsiasi istante parlando al microfono; il sistema silenzia la riproduzione in millisecondi.
-* **Accoppiamento Accademico (Grounding)**: Prima di rispondere, il modulo inietta nel contesto vocale i frammenti precisi estratti dalle dispense e dai libri di testo del corso.
-* **Avatar & Visualizer Audio**: Indicatore visivo delle onde sonore dell'utente e dell'assistente con fallback grafico DOM/Canvas reattivo.
-
----
-
-### 7. Retrieval MCP con Prompt Caching (96.2% Hit Rate)
+### 11. Retrieval MCP con Prompt Caching (96.2% Hit Rate)
 Grazie al server **FastMCP** (`mcp_server/server.py`), qualsiasi assistente AI (Claude Desktop, Antigravity, Cursor, DeepSeek) interroga la base di conoscenza tramite **Retrieval Ibrido** (Embedding Vettoriali + BM25 Full-Text Cypher) in locale:
 
 <p align="center">
