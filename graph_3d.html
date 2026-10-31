@@ -2,6 +2,8 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Academic KB — 3D Knowledge Graph</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -17,17 +19,467 @@
     box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
   }
 
-  /* ——— SIDEBAR ——— */
+  /* ——— SIDEBAR (Apple Liquid Glass) ——— */
   #sidebar {
     position:fixed; top:16px; left:16px; width:280px; max-height:calc(100vh - 32px); border-radius:24px;
     display:flex; flex-direction:column; z-index:20; overflow-y:auto;
-    transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.3s ease, width 0.35s cubic-bezier(0.25,0.46,0.45,0.94);
+    background: rgba(18, 22, 32, 0.85);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  #sidebar.studio-active {
+    width: 340px;
   }
   #sidebar.hidden {
     transform: translateX(-310px);
     opacity: 0;
     pointer-events: none;
   }
+  #sidebar.hidden.studio-active {
+    transform: translateX(-370px);
+  }
+
+  /* Segmented Nav: Grafo vs Studio */
+  .sidebar-nav {
+    display: flex;
+    gap: 6px;
+    padding: 8px 14px;
+    background: rgba(12, 15, 24, 0.92);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    position: sticky;
+    top: 45px;
+    z-index: 10;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .sidebar-nav-btn {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #8b8ea2;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+  }
+  .sidebar-nav-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+  .sidebar-nav-btn.active {
+    color: #fff;
+    background: linear-gradient(135deg, rgba(124, 92, 252, 0.35) 0%, rgba(167, 139, 250, 0.25) 100%);
+    border-color: rgba(167, 139, 250, 0.5);
+    box-shadow: 0 4px 16px rgba(124, 92, 252, 0.3);
+  }
+
+  /* Studio Sub-Navigation (5 Panels) */
+  .studio-subnav {
+    display: flex;
+    overflow-x: auto;
+    gap: 5px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.25);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    scrollbar-width: none;
+    position: sticky;
+    top: 89px;
+    z-index: 9;
+    backdrop-filter: blur(15px);
+  }
+  .studio-subnav::-webkit-scrollbar { display: none; }
+  .studio-subnav-btn {
+    padding: 5px 9px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #8b8e9f;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    font-family: inherit;
+  }
+  .studio-subnav-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .studio-subnav-btn.active {
+    color: #a78bfa;
+    background: rgba(124, 92, 252, 0.25);
+    border-color: rgba(124, 92, 252, 0.5);
+    box-shadow: 0 2px 8px rgba(124, 92, 252, 0.25);
+  }
+
+  .studio-panel {
+    padding: 14px;
+  }
+  .studio-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.3px;
+  }
+  .studio-desc {
+    font-size: 10px;
+    color: #888;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+  .studio-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 11px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+  }
+  .studio-input:focus {
+    border-color: #7c5cfc;
+    box-shadow: 0 0 0 2px rgba(124, 92, 252, 0.25);
+  }
+  .studio-select {
+    width: 100%;
+    padding: 7px 10px;
+    background: rgba(18, 22, 34, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 11px;
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .studio-select:focus {
+    border-color: #7c5cfc;
+  }
+
+  /* Question Cards */
+  .q-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 10px;
+    backdrop-filter: blur(16px);
+    transition: all 0.2s ease;
+  }
+  .q-card:hover {
+    border-color: rgba(167, 139, 250, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+  .q-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .q-type-badge {
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: rgba(124, 92, 252, 0.2);
+    color: #c4b5fd;
+    border: 1px solid rgba(124, 92, 252, 0.35);
+  }
+  .q-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: #f1f2f6;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .q-options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .q-option-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: #ccc;
+    font-size: 10.5px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    line-height: 1.3;
+  }
+  .q-option-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  .q-option-btn.correct {
+    background: rgba(46, 213, 115, 0.25) !important;
+    border-color: #2ed573 !important;
+    color: #2ed573 !important;
+    font-weight: 700;
+    box-shadow: 0 0 10px rgba(46, 213, 115, 0.3);
+  }
+  .q-option-btn.wrong {
+    background: rgba(255, 71, 87, 0.25) !important;
+    border-color: #ff4757 !important;
+    color: #ff4757 !important;
+  }
+  .q-feedback-msg {
+    font-size: 10px;
+    margin-top: 6px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    display: none;
+  }
+  .q-feedback-msg.correct {
+    display: block;
+    background: rgba(46, 213, 115, 0.15);
+    color: #2ed573;
+    border: 1px solid rgba(46, 213, 115, 0.3);
+  }
+  .q-feedback-msg.wrong {
+    display: block;
+    background: rgba(255, 71, 87, 0.15);
+    color: #ff4757;
+    border: 1px solid rgba(255, 71, 87, 0.3);
+  }
+  .q-explanation {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    font-size: 10px;
+    color: #bbb;
+    line-height: 1.4;
+    border-left: 3px solid #7c5cfc;
+    display: none;
+  }
+
+  /* 3D Flip Flashcard */
+  .flashcard-scene {
+    perspective: 1000px;
+    width: 100%;
+    height: 190px;
+    margin: 10px 0;
+    cursor: pointer;
+    user-select: none;
+  }
+  .flashcard-card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-radius: 18px;
+  }
+  .flashcard-card.flipped {
+    transform: rotateY(180deg);
+  }
+  .flashcard-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 18px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+  }
+  .flashcard-front {
+    background: linear-gradient(135deg, rgba(28, 22, 54, 0.95) 0%, rgba(16, 14, 32, 0.95) 100%);
+  }
+  .flashcard-back {
+    background: linear-gradient(135deg, rgba(14, 36, 40, 0.95) 0%, rgba(10, 24, 28, 0.95) 100%);
+    transform: rotateY(180deg);
+  }
+  .sm2-btn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .sm2-btn {
+    padding: 8px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #eee;
+    transition: all 0.2s ease;
+    text-align: center;
+    font-family: inherit;
+  }
+  .sm2-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.2);
+  }
+  .sm2-again { background: rgba(255, 71, 87, 0.2); border-color: rgba(255, 71, 87, 0.4); color: #ff6b81; }
+  .sm2-hard { background: rgba(255, 165, 2, 0.2); border-color: rgba(255, 165, 2, 0.4); color: #ffa502; }
+  .sm2-good { background: rgba(46, 213, 115, 0.2); border-color: rgba(46, 213, 115, 0.4); color: #2ed573; }
+  .sm2-easy { background: rgba(30, 144, 255, 0.2); border-color: rgba(30, 144, 255, 0.4); color: #70a1ff; }
+  .fc-feedback-banner {
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: 10px;
+    margin-top: 8px;
+    text-align: center;
+    background: rgba(124, 92, 252, 0.18);
+    border: 1px solid rgba(124, 92, 252, 0.35);
+    color: #c4b5fd;
+    display: none;
+    line-height: 1.4;
+  }
+
+  /* Knowledge Gap Badges */
+  .gap-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.3px;
+  }
+  .gap-badge.critical {
+    background: rgba(255, 71, 87, 0.25);
+    color: #ff4757;
+    border: 1px solid rgba(255, 71, 87, 0.5);
+  }
+  .gap-badge.medium {
+    background: rgba(255, 165, 2, 0.25);
+    color: #ffa502;
+    border: 1px solid rgba(255, 165, 2, 0.5);
+  }
+  .gap-badge.good {
+    background: rgba(46, 213, 115, 0.25);
+    color: #2ed573;
+    border: 1px solid rgba(46, 213, 115, 0.5);
+  }
+  .gap-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .gap-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.18);
+    transform: translateX(2px);
+  }
+
+  /* Learning Path Timeline */
+  .timeline {
+    position: relative;
+    padding-left: 20px;
+    margin-top: 10px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: linear-gradient(180deg, #7c5cfc 0%, rgba(124, 92, 252, 0.2) 100%);
+  }
+  .timeline-step {
+    position: relative;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+  .timeline-dot {
+    position: absolute;
+    left: -20px;
+    top: 4px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #080814;
+    border: 2px solid #7c5cfc;
+    box-shadow: 0 0 8px rgba(124, 92, 252, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: #a78bfa;
+    font-weight: 700;
+  }
+  .timeline-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 8px 10px;
+    transition: all 0.2s ease;
+  }
+  .timeline-card:hover {
+    background: rgba(124, 92, 252, 0.12);
+    border-color: rgba(124, 92, 252, 0.4);
+    transform: translateX(2px);
+  }
+  .timeline-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .timeline-desc {
+    font-size: 10px;
+    color: #888;
+    line-height: 1.35;
+  }
+
+  /* Search Hits */
+  .search-hit-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    padding: 8px 10px;
+    transition: all 0.2s ease;
+  }
+  .search-hit-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
   #sidebar h1 {
     font-size:13px; font-weight:600; color:#fff;
     padding:16px 16px 10px; border-bottom:1px solid rgba(255,255,255,0.06);
@@ -143,6 +595,42 @@
   .close-info { float:right; cursor:pointer; color:#555; font-size:16px; line-height:1; }
   .close-info:hover { color:#fff; }
 
+  /* Modalità Volo Tesla: pannello ispezione posizionato in alto a destra, isolato dai controlli */
+  body.flight-active #info-panel {
+    top: 76px;
+    bottom: auto;
+    right: 28px;
+    width: 380px;
+    max-height: calc(100vh - 150px);
+    z-index: 9500;
+    background: rgba(12, 16, 26, 0.94);
+    border: 1px solid rgba(0, 242, 254, 0.4);
+    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.75), 0 0 25px rgba(0, 242, 254, 0.15);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+  }
+  body.flight-active #info-panel::-webkit-scrollbar {
+    width: 6px;
+  }
+  body.flight-active #info-panel::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+  }
+  body.flight-active #info-panel::-webkit-scrollbar-thumb {
+    background: rgba(0, 242, 254, 0.35);
+    border-radius: 4px;
+  }
+  body.flight-active #info-panel::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 242, 254, 0.65);
+  }
+  .related-doc-tag {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .related-doc-tag:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 2px 8px rgba(0, 242, 254, 0.25);
+  }
+
   /* ——— LOADING OVERLAY ——— */
   #loader {
     position:fixed; inset:0; background:#070710;
@@ -198,6 +686,72 @@
     transition:all .2s ease; letter-spacing:.5px; box-shadow: 0 8px 24px rgba(124,92,252,0.3);
   }
   #launch-btn:hover { filter:brightness(1.15); transform:scale(1.02); }
+
+  /* Tesla Roadster Flight Mode & Cockpit HUD */
+  #floating-flight-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 22px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.35) 0%, rgba(20, 24, 38, 0.9) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(239, 68, 68, 0.3);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #floating-flight-btn:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 14px 40px rgba(0,0,0,0.6), 0 0 32px rgba(239, 68, 68, 0.5);
+    border-color: rgba(239, 68, 68, 0.6);
+  }
+  #floating-flight-btn:active {
+    transform: scale(0.98);
+  }
+
+  /* Hangar Veivoli 3D Selector */
+  .hangar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #94a3b8;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .hangar-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+  .hangar-btn.selected {
+    background: linear-gradient(135deg, rgba(0, 242, 254, 0.22) 0%, rgba(124, 92, 252, 0.35) 100%);
+    border-color: #00f2fe;
+    color: #fff;
+    box-shadow: 0 0 14px rgba(0, 242, 254, 0.35);
+  }
+
+  body.flight-active #floating-flight-btn,
+  body.flight-active #sidebar,
+  body.flight-active #sidebar-toggle {
+    display: none !important;
+  }
 </style>
 </head>
 <body>
@@ -214,9 +768,9 @@
     <div class="cfg-row">
       <div class="cfg-label">
         <span>Budget Nodi</span>
-        <span id="budget-val" class="cfg-val">10000</span>
+        <span id="budget-val" class="cfg-val">25000</span>
       </div>
-      <input type="range" id="cfg-budget" min="50" max="10000" value="10000" step="100" class="cfg-slider">
+      <input type="range" id="cfg-budget" min="50" max="25000" value="25000" step="100" class="cfg-slider">
       <div class="cfg-hint">Più nodi = più dettaglio, ma più lento</div>
       <div id="budget-breakdown" class="cfg-breakdown">—</div>
     </div>
@@ -231,16 +785,16 @@
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
         <label class="cfg-check"><input type="checkbox" id="cfg-sim" checked> <span>SIMILAR_TO</span></label>
         <label class="cfg-check"><input type="checkbox" id="cfg-rel" checked> <span>RELATED_TO</span></label>
-        <label class="cfg-check"><input type="checkbox" id="cfg-has"> <span>HAS_CHUNK</span></label>
+        <label class="cfg-check"><input type="checkbox" id="cfg-has" checked> <span>HAS_CHUNK</span></label>
       </div>
     </div>
 
     <div class="cfg-row" style="border:none; padding-bottom:0;">
       <div class="cfg-label"><span>Pre-calcolo fisica</span></div>
       <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap">
-        <label class="cfg-check"><input type="radio" name="warmup" value="40" checked> <span>Veloce (40 tick)</span></label>
-        <label class="cfg-check"><input type="radio" name="warmup" value="120"> <span>Bilanciato (120)</span></label>
-        <label class="cfg-check"><input type="radio" name="warmup" value="300"> <span>Ottimale (300, lento)</span></label>
+        <label class="cfg-check"><input type="radio" name="warmup" value="0" checked> <span>⚡ Istantaneo (0 tick - Fluido 60 FPS)</span></label>
+        <label class="cfg-check"><input type="radio" name="warmup" value="30"> <span>Veloce (30 tick)</span></label>
+        <label class="cfg-check"><input type="radio" name="warmup" value="90"> <span>Pre-stabilizzato (90 tick)</span></label>
       </div>
     </div>
 
@@ -257,107 +811,327 @@
 
 <!-- Main sidebar -->
 <div id="sidebar" class="glass">
-  <h1>🧠 Academic KB <span id="sidebar-close" style="margin-left:auto;cursor:pointer;font-size:18px;opacity:0.4">×</span></h1>
+  <h1><a href="index.html" style="text-decoration:none; margin-right:12px; font-size:16px; opacity:0.6; transition:opacity 0.2s; color:#fff;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6" title="Torna al Login">⬅</a> 🧠 Academic KB <span id="sidebar-close" style="margin-left:auto;cursor:pointer;font-size:18px;opacity:0.4">×</span></h1>
 
-  <!-- Stats -->
-  <div class="section">
-    <div class="section-title">Statistiche</div>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="val" id="s-nodes">—</div><div class="lbl">Nodi visibili</div></div>
-      <div class="stat-card"><div class="val" id="s-links">—</div><div class="lbl">Link visibili</div></div>
-      <div class="stat-card"><div class="val" id="s-sim">—</div><div class="lbl">SIMILAR_TO</div></div>
-      <div class="stat-card"><div class="val" id="s-rel">—</div><div class="lbl">RELATED_TO</div></div>
-    </div>
+  <!-- Segmented Tab Navigation: Grafo vs Studio -->
+  <div class="sidebar-nav">
+    <button class="sidebar-nav-btn active" id="btn-tab-graph" data-target="tab-graph-view">🌐 Grafo</button>
+    <button class="sidebar-nav-btn" id="btn-tab-studio" data-target="tab-studio-view">📚 Studio</button>
   </div>
 
-  <!-- Course multi-select -->
-  <div class="section">
-    <div class="section-title">Filtro Corsi (multi-selezione)</div>
-    <details class="dropdown-details" id="course-dropdown">
-      <summary class="dropdown-summary">Corsi Attivi (<span id="course-count">5</span>)</summary>
-      <div class="dropdown-content" id="course-list">
-        <!-- course items will be injected here -->
+  <!-- TAB 1: GRAPH VIEW (Existing controls) -->
+  <div id="tab-graph-view" class="tab-pane active">
+    <!-- Stats -->
+    <div class="section">
+      <div class="section-title">Statistiche</div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="val" id="s-nodes">—</div><div class="lbl">Nodi visibili</div></div>
+        <div class="stat-card"><div class="val" id="s-links">—</div><div class="lbl">Link visibili</div></div>
+        <div class="stat-card"><div class="val" id="s-sim">—</div><div class="lbl">SIMILAR_TO</div></div>
+        <div class="stat-card"><div class="val" id="s-rel">—</div><div class="lbl">RELATED_TO</div></div>
       </div>
-    </details>
-    <div style="display:flex; gap:6px; margin-top:8px;">
-      <button class="action-btn" id="btn-all" style="margin-bottom:0">✓ Tutti</button>
-      <button class="action-btn" id="btn-none" style="margin-bottom:0">✗ Nessuno</button>
-      <button class="action-btn" id="btn-cross" style="margin-bottom:0; color:#ffa502">🔀 Solo Cross</button>
+    </div>
+
+    <!-- Course multi-select -->
+    <div class="section">
+      <div class="section-title">Filtro Corsi (multi-selezione)</div>
+      <details class="dropdown-details" id="course-dropdown">
+        <summary class="dropdown-summary">Corsi Attivi (<span id="course-count">5</span>)</summary>
+        <div class="dropdown-content" id="course-list">
+          <!-- course items will be injected here -->
+        </div>
+      </details>
+      <div style="display:flex; gap:6px; margin-top:8px;">
+        <button class="action-btn" id="btn-all" style="margin-bottom:0">✓ Tutti</button>
+        <button class="action-btn" id="btn-none" style="margin-bottom:0">✗ Nessuno</button>
+        <button class="action-btn" id="btn-cross" style="margin-bottom:0; color:#ffa502">🔀 Solo Cross</button>
+      </div>
+    </div>
+
+    <!-- Link types -->
+    <div class="section">
+      <div class="section-title">Tipo di Relazioni</div>
+      <div class="link-toggle">
+        <input type="checkbox" id="t-sim" checked>
+        <label for="t-sim">SIMILAR_TO <span style="color:#888; font-size:10px">(chunk semantici)</span></label>
+        <span class="link-badge" style="background:rgba(124,92,252,.2); color:#a78bfa">SIM</span>
+      </div>
+      <div class="link-toggle">
+        <input type="checkbox" id="t-rel" checked>
+        <label for="t-rel">RELATED_TO <span style="color:#888; font-size:10px">(doc collegati)</span></label>
+        <span class="link-badge" style="background:rgba(255,165,2,.2); color:#ffa502">REL</span>
+      </div>
+      <div class="link-toggle">
+        <input type="checkbox" id="t-has" checked>
+        <label for="t-has">HAS_CHUNK <span style="color:#888; font-size:10px">(doc→chunk)</span></label>
+        <span class="link-badge" style="background:rgba(255,255,255,.15); color:#ddd">HAS</span>
+      </div>
+      <div class="slider-row" style="margin-top:10px;">
+        <label>Opacità link</label>
+        <input type="range" id="sl-link-opacity" min="0.05" max="1.0" value="0.55" step="0.02">
+        <span id="v-link-opacity">0.55</span>
+      </div>
+      <div class="slider-row">
+        <label>Spessore link</label>
+        <input type="range" id="sl-link-width" min="0.3" max="3.0" value="1.0" step="0.1">
+        <span id="v-link-width">1.0</span>
+      </div>
+    </div>
+
+    <!-- Ego-Network Search -->
+    <div class="section">
+      <div class="section-title">Esplora Rete Ego-Centrica</div>
+      <div style="display:flex; gap:6px; margin-bottom:8px">
+        <input type="text" id="ego-search" placeholder="Cerca nodo sorgente...">
+        <button class="action-btn" id="btn-ego-reset" style="width:auto; margin-bottom:0; padding:8px 12px; font-weight:bold;">Reset</button>
+      </div>
+      <div id="ego-search-results"></div>
+      <div class="slider-row" style="margin-top:8px">
+        <label style="width:75px">Gradi (Depth)</label>
+        <input type="range" id="sl-ego-degree" min="1" max="4" value="2" step="1">
+        <span id="v-ego-degree">2</span>
+      </div>
+    </div>
+
+    <!-- Physics -->
+    <div class="section">
+      <div class="section-title">Fisica &amp; Performance</div>
+      <div class="slider-row">
+        <label>Forza repuls.</label>
+        <input type="range" id="sl-repulse" min="-500" max="-20" value="-120" step="10">
+        <span id="v-repulse">-120</span>
+      </div>
+      <div class="slider-row">
+        <label>Link dist.</label>
+        <input type="range" id="sl-linkdist" min="10" max="200" value="60" step="5">
+        <span id="v-linkdist">60</span>
+      </div>
+      <button class="action-btn primary" id="btn-physics">⏸ Congela Fisica</button>
+      <div style="display:flex; gap:6px; margin-top:8px;">
+        <button class="action-btn" id="btn-reset-cam" style="margin-bottom:0">🎯 Reset Cam</button>
+        <button class="action-btn" id="btn-autorotate" style="margin-bottom:0">🔄 Auto-Rotazione</button>
+      </div>
+
+      <!-- Hangar Veivoli 3D: Selezione Tesla vs Aermacchi M-345 -->
+      <div style="margin-top:14px; margin-bottom:6px; font-size:10px; font-weight:800; color:#888; text-transform:uppercase; letter-spacing:0.8px; display:flex; justify-content:space-between; align-items:center;">
+        <span>HANGAR VEIVOLI 3D</span>
+        <span id="hangar-current-badge" style="font-size:9px; color:#00f2fe; background:rgba(0,242,254,0.15); padding:1px 6px; border-radius:6px; border:1px solid rgba(0,242,254,0.3);">Attivo: Tesla</span>
+      </div>
+      <div id="hangar-selector" style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
+        <button type="button" class="hangar-btn selected" id="hangar-btn-tesla" data-vehicle="tesla" title="Tesla Roadster 2.0 con propulsori a gas freddo SpaceX">
+          <span style="font-size:14px;">🏎️</span>
+          <span>Tesla Roadster</span>
+        </button>
+        <button type="button" class="hangar-btn" id="hangar-btn-aermacchi" data-vehicle="aermacchi" title="Aermacchi M-345 HET Frecce Tricolori con fumi tricolori">
+          <span style="font-size:14px;">✈️</span>
+          <span>M-345 Frecce</span>
+        </button>
+      </div>
+
+      <button class="action-btn" id="btn-flight-mode" style="margin-top:2px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.45) 0%, rgba(147, 51, 234, 0.5) 100%); border: 1px solid rgba(239, 68, 68, 0.6); font-weight:700; color:#fff; box-shadow: 0 0 16px rgba(239, 68, 68, 0.35); display: flex; align-items:center; justify-content:center; gap:8px;">
+        <span id="btn-flight-icon" style="font-size:16px;">🏎️💨</span>
+        <span id="btn-flight-text">Vola nel Grafo (Tesla Roadster)</span>
+      </button>
+    </div>
+
+    <!-- Legend integrated into sidebar -->
+    <div class="section">
+      <div class="section-title">Legenda</div>
+      <div id="dynamic-legend-courses"></div>
+      <div style="margin-top:6px; border-top:1px solid rgba(255,255,255,.05); padding-top:6px;">
+        <div class="leg-row"><div class="leg-line" style="background:rgba(124,92,252,.7)"></div> SIMILAR_TO</div>
+        <div class="leg-row"><div class="leg-line" style="background:rgba(255,165,2,.9)"></div> RELATED_TO</div>
+      </div>
+      <div style="margin-top:6px; border-top:1px solid rgba(255,255,255,.05); padding-top:6px; font-size:10px; color:#aaa;">
+        Sfera grande = Documento<br>Punto piccolo = Chunk
+      </div>
     </div>
   </div>
 
-  <!-- Link types -->
-  <div class="section">
-    <div class="section-title">Tipo di Relazioni</div>
-    <div class="link-toggle">
-      <input type="checkbox" id="t-sim" checked>
-      <label for="t-sim">SIMILAR_TO <span style="color:#888; font-size:10px">(chunk semantici)</span></label>
-      <span class="link-badge" style="background:rgba(124,92,252,.2); color:#a78bfa">SIM</span>
+  <!-- TAB 2: STUDIO VIEW (Apple Liquid Glass Study Suite) -->
+  <div id="tab-studio-view" class="tab-pane" style="display:none;">
+    <!-- Studio Sub-Navigation (5 Panels) -->
+    <div class="studio-subnav">
+      <button class="studio-subnav-btn active" data-panel="search">🔎 Cerca</button>
+      <button class="studio-subnav-btn" data-panel="questions">🧠 Domande</button>
+      <button class="studio-subnav-btn" data-panel="flashcards">🗂️ Flashcard</button>
+      <button class="studio-subnav-btn" data-panel="gaps">📊 Gap</button>
+      <button class="studio-subnav-btn" data-panel="path">🗺️ Path</button>
     </div>
-    <div class="link-toggle">
-      <input type="checkbox" id="t-rel" checked>
-      <label for="t-rel">RELATED_TO <span style="color:#888; font-size:10px">(doc collegati)</span></label>
-      <span class="link-badge" style="background:rgba(255,165,2,.2); color:#ffa502">REL</span>
-    </div>
-    <div class="link-toggle">
-      <input type="checkbox" id="t-has">
-      <label for="t-has">HAS_CHUNK <span style="color:#888; font-size:10px">(doc→chunk)</span></label>
-      <span class="link-badge" style="background:rgba(255,255,255,.07); color:#666">HAS</span>
-    </div>
-  </div>
 
-  <!-- Ego-Network Search -->
-  <div class="section">
-    <div class="section-title">Esplora Rete Ego-Centrica</div>
-    <div style="display:flex; gap:6px; margin-bottom:8px">
-      <input type="text" id="ego-search" placeholder="Cerca nodo sorgente...">
-      <button class="action-btn" id="btn-ego-reset" style="width:auto; margin-bottom:0; padding:8px 12px; font-weight:bold;">Reset</button>
+    <!-- PANEL 1: Search & Chat Panel -->
+    <div id="studio-search-panel" class="studio-panel">
+      <div class="studio-title">🔎 Cerca &amp; Chat KB</div>
+      <div class="studio-desc">Esplora documenti e chunk semantici nel grafo accademico.</div>
+      <div style="display:flex; gap:6px; margin-bottom:8px;">
+        <input type="text" id="studio-search-query" class="studio-input" placeholder="Cerca concetto (es. TLS, Raft, SAGA)...">
+        <button id="btn-studio-search" class="action-btn primary" style="width:auto; margin-bottom:0; padding:8px 12px; font-weight:700;">Cerca</button>
+      </div>
+      <div id="studio-search-results" style="display:flex; flex-direction:column; gap:6px; max-height:400px; overflow-y:auto;">
+        <div style="font-size:11px; color:#666; text-align:center; padding:16px 0;">Digita un termine per cercare nel Knowledge Graph.</div>
+      </div>
     </div>
-    <div id="ego-search-results"></div>
-    <div class="slider-row" style="margin-top:8px">
-      <label style="width:75px">Gradi (Depth)</label>
-      <input type="range" id="sl-ego-degree" min="1" max="4" value="2" step="1">
-      <span id="v-ego-degree">2</span>
-    </div>
-  </div>
 
-  <!-- Physics -->
-  <div class="section">
-    <div class="section-title">Fisica &amp; Performance</div>
-    <div class="slider-row">
-      <label>Forza repuls.</label>
-      <input type="range" id="sl-repulse" min="-500" max="-20" value="-120" step="10">
-      <span id="v-repulse">-120</span>
-    </div>
-    <div class="slider-row">
-      <label>Link dist.</label>
-      <input type="range" id="sl-linkdist" min="10" max="200" value="60" step="5">
-      <span id="v-linkdist">60</span>
-    </div>
-    <button class="action-btn primary" id="btn-physics">⏸ Congela Fisica</button>
-    <div style="display:flex; gap:6px; margin-top:8px;">
-      <button class="action-btn" id="btn-reset-cam" style="margin-bottom:0">🎯 Reset Cam</button>
-      <button class="action-btn" id="btn-autorotate" style="margin-bottom:0">🔄 Auto-Rotazione</button>
-    </div>
-  </div>
+    <!-- PANEL 2: Question Generation Panel -->
+    <div id="studio-questions-panel" class="studio-panel" style="display:none;">
+      <div class="studio-title">🧠 Generazione Domande (LLM)</div>
+      <div class="studio-desc">Crea quiz e quesiti accademici generati dinamicamente dal KB.</div>
+      
+      <div style="margin-bottom:8px;">
+        <label style="font-size:10px; color:#888; text-transform:uppercase; letter-spacing:0.5px;">Argomento</label>
+        <input type="text" id="studio-q-topic" class="studio-input" placeholder="Argomento (es. Consensus Raft, TLS 1.3)..." value="Consensus Raft">
+      </div>
 
-  <!-- Legend integrated into sidebar -->
-  <div class="section">
-    <div class="section-title">Legenda</div>
-    <div class="leg-row"><div class="leg-dot" style="background:#ff6b6b"></div> CNS</div>
-    <div class="leg-row"><div class="leg-dot" style="background:#4ecdc4"></div> SDCC</div>
-    <div class="leg-row"><div class="leg-dot" style="background:#ffe66d"></div> ML</div>
-    <div class="leg-row"><div class="leg-dot" style="background:#a29bfe"></div> SE</div>
-    <div class="leg-row"><div class="leg-dot" style="background:#fd79a8"></div> MAGISTRALE</div>
-    <div style="margin-top:6px; border-top:1px solid rgba(255,255,255,.05); padding-top:6px;">
-      <div class="leg-row"><div class="leg-line" style="background:rgba(124,92,252,.7)"></div> SIMILAR_TO</div>
-      <div class="leg-row"><div class="leg-line" style="background:rgba(255,165,2,.9)"></div> RELATED_TO</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
+        <div>
+          <label style="font-size:10px; color:#888;">Difficoltà</label>
+          <select id="studio-q-diff" class="studio-select">
+            <option value="Media" selected>Media</option>
+            <option value="Facile">Facile</option>
+            <option value="Difficile">Difficile</option>
+            <option value="Misto">Misto</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px; color:#888;">Tipologia</label>
+          <select id="studio-q-type" class="studio-select">
+            <option value="Risposta Multipla" selected>Risposta Multipla</option>
+            <option value="Aperta">Aperta</option>
+            <option value="Singola">Singola</option>
+            <option value="Esercizio">Esercizio</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <label style="font-size:10px; color:#888;">Numero Domande (1-20):</label>
+        <input type="number" id="studio-q-count" class="studio-input" style="width:65px; text-align:center;" min="1" max="20" value="5">
+      </div>
+
+      <button id="btn-studio-q-generate" class="action-btn primary" style="font-weight:700; padding:10px;">
+        <span id="q-btn-text">🧠 Genera Domande</span>
+      </button>
+
+      <div id="studio-questions-results" style="margin-top:12px; max-height:420px; overflow-y:auto;">
+        <div style="font-size:11px; color:#666; text-align:center; padding:16px 0;">Configura i parametri e clicca su Genera Domande.</div>
+      </div>
     </div>
-    <div style="margin-top:6px; border-top:1px solid rgba(255,255,255,.05); padding-top:6px; font-size:10px; color:#aaa;">
-      Sfera grande = Documento<br>Punto piccolo = Chunk
+
+    <!-- PANEL 3: Flashcard SM-2 Panel -->
+    <div id="studio-flashcards-panel" class="studio-panel" style="display:none;">
+      <div class="studio-title">🗂️ Flashcard SM-2 Spaced Repetition</div>
+      <div class="studio-desc">Algoritmo di ripetizione spaziata SuperMemo-2 per la memorizzazione a lungo termine.</div>
+
+      <div style="display:flex; gap:6px; margin-bottom:8px; align-items:center;">
+        <label style="font-size:10px; color:#888; flex-shrink:0;">Corso:</label>
+        <select id="studio-fc-course" class="studio-select" style="flex:1;">
+          <option value="ALL" selected>Tutti i Corsi</option>
+          <option value="CNS">CNS</option>
+          <option value="SDCC">SDCC</option>
+          <option value="ML">ML</option>
+          <option value="SE">SE</option>
+          <option value="GEOMETRIA AROSIO">GEOMETRIA</option>
+          <option value="SERT">SERT</option>
+          <option value="MAGISTRALE">MAGISTRALE</option>
+        </select>
+      </div>
+
+      <div id="fc-counter" style="font-size:11px; color:#aaa; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+        <span>Card <b id="fc-idx-val">1</b> di <b id="fc-total-val">6</b></span>
+        <span id="fc-due-badge" class="tag" style="background:rgba(124,92,252,0.25); color:#a78bfa;">Da ripassare oggi</span>
+      </div>
+
+      <!-- 3D Flip Card Container -->
+      <div class="flashcard-scene" id="fc-scene" title="Clicca sulla card per girarla">
+        <div class="flashcard-card" id="fc-card">
+          <!-- Front Face -->
+          <div class="flashcard-face flashcard-front" id="fc-front">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="tag" id="fc-front-course" style="background:rgba(255,107,107,0.2); color:#ff6b6b;">CNS</span>
+              <span style="font-size:9px; color:#777;">🔄 Clicca per girare</span>
+            </div>
+            <div id="fc-front-text" style="font-size:11.5px; font-weight:600; color:#fff; text-align:center; padding:10px 4px; line-height:1.4;">
+              Caricamento flashcard in corso...
+            </div>
+            <div style="font-size:9px; color:#666; text-align:center;">Fronte (Domanda / Concetto)</div>
+          </div>
+          <!-- Back Face -->
+          <div class="flashcard-face flashcard-back" id="fc-back">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="tag" id="fc-back-course" style="background:rgba(46,213,115,0.2); color:#2ed573;">Risposta</span>
+              <span style="font-size:9px; color:#777;">🔄 Clicca per girare</span>
+            </div>
+            <div id="fc-back-text" style="font-size:10.5px; color:#eee; text-align:center; padding:6px 4px; line-height:1.4; overflow-y:auto; max-height:90px;">
+              Risposta...
+            </div>
+            <div id="fc-back-source" style="font-size:8.5px; color:#888; text-align:center;">Fonte: Slide ufficiali</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Navigation -->
+      <div style="display:flex; gap:6px; margin-bottom:8px;">
+        <button class="action-btn" id="btn-fc-prev" style="flex:1; margin-bottom:0;">◀ Precedente</button>
+        <button class="action-btn" id="btn-fc-next" style="flex:1; margin-bottom:0;">Successiva ▶</button>
+      </div>
+
+      <!-- SM-2 Recall Feedback Buttons -->
+      <div style="font-size:9.5px; color:#888; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Valuta memorizzazione (SM-2):</div>
+      <div class="sm2-btn-grid">
+        <button class="sm2-btn sm2-again" id="btn-sm2-again">🔴 Di Nuovo (Q1)</button>
+        <button class="sm2-btn sm2-hard" id="btn-sm2-hard">🟠 Difficile (Q2)</button>
+        <button class="sm2-btn sm2-good" id="btn-sm2-good">🟢 Bene (Q3)</button>
+        <button class="sm2-btn sm2-easy" id="btn-sm2-easy">🔵 Facile (Q5)</button>
+      </div>
+
+      <!-- Feedback banner -->
+      <div id="fc-feedback" class="fc-feedback-banner">Prossima revisione calcolata tra 1 giorni (intervallo SM-2)</div>
+    </div>
+
+    <!-- PANEL 4: Knowledge Gap Detection Panel -->
+    <div id="studio-gaps-panel" class="studio-panel" style="display:none;">
+      <div class="studio-title">📊 Knowledge Gap Detection</div>
+      <div class="studio-desc">Rileva documenti con copertura chunk insufficiente (&lt;2 chunk = GAP).</div>
+
+      <div style="display:flex; gap:6px; margin-bottom:8px; align-items:center;">
+        <label style="font-size:10px; color:#888; flex-shrink:0;">Corso:</label>
+        <select id="studio-gaps-course" class="studio-select" style="flex:1;">
+          <option value="CNS" selected>CNS</option>
+          <option value="SDCC">SDCC</option>
+          <option value="ML">ML</option>
+          <option value="SE">SE</option>
+          <option value="GEOMETRIA AROSIO">GEOMETRIA</option>
+          <option value="SERT">SERT</option>
+          <option value="MAGISTRALE">MAGISTRALE</option>
+          <option value="ALL">Tutti i Corsi</option>
+        </select>
+        <button id="btn-studio-gaps-analyze" class="action-btn primary" style="width:auto; margin-bottom:0; padding:7px 12px; font-weight:700;">Analizza</button>
+      </div>
+
+      <div id="studio-gaps-summary" style="font-size:10px; color:#aaa; margin-bottom:6px; display:flex; justify-content:space-between;"></div>
+
+      <div id="studio-gaps-results" style="max-height:360px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;">
+        <div style="font-size:11px; color:#666; text-align:center; padding:16px 0;">Seleziona un corso e clicca su Analizza.</div>
+      </div>
+    </div>
+
+    <!-- PANEL 5: Learning Path Panel -->
+    <div id="studio-path-panel" class="studio-panel" style="display:none;">
+      <div class="studio-title">🗺️ Percorso di Studio (Prerequisiti)</div>
+      <div class="studio-desc">Sequenza propedeutica ordinata (DAG) generata dal Concept Graph.</div>
+
+      <div style="display:flex; gap:6px; margin-bottom:8px;">
+        <input type="text" id="studio-path-topic" class="studio-input" placeholder="Argomento da apprendere..." value="Zero-Knowledge Proofs">
+        <button id="btn-studio-path-generate" class="action-btn primary" style="width:auto; margin-bottom:0; padding:8px 12px; font-weight:700;">Calcola</button>
+      </div>
+
+      <div id="studio-path-results" style="max-height:400px; overflow-y:auto;">
+        <div style="font-size:11px; color:#666; text-align:center; padding:16px 0;">Inserisci un topic e genera il percorso propedeutico.</div>
+      </div>
     </div>
   </div>
 </div>
+
 
 <!-- Node info -->
 <div id="info-panel" class="glass">
@@ -369,10 +1143,118 @@
 <!-- Tooltip -->
 <div id="tooltip" class="glass"></div>
 
+<!-- Floating Flight Launch Pill -->
+<button id="floating-flight-btn" title="Entra in modalità volo 3D (Tasto T per cambiare veicolo)">
+  <span id="floating-flight-icon" style="font-size:18px;">🏎️💨</span>
+  <span id="floating-flight-text">Vola nel Grafo (Tesla Roadster)</span>
+</button>
+
+<!-- Tesla Flight Cockpit & Radar HUD -->
+<div id="flight-hud" style="display:none; position:fixed; inset:0; pointer-events:none; z-index:9000; font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
+  <!-- Aeronautical Crosshair & Artificial Horizon -->
+  <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:140px; height:140px; border:1px dashed rgba(255,255,255,0.22); border-radius:50%; pointer-events:none;">
+    <div style="position:absolute; top:50%; left:15%; right:15%; height:1px; background:rgba(255,255,255,0.35);"></div>
+    <div style="position:absolute; top:15%; bottom:15%; left:50%; width:1px; background:rgba(255,255,255,0.35);"></div>
+    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:8px; height:8px; border:1.5px solid #00f2fe; border-radius:50%; box-shadow: 0 0 8px #00f2fe;"></div>
+    <!-- Dynamic Mouse Flight Pointer -->
+    <div id="hud-mouse-aim" style="position:absolute; top:50%; left:50%; width:20px; height:20px; margin:-10px 0 0 -10px; border:2px solid #00f2fe; border-radius:50%; pointer-events:none; transition:transform 0.04s ease-out; box-shadow:0 0 10px #00f2fe, inset 0 0 4px rgba(0,242,254,0.5);">
+      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:4px; height:4px; background:#fff; border-radius:50%;"></div>
+    </div>
+  </div>
+
+  <!-- Top Center: Proximity Radar & Target Inspector -->
+  <div style="position:absolute; top:24px; left:50%; transform:translateX(-50%); display:flex; gap:12px; align-items:center; pointer-events:auto;">
+    <div class="glass" style="padding:10px 22px; border-radius:24px; background:rgba(12,15,24,0.85); border:1px solid rgba(255,255,255,0.18); display:flex; align-items:center; gap:16px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+      <div style="display:flex; flex-direction:column;">
+        <span style="font-size:9.5px; color:#888; text-transform:uppercase; letter-spacing:1px; font-weight:700;">NAV RADAR PROXIMITY</span>
+        <span id="hud-target-name" style="font-size:13px; font-weight:700; color:#00f2fe; max-width:320px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Scansione spazio circostante...</span>
+      </div>
+      <div style="height:26px; width:1px; background:rgba(255,255,255,0.12);"></div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end;">
+        <span style="font-size:9.5px; color:#888; text-transform:uppercase; letter-spacing:1px; font-weight:700;">DISTANZA</span>
+        <span id="hud-target-dist" style="font-size:14px; font-weight:800; color:#ffd32a; font-variant-numeric:tabular-nums;">-- m</span>
+      </div>
+      <button id="hud-inspect-btn" style="pointer-events:auto; background:rgba(0,242,254,0.15); border:1px solid rgba(0,242,254,0.45); color:#00f2fe; border-radius:12px; padding:6px 14px; font-size:11px; font-weight:700; cursor:pointer; transition:all 0.2s ease;">[E] Ispeziona</button>
+    </div>
+  </div>
+
+  <!-- Bottom Left: Telemetry & Vehicle Status -->
+  <div style="position:absolute; bottom:28px; left:28px; display:flex; flex-direction:column; gap:10px; pointer-events:auto;">
+    <div class="glass" style="padding:16px 20px; border-radius:20px; background:rgba(12,15,24,0.88); border:1px solid rgba(255,255,255,0.18); width:310px; box-shadow:0 12px 35px rgba(0,0,0,0.6);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span id="hud-vehicle-title" style="font-size:11px; font-weight:800; color:#fff; letter-spacing:1.2px;">TESLA ROADSTER 2.0</span>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span id="hud-vehicle-badge" style="font-size:9.5px; font-weight:700; color:#ef4444; background:rgba(239,68,68,0.2); padding:2px 8px; border-radius:10px; border:1px solid rgba(239,68,68,0.4);">SPACEX PACKAGE</span>
+          <button id="hud-switch-vehicle-btn" title="Cambia veivolo al volo (tasto T)" style="background:rgba(255,255,255,0.08); border:1px solid rgba(0,242,254,0.4); color:#00f2fe; font-size:10px; font-weight:700; padding:2px 8px; border-radius:8px; cursor:pointer; transition:all 0.2s ease;">🔄 [T]</button>
+        </div>
+      </div>
+      
+      <!-- Speedometer -->
+      <div style="display:flex; align-items:baseline; gap:6px; margin-bottom:12px;">
+        <span id="hud-speed" style="font-size:36px; font-weight:900; color:#fff; font-variant-numeric:tabular-nums;">0</span>
+        <span style="font-size:12px; font-weight:700; color:#888;">KM/H</span>
+        <span id="hud-gear" style="margin-left:auto; font-size:11px; font-weight:800; color:#10b981; background:rgba(16,185,129,0.15); padding:2px 8px; border-radius:6px; border:1px solid rgba(16,185,129,0.3);">FLIGHT D</span>
+      </div>
+
+      <!-- Thrusters Pressure Bar -->
+      <div style="margin-bottom:6px;">
+        <div style="display:flex; justify-content:space-between; font-size:9.5px; font-weight:700; color:#aaa; margin-bottom:4px;">
+          <span id="hud-thrust-label">COLD GAS THRUST (COPV)</span>
+          <span id="hud-psi">10,000 PSI</span>
+        </div>
+        <div style="height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden;">
+          <div id="hud-thrust-bar" style="height:100%; width:0%; background:linear-gradient(90deg, #00f2fe, #ef4444); transition:width 0.1s ease-out;"></div>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:10px; color:#888;">
+        <span>GUIDA: <b id="hud-guidance-mode" style="color:#94a3b8;">STANDBY (PREMI W/A/S/D)</b></span>
+        <span>CAM: <b id="hud-cam-mode" style="color:#fff;">INSEGUIMENTO</b> [V]</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Right: Controls Guide & Exit -->
+  <div style="position:absolute; bottom:28px; right:28px; display:flex; flex-direction:column; gap:10px; pointer-events:auto; align-items:flex-end;">
+    <div id="hud-controls-card" class="glass" style="padding:12px 16px; border-radius:18px; background:rgba(12,15,24,0.88); border:1px solid rgba(255,255,255,0.18); font-size:11px; color:#ddd; box-shadow:0 12px 35px rgba(0,0,0,0.6); transition:all 0.25s ease; max-width:380px;">
+      <div id="hud-controls-header" style="font-weight:800; color:#fff; display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; gap:16px;">
+        <span style="display:flex; align-items:center; gap:6px;">
+          <span>🎮 CONTROLLI DI VOLO</span>
+        </span>
+        <button id="hud-controls-toggle-btn" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#00f2fe; font-size:10px; padding:2px 8px; border-radius:8px; cursor:pointer;">
+          <span id="hud-controls-toggle-icon">− Riduci</span>
+        </button>
+      </div>
+      <div id="hud-controls-body" style="display:grid; grid-template-columns:auto auto; gap:4px 14px; font-size:11px; margin-top:8px;">
+        <span><kbd style="background:rgba(0,242,254,0.2); color:#00f2fe; border:1px solid rgba(0,242,254,0.4); padding:2px 6px; border-radius:4px; font-weight:700;">T</kbd></span><span style="color:#00f2fe; font-weight:700;">Cambia Veivolo (Tesla ↔ Aermacchi M-345)</span>
+        <span><kbd style="background:rgba(0,242,254,0.2); color:#00f2fe; border:1px solid rgba(0,242,254,0.4); padding:2px 6px; border-radius:4px; font-weight:700;">W / SHIFT</kbd></span><span style="color:#00f2fe; font-weight:700;">Propulsori (W: Spinta / SHIFT: Boost)</span>
+        <span><kbd style="background:rgba(255,255,255,0.15); padding:2px 6px; border-radius:4px; font-weight:700;">TRASCINA MOUSE</kbd></span><span style="color:#e0e7ff; font-weight:600;">Camera in orbita libera 360° (quando NON premi WASD)</span>
+        <span><kbd style="background:rgba(255,255,255,0.15); padding:2px 6px; border-radius:4px; font-weight:700;">WASD + MOUSE</kbd></span><span>Sterzo aeronautico attivo (con tasti premuti)</span>
+        <span><kbd style="background:rgba(255,255,255,0.15); padding:2px 6px; border-radius:4px; font-weight:700;">S</kbd></span><span>Freno ad aria / Retromarcia</span>
+        <span><kbd style="background:rgba(255,255,255,0.15); padding:2px 6px; border-radius:4px; font-weight:700;">ROTELLA</kbd></span><span>Zoom orbita (in sosta) / Throttle (in volo)</span>
+        <span><kbd style="background:rgba(255,255,255,0.15); padding:2px 6px; border-radius:4px; font-weight:700;">A / D</kbd></span><span>Virata Sinistra / Destra (RCS Thruster)</span>
+        <span><kbd style="background:rgba(255,255,255,0.15); padding:2px 6px; border-radius:4px; font-weight:700;">SPAZIO / C</kbd></span><span>Cabrata / Picchiata</span>
+        <span><kbd style="background:rgba(255,255,255,0.15); padding:2px 6px; border-radius:4px; font-weight:700;">V</kbd></span><span>Visuale (Inseguimento / Pilota)</span>
+        <span><kbd style="background:rgba(255,255,255,0.15); padding:2px 6px; border-radius:4px; font-weight:700;">E</kbd></span><span>Ispeziona / Chiudi Nodo</span>
+        <span><kbd style="background:rgba(255,255,255,0.15); padding:2px 6px; border-radius:4px; font-weight:700;">ESC</kbd></span><span>Chiudi scheda / Esci dal volo</span>
+      </div>
+    </div>
+
+    <button id="btn-exit-flight" class="glass" style="pointer-events:auto; padding:10px 20px; border-radius:14px; background:rgba(239,68,68,0.25); border:1px solid rgba(239,68,68,0.5); color:#fff; font-weight:700; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:8px;">
+      <span>❌ Esci dal Volo (ESC)</span>
+    </button>
+  </div>
+</div>
+
 <!-- Graph container -->
 <div id="graph"></div>
 
 <script src="https://unpkg.com/3d-force-graph@1"></script>
+<script type="module">
+  import * as THREE from 'https://esm.sh/three';
+  window.THREE = THREE;
+  window.dispatchEvent(new CustomEvent('three-ready'));
+</script>
 <script>
 // Sidebar toggle
 const sidebar = document.getElementById('sidebar');
@@ -396,14 +1278,16 @@ document.getElementById('sidebar-close').addEventListener('click', () => {
 // ——————————————————————————————————————————
 // CONFIG
 // ——————————————————————————————————————————
-const COURSES = ['CNS','SDCC','ML','SE','MAGISTRALE'];
-const COLORS = {
-  CNS:'#ff6b6b', SDCC:'#4ecdc4', ML:'#ffe66d', SE:'#a29bfe', MAGISTRALE:'#fd79a8'
-};
+let COURSES = [];
+let COLORS = {};
+const PALETTE = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#a29bfe', '#fd79a8', '#00cec9', '#fab1a0', '#e84393', '#fdcb6e', '#0984e3', '#6c5ce7', '#d63031'];
+let currentLinkOpacity = 0.55;
+let linkWidthScale = 1.0;
+
 const LINK_COLOR = {
-  SIMILAR_TO: (c1,c2) => c1===c2 ? 'rgba(124,92,252,0.25)' : 'rgba(255,200,50,0.45)',
-  RELATED_TO: (c1,c2) => c1===c2 ? 'rgba(255,165,2,0.6)'  : 'rgba(255,100,50,0.8)',
-  HAS_CHUNK: () => 'rgba(255,255,255,0.04)'
+  RELATED_TO: (c1,c2) => (c1 && c2 && c1 !== c2) ? '#ff4757' : '#ffa502',
+  SIMILAR_TO: (c1,c2) => (c1 && c2 && c1 !== c2) ? 'rgba(255, 211, 42, 0.75)' : 'rgba(167, 139, 250, 0.65)',
+  HAS_CHUNK: () => 'rgba(180, 215, 255, 0.40)'
 };
 
 // ——————————————————————————————————————————
@@ -412,8 +1296,8 @@ const LINK_COLOR = {
 let rawData = null;
 let Graph = null;
 let selectedCourses = new Set(COURSES);
-let showSIM = true, showREL = true, showHAS = false;
-let physicsFrozen = false;
+let showSIM = true, showREL = true, showHAS = true;
+let physicsFrozen = true;
 let highlightNodes = new Set();
 let highlightLinks = new Set();
 let hoverNode = null;
@@ -529,52 +1413,80 @@ const linkVisibilityFn = l => {
   return true;
 };
 
+const getLinkCourses = l => {
+  const s = typeof l.source === 'object' ? l.source : (window.nodeMap ? window.nodeMap.get(l.source) : null);
+  const t = typeof l.target === 'object' ? l.target : (window.nodeMap ? window.nodeMap.get(l.target) : null);
+  const c1 = l.c1 || (s ? s.course : null);
+  const c2 = l.c2 || (t ? t.course : null);
+  return { c1, c2 };
+};
+
 const linkColorFn = l => {
   const s = typeof l.source === 'object' ? l.source.id : l.source;
   const t = typeof l.target === 'object' ? l.target.id : l.target;
+  const { c1, c2 } = getLinkCourses(l);
   
   if (egoMode) {
     if (litLinks.has(l)) {
         const fn = LINK_COLOR[l.type];
-        return fn ? fn(l.c1, l.c2) : '#fff';
+        return fn ? fn(c1, c2) : '#fff';
     }
-    return 'rgba(60,60,80,0.04)';
+    return 'rgba(60,60,80,0.08)';
   }
   
-  // Hover su un nodo: evidenzia i link adiacenti, nascondi gli altri
-  if (highlightLinks.size > 0 && !highlightLinks.has(`${s}-${t}`)) return 'rgba(255,255,255,0.02)';
+  // Quando un nodo è selezionato / evidenziato:
+  // - I link collegati si accendono in brillante ciano laser #00f2fe
+  // - Gli altri link mantengono una visibilità contestuale (non spariscono nel nulla!)
+  if (highlightLinks.size > 0) {
+    if (highlightLinks.has(`${s}-${t}`) || highlightLinks.has(`${t}-${s}`)) {
+      return '#00f2fe';
+    }
+    return 'rgba(125, 140, 175, 0.22)';
+  }
   
-  // Rendiamo VISIBILI tutti gli archi!
+  // Modalità normale: archi chiaramente visibili e distinti per tipo di relazione
   const fn = LINK_COLOR[l.type];
-  return fn ? fn(l.c1, l.c2) : 'rgba(255,255,255,0.05)';
+  return fn ? fn(c1, c2) : 'rgba(255,255,255,0.55)';
 };
 
 const linkWidthFn = l => {
-  if (egoMode && litLinks.has(l)) return 0.8; // Link spessi quando illuminati dall'onda
-  if (l.type === 'RELATED_TO') return (l.value || 1) * 0.5;
-  return 0; // SIMILAR_TO hanno spessore 0 (usano WebGL GL_LINES 1px se visibili)
+  const s = typeof l.source === 'object' ? l.source.id : l.source;
+  const t = typeof l.target === 'object' ? l.target.id : l.target;
+
+  if (egoMode && litLinks.has(l)) return 2.0 * linkWidthScale;
+  if (highlightLinks.size > 0 && (highlightLinks.has(`${s}-${t}`) || highlightLinks.has(`${t}-${s}`))) {
+    return 2.4 * linkWidthScale;
+  }
+
+  // Ponti principali RELATED_TO tra documenti: tubi solidi evidenti
+  if (l.type === 'RELATED_TO') return 0.95 * linkWidthScale;
+  // SIMILAR_TO tra chunk semantici: filamenti visibili
+  if (l.type === 'SIMILAR_TO') return 0.28 * linkWidthScale;
+  // HAS_CHUNK: linee di congiunzione strutturali
+  return 0.12 * linkWidthScale;
 };
 
 const linkParticlesFn = l => {
   if (egoMode) {
      return litLinks.has(l) ? 2 : 0;
   }
-  return l.type === 'RELATED_TO' ? 2 : l.type === 'SIMILAR_TO' ? 1 : 0;
+  const s = typeof l.source === 'object' ? l.source.id : l.source;
+  const t = typeof l.target === 'object' ? l.target.id : l.target;
+  // Particelle animate luminose per i link correntemente evidenziati/ispezionati
+  if (highlightLinks.size > 0 && (highlightLinks.has(`${s}-${t}`) || highlightLinks.has(`${t}-${s}`))) {
+    return 3;
+  }
+  // 1 particella fluida sui ponti principali tra documenti (RELATED_TO)
+  if (l.type === 'RELATED_TO') return 1;
+  return 0;
 };
 
 const linkParticleWidthFn = l => {
-  if (egoMode) {
-    return litLinks.has(l) ? 4 : 0;
-  }
-  return l.type === 'RELATED_TO' ? 3 : 1.5;
+  if (egoMode) return litLinks.has(l) ? 3 : 0;
+  return l.type === 'RELATED_TO' ? 2.2 : 1.2;
 };
 
-const linkParticleSpeedFn = l => {
-  if (egoMode) {
-    return litLinks.has(l) ? 0.015 : 0; 
-  }
-  return l.type === 'RELATED_TO' ? 0.008 : 0.003;
-};
+const linkParticleSpeedFn = () => 0.005;
 
 const linkParticleColorFn = l => {
   if (egoMode) {
@@ -584,6 +1496,14 @@ const linkParticleColorFn = l => {
   return fn ? fn(l.c1, l.c2) : '#fff';
 };
 
+function updateGraphHighlight() {
+  if (!Graph) return;
+  Graph.nodeColor(nodeColorFn)
+       .linkColor(linkColorFn)
+       .linkWidth(linkWidthFn)
+       .linkDirectionalParticles(linkParticlesFn);
+}
+
 function updateGraphRendering() {
   if (!Graph) return;
   Graph.nodeColor(nodeColorFn)
@@ -591,6 +1511,8 @@ function updateGraphRendering() {
        .linkVisibility(linkVisibilityFn)
        .linkColor(linkColorFn)
        .linkWidth(linkWidthFn)
+       .linkOpacity(currentLinkOpacity)
+       .linkResolution(2)
        .linkDirectionalParticles(linkParticlesFn)
        .linkDirectionalParticleWidth(linkParticleWidthFn)
        .linkDirectionalParticleSpeed(linkParticleSpeedFn)
@@ -734,37 +1656,7 @@ function updateCourseCount() {
   courseCountSpan.textContent = selectedCourses.size;
 }
 
-COURSES.forEach(c => {
-  const item = document.createElement('label');
-  item.className = 'course-dropdown-item';
-  
-  const checkbox = document.createElement('input');
-  checkbox.type = 'checkbox';
-  checkbox.checked = true;
-  checkbox.dataset.course = c;
-  
-  const colorDot = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COLORS[c]};vertical-align:middle"></span>`;
-  
-  const textSpan = document.createElement('span');
-  textSpan.innerHTML = `${colorDot} ${c}`;
-  
-  item.appendChild(checkbox);
-  item.appendChild(textSpan);
-  
-  checkbox.addEventListener('change', (e) => {
-    setCrossOnly(false);
-    if (e.target.checked) {
-      selectedCourses.add(c);
-    } else {
-      selectedCourses.delete(c);
-    }
-    updateCourseCount();
-    refreshGraph();
-  });
-  
-  courseList.appendChild(item);
-});
-updateCourseCount();
+// Sidebar dropdown and legend are populated in buildDynamicUI()
 
 document.getElementById('btn-all').addEventListener('click', () => {
   setCrossOnly(false);
@@ -794,6 +1686,18 @@ document.getElementById('t-sim').addEventListener('change', e => { showSIM = e.t
 document.getElementById('t-rel').addEventListener('change', e => { showREL = e.target.checked; refreshGraph(); });
 document.getElementById('t-has').addEventListener('change', e => { showHAS = e.target.checked; refreshGraph(); });
 
+document.getElementById('sl-link-opacity').addEventListener('input', e => {
+  currentLinkOpacity = parseFloat(e.target.value);
+  document.getElementById('v-link-opacity').textContent = e.target.value;
+  if (Graph) Graph.linkOpacity(currentLinkOpacity);
+});
+
+document.getElementById('sl-link-width').addEventListener('input', e => {
+  linkWidthScale = parseFloat(e.target.value);
+  document.getElementById('v-link-width').textContent = e.target.value;
+  if (Graph) Graph.linkWidth(linkWidthFn);
+});
+
 // ——————————————————————————————————————————
 // FILTER DATA
 // ——————————————————————————————————————————
@@ -801,17 +1705,25 @@ function getFilteredData(priorityNodeId = null) {
   const source = fullRawData || rawData;
   if (!source || !source.nodes) return { nodes: [], links: [] };
 
-  const budget = (launchConfig && launchConfig.budget) ? launchConfig.budget : 10000;
-  const { nodes } = sliceByBudget(source, budget, selectedCourses, priorityNodeId);
+  const budget = (launchConfig && launchConfig.budget) ? launchConfig.budget : 25000;
+  let { nodes } = sliceByBudget(source, budget, selectedCourses, priorityNodeId);
+
+  // SE HAS_CHUNK È DISATTIVATO:
+  // L'utente visualizza la pura Rete Macro (solo Documenti e ponti RELATED_TO)!
+  if (!showHAS) {
+    nodes = nodes.filter(n => n.type === 'document');
+  }
+
   const nodeIds = new Set(nodes.map(n => n.id));
 
   const links = source.links.filter(l => {
     const s = typeof l.source === 'object' ? l.source.id : l.source;
     const t = typeof l.target === 'object' ? l.target.id : l.target;
     if (!nodeIds.has(s) || !nodeIds.has(t)) return false;
-    if (l.type === 'SIMILAR_TO' && !showSIM) return false;
-    if (l.type === 'RELATED_TO' && !showREL) return false;
+    // Se HAS_CHUNK è spento, i chunk sono nascosti e non mostriamo né HAS_CHUNK né SIMILAR_TO
     if (l.type === 'HAS_CHUNK' && !showHAS) return false;
+    if (l.type === 'SIMILAR_TO' && (!showSIM || !showHAS)) return false;
+    if (l.type === 'RELATED_TO' && !showREL) return false;
     if (crossOnly && l.type !== 'HAS_CHUNK' && l.c1 === l.c2) return false;
     return true;
   });
@@ -833,10 +1745,30 @@ function refreshGraph(priorityNodeId = null) {
   }
   const filtered = getFilteredData(priorityNodeId);
   updateStats(filtered);
+
+  // Risolvi source e target ai nodi reali se stringhe
+  filtered.links.forEach(l => {
+    if (typeof l.source !== 'object') l.source = (window.nodeMap && window.nodeMap.get(l.source)) || l.source;
+    if (typeof l.target !== 'object') l.target = (window.nodeMap && window.nodeMap.get(l.target)) || l.target;
+  });
+
+  // Aggiorna mappa di adiacenza O(1)
+  window.adjLinkSet = new Map();
+  filtered.links.forEach(l => {
+    const s = typeof l.source === 'object' ? l.source.id : l.source;
+    const t = typeof l.target === 'object' ? l.target.id : l.target;
+    if (!window.adjLinkSet.has(s)) window.adjLinkSet.set(s, new Set());
+    if (!window.adjLinkSet.has(t)) window.adjLinkSet.set(t, new Set());
+    window.adjLinkSet.get(s).add(`${s}-${t}`);
+    window.adjLinkSet.get(s).add(`${t}-${s}`);
+    window.adjLinkSet.get(t).add(`${s}-${t}`);
+    window.adjLinkSet.get(t).add(`${t}-${s}`);
+  });
+
   Graph.graphData(filtered);
+  Graph.cooldownTicks(20);
+  if (Graph.d3ReheatSimulation) Graph.d3ReheatSimulation();
   updateGraphRendering();
-  // Unfreeze briefly to re-layout
-  if (physicsFrozen) { Graph.resumeAnimation(); setTimeout(() => { Graph.pauseAnimation(); }, 2500); }
 }
 
 // ——————————————————————————————————————————
@@ -845,125 +1777,158 @@ function refreshGraph(priorityNodeId = null) {
 function initGraph(data, warmupTicks = 40) {
   rawData = fullRawData || data;
 
-  // Pre-warm physics in a worker-like manner (warmupTicks) before rendering
   const loader = document.getElementById('loader');
   let progress = 0;
   const progressInterval = setInterval(() => {
-    progress = Math.min(progress + 8, 90);
-    document.getElementById('loader-bar').style.width = progress + '%';
-    document.getElementById('loader-sub').textContent = `Pre-calcolo fisica... (${progress}%)`;
-  }, 100);
+    progress = Math.min(progress + 10, 95);
+    const bar = document.getElementById('loader-bar');
+    if (bar) bar.style.width = progress + '%';
+    const sub = document.getElementById('loader-sub');
+    if (sub) sub.textContent = `Pre-calcolo fisica... (${progress}%)`;
+  }, 80);
 
-  const filtered = getFilteredData();
-  updateStats(filtered);
+  const dismissLoader = () => {
+    clearInterval(progressInterval);
+    const bar = document.getElementById('loader-bar');
+    if (bar) bar.style.width = '100%';
+    const sub = document.getElementById('loader-sub');
+    if (sub) sub.textContent = 'Grafo 3D Pronto!';
+    if (loader) {
+      loader.style.opacity = '0';
+      setTimeout(() => { if (loader) loader.style.display = 'none'; }, 250);
+    }
+  };
 
-  Graph = ForceGraph3D({ controlType: 'trackball', antialias: false /* perf */ })
-    (document.getElementById('graph'))
-    .graphData(filtered)
-    .backgroundColor('#050508')
-    .width(window.innerWidth)
-    .height(window.innerHeight)
-    // Nodes
-    .nodeVal(n => n.type === 'document' ? (n.size || 8) : 2.5) // Chunk leggermente più grandi
-    .nodeColor(nodeColorFn)
-    .nodeOpacity(1.0)
-    .nodeResolution(5)
-    // Links
-    .linkVisibility(linkVisibilityFn)
-    .linkColor(linkColorFn)
-    .linkWidth(linkWidthFn)
-    .linkDirectionalParticles(linkParticlesFn)
-    .linkDirectionalParticleWidth(linkParticleWidthFn)
-    .linkDirectionalParticleSpeed(linkParticleSpeedFn)
-    .linkDirectionalParticleColor(linkParticleColorFn)
-    .linkResolution(2)
-    // Physics
-    .d3AlphaDecay(0.04)
-    .d3VelocityDecay(0.35)
-    .warmupTicks(warmupTicks)
-    .cooldownTicks(0)
-    // Interactions
-    .onNodeHover(node => {
-      document.body.style.cursor = node ? 'pointer' : 'default';
-      hoverNode = node;
-      if (node) {
-        // tooltip
-        const tt = document.getElementById('tooltip');
-        tt.style.display = 'block';
-        const courseColor = (node.course && COLORS[node.course]) ? COLORS[node.course] : '#888888';
-        const courseName = node.course || '?';
-        const labelText = node.label || 'Untitled';
-        tt.innerHTML = `<b style="color:${courseColor}">[${courseName}]</b> ${labelText.substring(0,80)}`;
-      } else {
-        document.getElementById('tooltip').style.display = 'none';
-      }
+  try {
+    const filtered = getFilteredData();
+    updateStats(filtered);
 
-      if (!egoMode) {
-        if (node) {
-          highlightNodes = new Set([node.id]);
-          const currentLinks = (Graph && Graph.graphData() && Graph.graphData().links) || filtered.links;
-          highlightLinks = new Set(
-            currentLinks
-              .filter(l => {
-                const s = typeof l.source === 'object' ? l.source.id : l.source;
-                const t = typeof l.target === 'object' ? l.target.id : l.target;
-                return s === node.id || t === node.id;
-              })
-              .map(l => {
-                const s = typeof l.source === 'object' ? l.source.id : l.source;
-                const t = typeof l.target === 'object' ? l.target.id : l.target;
-                return `${s}-${t}`;
-              })
-          );
-        } else {
-          highlightNodes = new Set();
-          highlightLinks = new Set();
-        }
-        if (Graph) {
-          Graph.nodeColor(nodeColorFn)
-               .linkColor(linkColorFn);
-        }
-      }
-    })
-    .onNodeClick(node => {
-      showInfo(node);
-      // zoom
-      if (node && typeof node.x === 'number' && !isNaN(node.x) &&
-          typeof node.y === 'number' && !isNaN(node.y) &&
-          typeof node.z === 'number' && !isNaN(node.z)) {
-        const d = 120;
-        const dist = Math.hypot(node.x, node.y, node.z);
-        let camX, camY, camZ;
-        if (dist < 1e-3) {
-          camX = node.x;
-          camY = node.y;
-          camZ = node.z + d;
-        } else {
-          const ratio = 1 + d / dist;
-          camX = node.x * ratio;
-          camY = node.y * ratio;
-          camZ = node.z * ratio;
-        }
-        Graph.cameraPosition({ x: camX, y: camY, z: camZ }, { x: node.x, y: node.y, z: node.z }, 800);
-      }
-    })
-    .onEngineStop(() => {
-      clearInterval(progressInterval);
-      document.getElementById('loader-bar').style.width = '100%';
-      setTimeout(() => { loader.style.opacity = 0; setTimeout(() => loader.style.display = 'none', 500); }, 300);
+    // Risolvi source e target ai nodi reali se stringhe
+    filtered.links.forEach(l => {
+      if (typeof l.source !== 'object') l.source = (window.nodeMap && window.nodeMap.get(l.source)) || l.source;
+      if (typeof l.target !== 'object') l.target = (window.nodeMap && window.nodeMap.get(l.target)) || l.target;
     });
 
-  // Fallback: nascondi il loader dopo max 6 secondi comunque
-  setTimeout(() => {
-    clearInterval(progressInterval);
-    loader.style.opacity = 0;
-    setTimeout(() => loader.style.display = 'none', 500);
-  }, 6000);
+    // Mappa di adiacenza O(1) per hover ultra-veloce senza lag
+    window.adjLinkSet = new Map();
+    filtered.links.forEach(l => {
+      const s = typeof l.source === 'object' ? l.source.id : l.source;
+      const t = typeof l.target === 'object' ? l.target.id : l.target;
+      if (!window.adjLinkSet.has(s)) window.adjLinkSet.set(s, new Set());
+      if (!window.adjLinkSet.has(t)) window.adjLinkSet.set(t, new Set());
+      window.adjLinkSet.get(s).add(`${s}-${t}`);
+      window.adjLinkSet.get(s).add(`${t}-${s}`);
+      window.adjLinkSet.get(t).add(`${s}-${t}`);
+      window.adjLinkSet.get(t).add(`${t}-${s}`);
+    });
 
-  // Force tweaks
-  Graph.d3Force('charge').strength(parseFloat(document.getElementById('sl-repulse').value));
-  Graph.d3Force('link').distance(parseFloat(document.getElementById('sl-linkdist').value));
-  Graph.d3Force('center', null); // disattiva centro (più organico)
+    Graph = ForceGraph3D({ controlType: 'orbit', antialias: false, powerPreference: 'high-performance' })
+      (document.getElementById('graph'))
+      .graphData(filtered)
+      .backgroundColor('#050508')
+      .width(window.innerWidth)
+      .height(window.innerHeight)
+      // Nodes: Documenti visibili (3.5), Chunk come fini punti stellari (0.08) per totale trasparenza
+      .nodeVal(n => n.type === 'document' ? 3.5 : 0.08)
+      .nodeColor(nodeColorFn)
+      .nodeOpacity(1.0)
+      .nodeResolution(6)
+      // Links: archi 3D ben visibili e distinti per tipo di relazione
+      .linkVisibility(linkVisibilityFn)
+      .linkColor(linkColorFn)
+      .linkWidth(linkWidthFn)
+      .linkOpacity(currentLinkOpacity)
+      .linkResolution(2)
+      .linkDirectionalParticles(linkParticlesFn)
+      .linkDirectionalParticleWidth(linkParticleWidthFn)
+      .linkDirectionalParticleSpeed(linkParticleSpeedFn)
+      .linkDirectionalParticleColor(linkParticleColorFn)
+      // 25 tick necessari per posizionare tutti gli archi geometricamente nello spazio 3D
+      .warmupTicks(0)
+      .cooldownTicks(25)
+      // Interactions (ultra-ottimizzate a 60 FPS: hover leggero per tooltip, click per selezione)
+      .onNodeHover(node => {
+        if ((!node && !hoverNode) || (node && hoverNode && node.id === hoverNode.id)) return;
+        hoverNode = node;
+        document.body.style.cursor = node ? 'pointer' : 'default';
+
+        const tt = document.getElementById('tooltip');
+        if (node) {
+          tt.style.display = 'block';
+          const courseColor = (node.course && COLORS[node.course]) ? COLORS[node.course] : '#888888';
+          const courseName = node.course || '?';
+          const labelText = node.label || 'Untitled';
+          tt.innerHTML = `<b style="color:${courseColor}">[${courseName}]</b> ${labelText.substring(0,80)}`;
+        } else {
+          tt.style.display = 'none';
+        }
+      })
+      .onNodeClick(node => {
+        showInfo(node);
+        if (!node) return;
+
+        // In click: evidenzia i link adiacenti senza bloccare il mousemove
+        highlightNodes = new Set([node.id]);
+        const adj = window.adjLinkSet ? window.adjLinkSet.get(node.id) : null;
+        highlightLinks = adj ? adj : new Set();
+        updateGraphHighlight();
+
+        // zoom
+        if (typeof node.x === 'number' && !isNaN(node.x) &&
+            typeof node.y === 'number' && !isNaN(node.y) &&
+            typeof node.z === 'number' && !isNaN(node.z)) {
+          const d = node.type === 'document' ? 450 : 160;
+          const dist = Math.hypot(node.x, node.y, node.z);
+          let camX, camY, camZ;
+          if (dist < 1e-3) {
+            camX = node.x;
+            camY = node.y;
+            camZ = node.z + d;
+          } else {
+            const ratio = 1 + d / dist;
+            camX = node.x * ratio;
+            camY = node.y * ratio;
+            camZ = node.z * ratio;
+          }
+          Graph.cameraPosition({ x: camX, y: camY, z: camZ }, { x: node.x, y: node.y, z: node.z }, 800);
+        }
+      })
+      .onBackgroundClick(() => {
+        if (highlightNodes.size > 0 || highlightLinks.size > 0) {
+          highlightNodes.clear();
+          highlightLinks.clear();
+          updateGraphHighlight();
+        }
+      })
+      .onEngineStop(dismissLoader);
+
+    // Fallback sicuro: garantisce sempre la scomparsa del loader entro 1.2 secondi
+    setTimeout(dismissLoader, Math.min(1200, Math.max(200, (warmupTicks + 1) * 20)));
+
+    // Coordinate pre-calcolate: disattiva forze D3 continua per 0% uso CPU
+    Graph.d3Force('charge', null);
+    if (Graph.d3Force('link')) Graph.d3Force('link').strength(0);
+    Graph.d3Force('center', null);
+
+    // Inquadratura panoramica iniziale su universo 3D de-compresso (visione cosmica ad ampio respiro)
+    Graph.cameraPosition({ x: 0, y: 3200, z: 9200 }, { x: 0, y: 0, z: 0 }, 1000);
+  } catch (err) {
+    console.error("Errore critico durante l'inizializzazione del grafo:", err);
+    dismissLoader();
+  }
+
+  // Controlli di navigazione fluidi e cinematici con inerzia (Damping)
+  const controls = Graph.controls();
+  if (controls) {
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.rotateSpeed = 0.75;
+    controls.zoomSpeed = 1.3;
+    controls.panSpeed = 0.85;
+    controls.screenSpacePanning = true;
+    controls.maxDistance = 35000;
+    controls.minDistance = 30;
+  }
 }
 
 // ——————————————————————————————————————————
@@ -972,6 +1937,17 @@ function initGraph(data, warmupTicks = 40) {
 function showInfo(node) {
   if (!node) return;
   const panel = document.getElementById('info-panel');
+
+  // Se la modalità volo Tesla è attiva, riduci automaticamente i controlli di volo per evitare overlay e massimizzare lo spazio
+  if (document.body.classList.contains('flight-active')) {
+    const controlsBody = document.getElementById('hud-controls-body');
+    const toggleIcon = document.getElementById('hud-controls-toggle-icon');
+    if (controlsBody && controlsBody.style.display !== 'none') {
+      controlsBody.style.display = 'none';
+      if (toggleIcon) toggleIcon.textContent = '+ Espandi';
+    }
+  }
+
   const course = node.course;
   const color = (course && COLORS[course]) ? COLORS[course] : '#888888';
   const label = node.label || 'Untitled';
@@ -993,7 +1969,7 @@ function showInfo(node) {
     if (!other) return '';
     const otherColor = (other.course && COLORS[other.course]) ? COLORS[other.course] : '#888888';
     const otherCourse = other.course || '?';
-    return `<span class="tag" style="background:${colorToRgba(otherColor, 0.13)};color:${otherColor}">[${otherCourse}] ${(other.label || '').substring(0,35)}</span>`;
+    return `<span class="tag related-doc-tag" data-id="${other.id}" style="background:${colorToRgba(otherColor, 0.13)};color:${otherColor};cursor:pointer;" title="Clicca per ispezionare">[${otherCourse}] ${(other.label || '').substring(0,35)}</span>`;
   }).join('');
 
   document.getElementById('info-body').innerHTML = `
@@ -1003,14 +1979,34 @@ function showInfo(node) {
       ${node.source ? `<span class="tag" style="background:rgba(255,255,255,.07);color:#777">${node.source}</span>` : ''}
     </div>
     ${simL.length ? `<div class="info-row">🔗 SIMILAR_TO: <b>${simL.length} link</b></div>` : ''}
-    ${relL.length ? `<div class="info-row" style="margin-bottom:6px;">📎 RELATED_TO: <b>${relL.length} documenti</b></div>${relNames}` : ''}
+    ${relL.length ? `<div class="info-row" style="margin-bottom:6px;">📎 RELATED_TO: <b>${relL.length} documenti</b> (clicca per esplorare)</div><div style="display:flex;flex-wrap:wrap;gap:4px;max-height:220px;overflow-y:auto;padding-right:4px;">${relNames}</div>` : ''}
     ${node.type==='chunk' ? `<div style="margin-top:8px;font-size:10px;color:#666;border-top:1px solid rgba(255,255,255,.05);padding-top:8px;line-height:1.5">${label}</div>` : ''}
   `;
   panel.style.display = 'block';
 }
 
+document.getElementById('info-body').addEventListener('click', (e) => {
+  const tag = e.target.closest('.related-doc-tag');
+  if (tag && tag.dataset.id) {
+    const allNodes = (fullRawData || rawData || {}).nodes || [];
+    const targetNode = allNodes.find(n => n.id === tag.dataset.id);
+    if (targetNode) {
+      showInfo(targetNode);
+      highlightNodes = new Set([targetNode.id]);
+      const adj = window.adjLinkSet ? window.adjLinkSet.get(targetNode.id) : null;
+      highlightLinks = adj ? adj : new Set();
+      updateGraphHighlight();
+    }
+  }
+});
+
 document.getElementById('close-info').addEventListener('click', () => {
   document.getElementById('info-panel').style.display = 'none';
+  if (highlightNodes.size > 0 || highlightLinks.size > 0) {
+    highlightNodes.clear();
+    highlightLinks.clear();
+    updateGraphHighlight();
+  }
 });
 
 // ——————————————————————————————————————————
@@ -1095,7 +2091,10 @@ document.getElementById('btn-physics').addEventListener('click', () => {
 });
 
 document.getElementById('btn-reset-cam').addEventListener('click', () => {
-  if (Graph) Graph.cameraPosition({ x: 0, y: 0, z: 400 }, { x:0,y:0,z:0 }, 1000);
+  if (isAutoRotating) {
+    document.getElementById('btn-autorotate').click();
+  }
+  if (Graph) Graph.cameraPosition({ x: 0, y: 3200, z: 9200 }, { x:0,y:0,z:0 }, 1000);
 });
 
 document.getElementById('sl-repulse').addEventListener('input', e => {
@@ -1138,40 +2137,13 @@ window.addEventListener('resize', () => {
 // ——————————————————————————————————————————
 let fullRawData = null;
 let launchConfig = {
-  budget: 10000,
+  budget: 25000,
   courses: new Set(COURSES),
-  sim: true, rel: true, has: false,
-  warmup: 40
+  sim: true, rel: true, has: true,
+  warmup: 0
 };
 
-// Build course checkboxes in launcher
-const cfgCourseGrid = document.getElementById('cfg-courses');
-COURSES.forEach(c => {
-  const el = document.createElement('div');
-  el.className = 'cfg-course-check on';
-  el.dataset.course = c;
-  el.style.borderColor = COLORS[c];
-  el.style.background = COLORS[c] + '22';
-  el.style.color = COLORS[c];
-  el.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${COLORS[c]};margin-right:4px;vertical-align:middle"></span>${c}`;
-  el.addEventListener('click', () => {
-    if (launchConfig.courses.has(c)) {
-      launchConfig.courses.delete(c);
-      el.classList.remove('on');
-      el.style.background = 'rgba(255,255,255,0.04)';
-      el.style.color = '#555';
-      el.style.borderColor = 'transparent';
-    } else {
-      launchConfig.courses.add(c);
-      el.classList.add('on');
-      el.style.background = COLORS[c] + '22';
-      el.style.color = COLORS[c];
-      el.style.borderColor = COLORS[c];
-    }
-    updateBudgetBreakdown();
-  });
-  cfgCourseGrid.appendChild(el);
-});
+// Build course checkboxes in launcher (populated dynamically in buildDynamicUI)
 
 // Budget slider
 document.getElementById('cfg-budget').addEventListener('input', e => {
@@ -1293,13 +2265,141 @@ document.getElementById('launch-btn').addEventListener('click', () => {
 });
 
 // ——————————————————————————————————————————
+// DYNAMIC UI BUILDER
+// ——————————————————————————————————————————
+function buildDynamicUI() {
+  // 1. Sidebar Course Dropdown
+  const courseList = document.getElementById('course-list');
+  courseList.innerHTML = ''; // clear existing
+  COURSES.forEach(c => {
+    const item = document.createElement('label');
+    item.className = 'course-dropdown-item';
+    
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = true;
+    checkbox.dataset.course = c;
+    
+    const colorDot = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COLORS[c]};vertical-align:middle"></span>`;
+    
+    const textSpan = document.createElement('span');
+    textSpan.innerHTML = `${colorDot} ${c}`;
+    
+    const flyBtn = document.createElement('span');
+    flyBtn.innerHTML = '🎯';
+    flyBtn.title = `Vola alla galassia ${c}`;
+    flyBtn.style.marginLeft = 'auto';
+    flyBtn.style.cursor = 'pointer';
+    flyBtn.style.fontSize = '12px';
+    flyBtn.style.opacity = '0.6';
+    flyBtn.style.transition = 'opacity 0.2s';
+    flyBtn.addEventListener('mouseenter', () => flyBtn.style.opacity = '1.0');
+    flyBtn.addEventListener('mouseleave', () => flyBtn.style.opacity = '0.6');
+    flyBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const allNodes = (fullRawData || rawData || {}).nodes || [];
+      const courseDocs = allNodes.filter(n => n.course === c && n.type === 'document');
+      if (courseDocs.length > 0) {
+        focusCameraOnNodes(new Set(courseDocs.map(n => n.id)));
+      }
+    });
+
+    item.appendChild(checkbox);
+    item.appendChild(textSpan);
+    item.appendChild(flyBtn);
+    
+    checkbox.addEventListener('change', (e) => {
+      setCrossOnly(false);
+      if (e.target.checked) {
+        selectedCourses.add(c);
+      } else {
+        selectedCourses.delete(c);
+      }
+      updateCourseCount();
+      refreshGraph();
+    });
+    courseList.appendChild(item);
+  });
+  updateCourseCount();
+
+  // 2. Sidebar Legend
+  const legendContainer = document.getElementById('dynamic-legend-courses');
+  if (legendContainer) {
+    legendContainer.innerHTML = '';
+    COURSES.forEach(c => {
+      const row = document.createElement('div');
+      row.className = 'leg-row';
+      row.innerHTML = `<div class="leg-dot" style="background:${COLORS[c]}"></div> ${c}`;
+      legendContainer.appendChild(row);
+    });
+  }
+
+  // 3. Launcher Course Grid
+  const cfgCourseGrid = document.getElementById('cfg-courses');
+  if (cfgCourseGrid) {
+    cfgCourseGrid.innerHTML = '';
+    COURSES.forEach(c => {
+      const el = document.createElement('div');
+      el.className = 'cfg-course-check on';
+      el.dataset.course = c;
+      el.style.borderColor = COLORS[c];
+      el.style.background = COLORS[c] + '22';
+      el.style.color = COLORS[c];
+      el.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${COLORS[c]};margin-right:4px;vertical-align:middle"></span>${c}`;
+      el.addEventListener('click', () => {
+        if (launchConfig.courses.has(c)) {
+          launchConfig.courses.delete(c);
+          el.classList.remove('on');
+          el.style.background = 'rgba(255,255,255,0.04)';
+          el.style.color = '#555';
+          el.style.borderColor = 'transparent';
+        } else {
+          launchConfig.courses.add(c);
+          el.classList.add('on');
+          el.style.background = COLORS[c] + '22';
+          el.style.color = COLORS[c];
+          el.style.borderColor = COLORS[c];
+        }
+        updateBudgetBreakdown();
+      });
+      cfgCourseGrid.appendChild(el);
+    });
+  }
+}
+
+// ——————————————————————————————————————————
 // LOAD DATA (pre-load JSON, show launcher)
 // ——————————————————————————————————————————
-fetch('graph_3d_data.json')
+fetch('graph_3d_data.json?t=' + new Date().getTime())
   .then(r => r.json())
   .then(data => {
     fullRawData = data;
     rawData = data;
+    window.nodeMap = new Map();
+    data.nodes.forEach(n => window.nodeMap.set(n.id, n));
+
+    // Dynamically extract unique courses
+    const courseSet = new Set();
+    data.nodes.forEach(n => {
+      if (n.course && n.course.trim() !== '') {
+        courseSet.add(n.course);
+      }
+    });
+    COURSES = Array.from(courseSet).sort();
+
+    // Assign colors from palette
+    COURSES.forEach((c, index) => {
+      COLORS[c] = PALETTE[index % PALETTE.length];
+    });
+
+    // Update config
+    selectedCourses = new Set(COURSES);
+    launchConfig.courses = new Set(COURSES);
+
+    // Build UI dynamically
+    buildDynamicUI();
+
     // Update breakdown with default values
     updateBudgetBreakdown();
   })
@@ -1307,33 +2407,2422 @@ fetch('graph_3d_data.json')
     document.getElementById('launcher-card').innerHTML += `<p style="color:#ff6b6b; margin-top:16px">❌ Errore caricamento: ${e.message}</p>`;
   });
 
-// Auto-Rotation logic
+// Auto-Rotation logic (Cinematic constant-distance orbit around target)
 let isAutoRotating = false;
+let autoRotateRaf = null;
 
-document.getElementById('btn-autorotate').addEventListener('click', (e) => {
+function updateAutoRotate() {
+  if (!isAutoRotating || !Graph) return;
+  
+  const camPos = Graph.cameraPosition();
+  if (!camPos || isNaN(camPos.x) || isNaN(camPos.z)) {
+    autoRotateRaf = requestAnimationFrame(updateAutoRotate);
+    return;
+  }
+
+  const controls = (typeof Graph.controls === 'function') ? Graph.controls() : null;
+  const target = (controls && controls.target) 
+    ? { x: controls.target.x || 0, y: controls.target.y || 0, z: controls.target.z || 0 } 
+    : { x: 0, y: 0, z: 0 };
+
+  const dx = camPos.x - target.x;
+  const dz = camPos.z - target.z;
+  
+  // Raggio orizzontale corrente (preserva rigorosamente lo zoom scelto dall'utente)
+  let rXZ = Math.hypot(dx, dz);
+  // Protezione di sicurezza contro coordinate corrotte o degenerate
+  if (rXZ < 10 || rXZ > 3000) {
+    rXZ = 400;
+  }
+  
+  // Incremento angolare costante (orbita circolare pura: sin^2 + cos^2 = 1, distanza invariante)
+  let angle = Math.atan2(dx, dz) + 0.003;
+  
+  const nextX = target.x + rXZ * Math.sin(angle);
+  const nextZ = target.z + rXZ * Math.cos(angle);
+  const nextY = camPos.y; // Preserva l'altezza/inclinazione verticale
+  
+  Graph.cameraPosition({ x: nextX, y: nextY, z: nextZ }, target);
+  
+  autoRotateRaf = requestAnimationFrame(updateAutoRotate);
+}
+
+document.getElementById('btn-autorotate').addEventListener('click', () => {
   isAutoRotating = !isAutoRotating;
-  const btn = e.target;
-  
-  if (!Graph || !Graph.controls) return;
-  
-  const controls = Graph.controls();
+  const btn = document.getElementById('btn-autorotate');
   
   if (isAutoRotating) {
     btn.style.color = '#ffa502';
     btn.style.borderColor = '#ffa502';
-    
-    // Attiviamo l'autorotazione nativa di Three.js (OrbitControls)
-    // Questo permette all'utente di zoomare col mouse senza conflitti, rendendola fluidissima.
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.8; // Velocità fluida e cinematografica
-    
+    btn.style.background = 'rgba(255,165,2,0.15)';
+    btn.textContent = '⏸ Stop Rotazione';
+    updateAutoRotate();
   } else {
     btn.style.color = '#fff';
     btn.style.borderColor = 'rgba(255,255,255,0.1)';
-    controls.autoRotate = false;
+    btn.style.background = '';
+    btn.textContent = '🔄 Auto-Rotazione';
+    if (autoRotateRaf) {
+      cancelAnimationFrame(autoRotateRaf);
+      autoRotateRaf = null;
+    }
+  }
+});
+
+// ——————————————————————————————————————————————————————————————————————
+// MILESTONE M5: STUDIO TAB CONTROLLER & WEBGL EVENT ISOLATION
+// ——————————————————————————————————————————————————————————————————————
+
+// 1. WebGL Event Isolation: Prevent 3D scene camera rotation/zoom when interacting with sidebar
+const sidebarEl = document.getElementById('sidebar');
+if (sidebarEl) {
+  ['mousedown', 'mouseup', 'click', 'wheel', 'touchstart', 'touchend', 'pointerdown'].forEach(evt => {
+    sidebarEl.addEventListener(evt, e => {
+      e.stopPropagation();
+    }, { passive: false });
+  });
+}
+
+// 2. Dual-Mode Studio Data Controller (StudioAPI)
+const StudioAPI = {
+  // --- 2.1 Search & Chat KB ---
+  async searchKB(query) {
+    if (!query || !query.trim()) return [];
+    const q = query.trim().toLowerCase();
+
+    // Live endpoint probe
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) return data;
+      }
+    } catch (e) {
+      // Graceful offline fallback
+    }
+
+    const source = fullRawData || rawData;
+    if (!source || !source.nodes) return [];
+
+    const hits = [];
+    const words = q.split(/\s+/).filter(Boolean);
+
+    for (const n of source.nodes) {
+      const text = (n.label || '').toLowerCase();
+      const course = (n.course || '').toLowerCase();
+      const id = (n.id || '').toLowerCase();
+
+      let score = 0;
+      for (const w of words) {
+        if (text.includes(w)) score += (n.type === 'document' ? 6 : 3);
+        if (course.includes(w)) score += 4;
+        if (id.includes(w)) score += 1;
+      }
+
+      if (score > 0) {
+        let cleanText = (n.label || '').replace(/--- PAGE \d+ ---/g, '').trim();
+        hits.push({
+          id: n.id,
+          label: cleanText.substring(0, 70) || 'Elemento KB',
+          course: n.course || 'GENERAL',
+          type: n.type,
+          score,
+          snippet: n.type === 'chunk'
+            ? cleanText.substring(0, 130) + '...'
+            : `Documento didattico ufficiale [${n.course || 'N/A'}]`
+        });
+      }
+    }
+
+    hits.sort((a, b) => b.score - a.score);
+    return hits.slice(0, 12);
+  },
+
+  // --- 2.2 Question Generation ---
+  async generateQuestions(topic, difficulty = 'Media', questionType = 'Risposta Multipla', count = 5) {
+    const cleanTopic = (topic || '').trim() || 'Argomenti Generali';
+    const reqCount = Math.max(1, Math.min(20, parseInt(count) || 5));
+
+    // Live backend attempt
+    try {
+      const res = await fetch('/api/generate_questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: cleanTopic,
+          difficulty: difficulty,
+          question_type: questionType,
+          count: reqCount
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) return data;
+        if (data && Array.isArray(data.questions)) return data.questions;
+      }
+    } catch (e) {
+      // Graceful offline fallback
+    }
+
+    return this.generateLocalQuestions(cleanTopic, difficulty, questionType, reqCount);
+  },
+
+  generateLocalQuestions(topic, difficulty, type, count) {
+    const source = fullRawData || rawData;
+    let relevantChunks = [];
+    let detectedCourse = 'CNS';
+
+    if (source && source.nodes) {
+      const q = topic.toLowerCase();
+      const matchingDocs = source.nodes.filter(n => n.type === 'document' && (n.label || '').toLowerCase().includes(q));
+      if (matchingDocs.length > 0) {
+        detectedCourse = matchingDocs[0].course || 'CNS';
+        const docIds = new Set(matchingDocs.map(d => d.id));
+        if (source.links) {
+          const chunkIds = new Set(
+            source.links
+              .filter(l => l.type === 'HAS_CHUNK' && docIds.has(typeof l.source === 'object' ? l.source.id : l.source))
+              .map(l => typeof l.target === 'object' ? l.target.id : l.target)
+          );
+          relevantChunks = source.nodes.filter(n => chunkIds.has(n.id));
+        }
+      }
+      if (relevantChunks.length === 0) {
+        relevantChunks = source.nodes.filter(n => n.type === 'chunk' && (n.label || '').toLowerCase().includes(q));
+      }
+      if (relevantChunks.length === 0) {
+        relevantChunks = source.nodes.filter(n => n.type === 'chunk').slice(0, 20);
+      }
+    }
+
+    const questions = [];
+    const normType = (type || '').toLowerCase();
+
+    for (let i = 1; i <= count; i++) {
+      const chunkRef = relevantChunks[(i - 1) % (relevantChunks.length || 1)];
+      const chunkId = chunkRef ? chunkRef.id : `chunk_${i}`;
+
+      const isMC = normType.includes('multipla') || (normType.includes('misto') && i % 2 !== 0);
+      const isEx = normType.includes('esercizio');
+      const isSingle = normType.includes('singola');
+
+      if (isMC) {
+        const mcBank = [
+          {
+            q: `Qual è il principio architetturale cardine che disciplina '${topic}' nel contesto di ${detectedCourse}?`,
+            opts: {
+              A: `Garantire la consistenza e l'isolamento dei dati secondo le specifiche formali di sicurezza e affidabilità.`,
+              B: `Aumentare la latenza di rete introducendo un protocollo a sincronizzazione arbitraria e non verificabile.`,
+              C: `Ignorare le condizioni di race-condition demandando la verifica dello stato al client locale.`,
+              D: `Disattivare il controllo di ridondanza per minimizzare l'overhead computazionale sui server.`
+            },
+            correct: 'A',
+            exp: `Nel contesto di ${topic}, l'architettura impone la garanzia di consistenza formale e affidabilità distribuita descritta nel materiale didattico di ${detectedCourse}.`
+          },
+          {
+            q: `In relazione al funzionamento di '${topic}', quale fra le seguenti affermazioni descrive accuratamente il comportamento del sistema?`,
+            opts: {
+              A: `Il fattore di confidenza decresce linearmente senza verifica preventiva delle condizioni di soglia.`,
+              B: `La transizione di stato richiede il raggiungimento del quorum fra la maggioranza dei nodi partecipanti.`,
+              C: `I messaggi di commit vengono scambiati in chiaro su canali non autenticati e privi di checksum.`,
+              D: `Non è prevista alcuna gestione per fallimenti parziali o partizioni della rete (Network Split).`
+            },
+            correct: 'B',
+            exp: `Nei sistemi analizzati per ${topic}, il meccanismo a quorum assicura la tolleranza ai guasti e la consistenza della transizione di stato.`
+          },
+          {
+            q: `Analizzando i vincoli operativi e di sicurezza in '${topic}', cosa si osserva?`,
+            opts: {
+              A: `L'entropia è statica e indipendente dalla dimensione dello spazio delle chiavi o dei token.`,
+              B: `L'attaccante può calcolare la derivazione solo in presenza di un oracolo perfetto a tempo zero.`,
+              C: `La riduzione dello spazio di campionamento incrementa esponenzialmente la probabilità di collisione.`,
+              D: `Il vettore di inizializzazione viene riutilizzato senza alterare la riservatezza del cifrario a flusso.`
+            },
+            correct: 'C',
+            exp: `In contesti crittografici e di calcolo per ${topic}, la riduzione dello spazio utile accelera la convergenza verso collisioni (es. Birthday Bound).`
+          },
+          {
+            q: `Quale metrica primaria viene ottimizzata dall'algoritmo di '${topic}' durante l'esecuzione?`,
+            opts: {
+              A: `Throughput delle transazioni con minimizzazione dei messaggi scambiati nel round di convergenza.`,
+              B: `Allocazione statica di tutta la memoria centrale all'avvio con blocco delle chiamate I/O concorrenti.`,
+              C: `Disabilitazione dell'albero dei certificati per velocizzare il payload utile nella sessione.`,
+              D: `Esecuzione strettamente sequenziale senza sfruttamento del parallelismo hardware del processore.`
+            },
+            correct: 'A',
+            exp: `L'obiettivo primario documentato è ottimizzare il throughput e ridurre l'overhead di messaggi durante la convergenza tra i nodi.`
+          }
+        ];
+        const t = mcBank[(i - 1) % mcBank.length];
+        questions.push({
+          id: `q_${i}`,
+          question: t.q,
+          type: 'risposta_multipla',
+          difficulty: difficulty,
+          options: t.opts,
+          correct_option: t.correct,
+          explanation: t.exp,
+          source_chunks: [chunkId]
+        });
+      } else if (isEx) {
+        questions.push({
+          id: `q_${i}`,
+          question: `[Esercizio Applicativo] Dato uno scenario basato su '${topic}' con N = 5 nodi coordinati, calcolare la dimensione minima del quorum per tollerare guasti di crash e derivare la condizione di safety.`,
+          type: 'esercizio',
+          difficulty: difficulty,
+          answer: `Formula del quorum: Q = ⌊N/2⌋ + 1 = ⌊5/2⌋ + 1 = 3 nodi. Con 3 nodi partecipanti qualsiasi coppia di quorum condivide almeno 1 nodo (intersezione non vuota: 3 + 3 - 5 = 1), garantendo che partizioni concorrenti non possano convergere su decisioni contrastanti.`,
+          explanation: `Applicazione canonica del principio di maggioranza semplice per garantire l'invarianza di safety nei sistemi distribuiti.`,
+          source_chunks: [chunkId]
+        });
+      } else if (isSingle) {
+        questions.push({
+          id: `q_${i}`,
+          question: `Qual è il termine tecnico che definisce la proprietà per cui 'nessun evento scorretto o inconsistente si verificherà mai' in '${topic}'?`,
+          type: 'singola',
+          difficulty: difficulty,
+          answer: `Safety (o Invarianza di Sicurezza)`,
+          explanation: `Nei modelli formali per '${topic}', la Safety assicura la correttezza dello stato, mentre la Liveness garantisce che il sistema compia progresso.`,
+          source_chunks: [chunkId]
+        });
+      } else {
+        questions.push({
+          id: `q_${i}`,
+          question: `Descrivere in modo approfondito il funzionamento di '${topic}', evidenziando le assunzioni sul modello di guasto e i vantaggi rispetto a soluzioni alternative.`,
+          type: 'aperta',
+          difficulty: difficulty,
+          answer: `L'approccio basato su '${topic}' si articola su tre pilastri: 1) Definizione rigorosa dei vincoli di consistenza e modello di sincronizzazione; 2) Meccanismo di validazione dei messaggi e rilevamento delle anomalie; 3) Protocollo di recupero e riconciliazione dello stato. Rispetto alle soluzioni tradizionali, riduce l'accoppiamento temporale e incrementa la robustezza.`,
+          explanation: `Risposta formulata conformemente agli appunti accademici e alle lezioni del corso ${detectedCourse}.`,
+          source_chunks: [chunkId]
+        });
+      }
+    }
+
+    return questions;
+  },
+
+  // --- 2.3 Flashcards SM-2 Spaced Repetition ---
+  getFlashcardDeck(course = 'ALL') {
+    const storageKey = 'academic_kb_flashcards_sm2';
+    let stored = [];
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) stored = JSON.parse(raw);
+    } catch (e) {}
+
+    if (!stored || stored.length === 0) {
+      stored = this.getInitialFlashcardDeck();
+      try { localStorage.setItem(storageKey, JSON.stringify(stored)); } catch (e) {}
+    }
+
+    if (course && course !== 'ALL') {
+      return stored.filter(c => c.course === course);
+    }
+    return stored;
+  },
+
+  getInitialFlashcardDeck() {
+    return [
+      {
+        id: 'fc_1',
+        course: 'CNS',
+        question: 'Perché l\'Initialization Vector (IV) a 24 bit in WEP è considerato criticamente debole?',
+        answer: 'Lo spazio a 24 bit contiene solo 2^24 ≈ 16.7 milioni di valori. Per il Birthday Paradox, dopo circa 5.000 pacchetti la probabilità di riutilizzo dello stesso IV con la medesima chiave RC4 supera il 50%, permettendo l\'attacco analitico FMS per recuperare la chiave WEP.',
+        easiness_factor: 2.5,
+        interval: 0,
+        repetitions: 0,
+        next_review: new Date().toISOString()
+      },
+      {
+        id: 'fc_2',
+        course: 'SDCC',
+        question: 'In Raft Consensus, cosa garantisce la proprietà di Leader Completeness?',
+        answer: 'Durante la fase di RequestVote, un Candidate vince l\'elezione solo se il suo log è aggiornato quanto quello della maggioranza. Poiché ogni commit richiede una maggioranza, ci sarà sempre almeno un nodo nel quorum che rifiuterà candidati privi di log committed.',
+        easiness_factor: 2.5,
+        interval: 0,
+        repetitions: 0,
+        next_review: new Date().toISOString()
+      },
+      {
+        id: 'fc_3',
+        course: 'ML',
+        question: 'Qual è il ruolo del Gradient Clipping durante l\'addestramento di reti neurali ricorrenti (RNN)?',
+        answer: 'Il Gradient Clipping previene il fenomeno dell\'Exploding Gradient riscalando la norma del gradiente quando supera una soglia prestabilita: g ← g · (threshold / ||g||), preservando la corretta direzione di discesa senza salti numerici divergenti.',
+        easiness_factor: 2.5,
+        interval: 0,
+        repetitions: 0,
+        next_review: new Date().toISOString()
+      },
+      {
+        id: 'fc_4',
+        course: 'SE',
+        question: 'Qual è la differenza fondamentale tra Circuit Breaker e Retry Pattern nei microservizi?',
+        answer: 'Il Retry ripete la chiamata per guasti transitori di breve durata. Il Circuit Breaker intercetta guasti persistenti: se il tasso di fallimento supera la soglia, apre il circuito e fallisce immediatamente (fail-fast), prevenendo l\'esaurimento a cascata delle risorse.',
+        easiness_factor: 2.5,
+        interval: 0,
+        repetitions: 0,
+        next_review: new Date().toISOString()
+      },
+      {
+        id: 'fc_5',
+        course: 'CNS',
+        question: 'Nel protocollo TLS 1.3, quale ottimizzazione riduce l\'handshake crittografico a 1-RTT?',
+        answer: 'TLS 1.3 combina negoziazione e scambio chiavi: il Client invia già nel ClientHello la propria quota di chiave Diffie-Hellman effimera (Key Share) insieme alla lista delle cipher suite consentite, dimezzando i round trip rispetto a TLS 1.2.',
+        easiness_factor: 2.5,
+        interval: 0,
+        repetitions: 0,
+        next_review: new Date().toISOString()
+      },
+      {
+        id: 'fc_6',
+        course: 'SDCC',
+        question: 'Cosa distingue il modello di consistenza Causale dalla consistenza Sequenziale?',
+        answer: 'La consistenza sequenziale impone che tutte le operazioni appaiano eseguite nello stesso ordine totale per tutti i processi. La consistenza causale ordina solo le operazioni legate da causalità (Lamport Happens-Before), consentendo esecuzioni concorrenti non correlate in ordini diversi.',
+        easiness_factor: 2.5,
+        interval: 0,
+        repetitions: 0,
+        next_review: new Date().toISOString()
+      }
+    ];
+  },
+
+  updateFlashcardReview(cardId, quality) {
+    const q = Math.max(0, Math.min(5, parseInt(quality) || 0));
+    const storageKey = 'academic_kb_flashcards_sm2';
+    let deck = this.getFlashcardDeck('ALL');
+    const card = deck.find(c => c.id === cardId);
+    if (!card) return null;
+
+    let reps = card.repetitions || 0;
+    let interval = card.interval || 0;
+    let ef = card.easiness_factor || 2.5;
+
+    // Standard SuperMemo-2 algorithm
+    if (q >= 3) {
+      if (reps === 0) interval = 1;
+      else if (reps === 1) interval = 6;
+      else interval = Math.round(interval * ef);
+      reps += 1;
+    } else {
+      reps = 0;
+      interval = 1;
+    }
+
+    ef = ef + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+    ef = Math.max(1.30, Math.round(ef * 10000) / 10000);
+
+    card.repetitions = reps;
+    card.interval = interval;
+    card.easiness_factor = ef;
+    card.next_review = new Date(Date.now() + interval * 86400000).toISOString();
+
+    try { localStorage.setItem(storageKey, JSON.stringify(deck)); } catch (e) {}
+
+    // Async background probe to server if endpoint exists
+    fetch('/api/update_flashcard_review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ flashcard_id: cardId, quality: q })
+    }).catch(() => {});
+
+    return {
+      cardId,
+      interval,
+      repetitions: reps,
+      easinessFactor: ef,
+      nextReview: card.next_review
+    };
+  },
+
+  // --- 2.4 Knowledge Gap Detection ---
+  async detectGaps(course = 'CNS') {
+    try {
+      const res = await fetch(`/api/detect_knowledge_gaps?course=${encodeURIComponent(course)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) return data;
+      }
+    } catch (e) {}
+
+    const source = fullRawData || rawData;
+    if (!source || !source.nodes) return [];
+
+    const normCourse = (course || 'CNS').toUpperCase();
+    const docs = source.nodes.filter(n => n.type === 'document' && (normCourse === 'ALL' || (n.course && n.course.toUpperCase() === normCourse)));
+
+    // Count chunks per doc from HAS_CHUNK links in the graph dataset
+    const chunkCounts = {};
+    if (source.links) {
+      source.links.forEach(l => {
+        if (l.type === 'HAS_CHUNK') {
+          const s = typeof l.source === 'object' ? l.source.id : l.source;
+          chunkCounts[s] = (chunkCounts[s] || 0) + 1;
+        }
+      });
+    }
+
+    const results = docs.map(d => {
+      const count = chunkCounts[d.id] || 0;
+      let score = 0.0;
+      if (count === 0) score = 0.0;
+      else if (count === 1) score = 25.0;
+      else score = Math.min(100.0, Math.round((50.0 + (count - 2) * 5.0) * 100) / 100);
+
+      const isGap = count < 2;
+      return {
+        doc_id: d.id,
+        source_title: d.label || d.id,
+        course: d.course || 'GENERAL',
+        chunk_count: count,
+        coverage_score: score,
+        is_gap: isGap
+      };
+    });
+
+    results.sort((a, b) => a.chunk_count - b.chunk_count || a.source_title.localeCompare(b.source_title));
+    return results;
+  },
+
+  // --- 2.5 Learning Path Generator ---
+  async generateLearningPath(topic = 'Zero-Knowledge Proofs') {
+    const cleanTopic = (topic || '').trim() || 'Argomento Accademico';
+
+    try {
+      const res = await fetch(`/api/generate_learning_path?topic=${encodeURIComponent(cleanTopic)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.steps) && data.steps.length > 0) return data;
+      }
+    } catch (e) {}
+
+    const source = fullRawData || rawData;
+    let refCourse = 'CNS';
+    let matchingNode = null;
+    if (source && source.nodes) {
+      const q = cleanTopic.toLowerCase();
+      matchingNode = source.nodes.find(n => (n.label || '').toLowerCase().includes(q));
+      if (matchingNode) refCourse = matchingNode.course || 'CNS';
+    }
+
+    return {
+      topic: cleanTopic,
+      summary: `Percorso propedeutico strutturato (DAG privo di cicli) per apprendere e dominare '${cleanTopic}' nell'ambito del corso ${refCourse}.`,
+      steps: [
+        {
+          step_number: 1,
+          concept_name: `Fondamenti teorici e definizioni preliminari per ${cleanTopic}`,
+          course: refCourse,
+          node_id: matchingNode ? matchingNode.id : null,
+          rationale: `Acquisizione della notazione formale, principi matematici e assunzioni di calcolo indispensabili prima di affrontare concetti avanzati.`
+        },
+        {
+          step_number: 2,
+          concept_name: `Architettura di base e protocolli operativi`,
+          course: refCourse,
+          node_id: null,
+          rationale: `Comprensione dei componenti strutturali, messaggistica interna e flusso di transizione dello stato del sistema.`
+        },
+        {
+          step_number: 3,
+          concept_name: `Meccanismi di sicurezza, consenso e tolleranza ai guasti`,
+          course: refCourse,
+          node_id: null,
+          rationale: `Analisi di robustezza in presenza di nodi avversari, partizioni di rete o canali rumorosi secondo i modelli accademici.`
+        },
+        {
+          step_number: 4,
+          concept_name: `Integrazione avanzata e casi applicativi di ${cleanTopic}`,
+          course: refCourse,
+          node_id: matchingNode ? matchingNode.id : null,
+          rationale: `Studio empirico delle prestazioni di sistema, benchmark comparativi e deploy in infrastrutture distribuite ad alta disponibilità.`
+        }
+      ]
+    };
+  }
+};
+
+// 3. UI EVENT LISTENERS & WIRING
+
+// 3.1 Tab Switching (Grafo vs Studio)
+const btnTabGraph = document.getElementById('btn-tab-graph');
+const btnTabStudio = document.getElementById('btn-tab-studio');
+const tabGraphView = document.getElementById('tab-graph-view');
+const tabStudioView = document.getElementById('tab-studio-view');
+
+if (btnTabGraph && btnTabStudio) {
+  btnTabGraph.addEventListener('click', () => {
+    btnTabGraph.classList.add('active');
+    btnTabStudio.classList.remove('active');
+    tabGraphView.style.display = 'block';
+    tabStudioView.style.display = 'none';
+    sidebarEl.classList.remove('studio-active');
+  });
+
+  btnTabStudio.addEventListener('click', () => {
+    btnTabStudio.classList.add('active');
+    btnTabGraph.classList.remove('active');
+    tabGraphView.style.display = 'none';
+    tabStudioView.style.display = 'block';
+    sidebarEl.classList.add('studio-active');
+
+    // Auto-load flashcards and default gap report if needed
+    if (currentFlashcards.length === 0) {
+      loadFlashcardDeck();
+    }
+  });
+}
+
+// 3.2 Studio Sub-Navigation (5 Panels)
+const studioPanelBtns = document.querySelectorAll('.studio-subnav-btn');
+const studioPanels = {
+  search: document.getElementById('studio-search-panel'),
+  questions: document.getElementById('studio-questions-panel'),
+  flashcards: document.getElementById('studio-flashcards-panel'),
+  gaps: document.getElementById('studio-gaps-panel'),
+  path: document.getElementById('studio-path-panel')
+};
+
+function switchStudioPanel(panelKey) {
+  Object.keys(studioPanels).forEach(key => {
+    if (studioPanels[key]) {
+      studioPanels[key].style.display = (key === panelKey) ? 'block' : 'none';
+    }
+  });
+  studioPanelBtns.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.panel === panelKey);
+  });
+}
+
+studioPanelBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    switchStudioPanel(btn.dataset.panel);
+  });
+});
+
+// 3.3 Panel 1: Search & Chat
+const searchInput = document.getElementById('studio-search-query');
+const searchBtn = document.getElementById('btn-studio-search');
+const searchResults = document.getElementById('studio-search-results');
+
+async function executeKBSearch() {
+  const q = searchInput.value.trim();
+  if (!q) {
+    searchResults.innerHTML = '<div style="font-size:11px; color:#666; text-align:center; padding:16px 0;">Digita un termine per cercare nel Knowledge Graph.</div>';
+    return;
+  }
+
+  searchResults.innerHTML = '<div style="font-size:11px; color:#a78bfa; text-align:center; padding:16px 0;">🔍 Ricerca nel grafo in corso...</div>';
+
+  try {
+    const hits = await StudioAPI.searchKB(q);
+    if (!hits || hits.length === 0) {
+      searchResults.innerHTML = '<div style="font-size:11px; color:#888; text-align:center; padding:16px 0;">Nessun risultato trovato nel Knowledge Graph.</div>';
+      return;
+    }
+
+    searchResults.innerHTML = hits.map(hit => {
+      const courseColor = (hit.course && COLORS[hit.course]) ? COLORS[hit.course] : '#888888';
+      return `
+        <div class="search-hit-card" data-id="${hit.id}">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span class="tag" style="background:${courseColor}22; color:${courseColor}; font-weight:700;">${hit.course}</span>
+            <span class="tag" style="background:rgba(255,255,255,0.06); color:#aaa;">${hit.type === 'document' ? 'Documento' : 'Chunk'}</span>
+          </div>
+          <div style="font-size:11px; font-weight:600; color:#fff; margin-bottom:3px;">${hit.label}</div>
+          <div style="font-size:10px; color:#888; margin-bottom:8px; line-height:1.3;">${hit.snippet}</div>
+          <button class="action-btn quick-gen-btn" data-topic="${hit.label.replace(/"/g, '&quot;')}" style="margin-bottom:0; font-size:10px; padding:6px; color:#c4b5fd;">
+            ⚡ Genera Domande su questo argomento
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    searchResults.querySelectorAll('.quick-gen-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const topic = btn.dataset.topic;
+        document.getElementById('studio-q-topic').value = topic;
+        switchStudioPanel('questions');
+        generateQuestionsHandler();
+      });
+    });
+
+    searchResults.querySelectorAll('.search-hit-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const docId = card.dataset.id;
+        focusCameraOnNodes(new Set([docId]));
+      });
+    });
+  } catch (err) {
+    searchResults.innerHTML = `<div style="font-size:11px; color:#ff6b6b; text-align:center; padding:16px 0;">Errore nella ricerca: ${err.message}</div>`;
+  }
+}
+
+if (searchBtn) searchBtn.addEventListener('click', executeKBSearch);
+if (searchInput) {
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') executeKBSearch();
+  });
+}
+
+// 3.4 Panel 2: Question Generation
+const qTopicInput = document.getElementById('studio-q-topic');
+const qDiffSelect = document.getElementById('studio-q-diff');
+const qTypeSelect = document.getElementById('studio-q-type');
+const qCountInput = document.getElementById('studio-q-count');
+const qGenBtn = document.getElementById('btn-studio-q-generate');
+const qResultsContainer = document.getElementById('studio-questions-results');
+
+async function generateQuestionsHandler() {
+  const topic = qTopicInput.value.trim() || 'Knowledge Graph Accademico';
+  const diff = qDiffSelect.value;
+  const qType = qTypeSelect.value;
+  const count = parseInt(qCountInput.value) || 5;
+
+  qGenBtn.disabled = true;
+  qGenBtn.style.opacity = '0.6';
+  qResultsContainer.innerHTML = `
+    <div style="text-align:center; padding:24px 0; color:#a78bfa;">
+      <div style="font-size:24px; margin-bottom:8px;">🧠</div>
+      <div style="font-size:11px; font-weight:600;">Generazione domande in corso per '${topic}'...</div>
+      <div style="font-size:9.5px; color:#777; margin-top:4px;">Elaborazione contestuale da Knowledge Graph e LLM</div>
+    </div>
+  `;
+
+  try {
+    const questions = await StudioAPI.generateQuestions(topic, diff, qType, count);
+    if (!questions || questions.length === 0) {
+      qResultsContainer.innerHTML = '<div style="font-size:11px; color:#888; text-align:center; padding:16px 0;">Nessuna domanda generata. Riprova con un altro argomento.</div>';
+      return;
+    }
+
+    qResultsContainer.innerHTML = questions.map((q, idx) => {
+      const qNum = idx + 1;
+      const isMC = q.type === 'risposta_multipla' && q.options;
+
+      let optionsHtml = '';
+      if (isMC) {
+        const opts = q.options;
+        const keys = Array.isArray(opts) ? opts.map((_, i) => String.fromCharCode(65 + i)) : Object.keys(opts);
+        optionsHtml = `
+          <div class="q-options-grid" data-correct="${q.correct_option || 'A'}">
+            ${keys.map(k => {
+              const text = Array.isArray(opts) ? opts[k.charCodeAt(0) - 65] : opts[k];
+              return `
+                <button class="q-option-btn" data-key="${k}">
+                  <b style="color:#a78bfa;">${k})</b> <span>${text}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+          <div class="q-feedback-msg" id="q-feedback-${qNum}"></div>
+        `;
+      } else {
+        optionsHtml = `
+          <div style="margin-top:8px;">
+            <button class="action-btn toggle-ans-btn" data-target="ans-${qNum}" style="font-size:10px; margin-bottom:6px;">
+              👁️ Mostra Risposta &amp; Spiegazione
+            </button>
+            <div id="ans-${qNum}" style="display:none; padding:8px 10px; background:rgba(0,0,0,0.3); border-radius:8px; font-size:10.5px; line-height:1.4; border-left:3px solid #7c5cfc; color:#ddd;">
+              <b>Risposta:</b> ${q.answer || 'N/A'}<br><br>
+              <span style="color:#aaa;"><b>Spiegazione:</b> ${q.explanation || 'Analisi teorica da materiale didattico.'}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="q-card" id="q-card-${qNum}">
+          <div class="q-header">
+            <span class="q-type-badge">${q.type || 'Quiz'}</span>
+            <span style="font-size:9.5px; color:#888;">Difficoltà: <b style="color:#ddd;">${q.difficulty || diff}</b></span>
+          </div>
+          <div class="q-text"><b>Q${qNum}:</b> ${q.question}</div>
+          ${optionsHtml}
+          ${isMC && q.explanation ? `
+            <button class="action-btn toggle-exp-btn" data-target="exp-${qNum}" style="font-size:9.5px; margin-top:6px; margin-bottom:0;">
+              💡 Mostra Spiegazione
+            </button>
+            <div class="q-explanation" id="exp-${qNum}">${q.explanation}</div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+
+    // Wire up option clicks for Multiple Choice
+    qResultsContainer.querySelectorAll('.q-options-grid').forEach(grid => {
+      const correctKey = (grid.dataset.correct || 'A').trim().toUpperCase().charAt(0);
+      const feedbackDiv = grid.nextElementSibling;
+      const optionBtns = grid.querySelectorAll('.q-option-btn');
+
+      optionBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const selectedKey = (btn.dataset.key || '').trim().toUpperCase().charAt(0);
+          optionBtns.forEach(b => b.disabled = true);
+
+          if (selectedKey === correctKey) {
+            btn.classList.add('correct');
+            if (feedbackDiv) {
+              feedbackDiv.className = 'q-feedback-msg correct';
+              feedbackDiv.textContent = '✅ Risposta Corretta! Ottima preparazione.';
+            }
+          } else {
+            btn.classList.add('wrong');
+            // Highlight correct one
+            optionBtns.forEach(b => {
+              if ((b.dataset.key || '').trim().toUpperCase().charAt(0) === correctKey) {
+                b.classList.add('correct');
+              }
+            });
+            if (feedbackDiv) {
+              feedbackDiv.className = 'q-feedback-msg wrong';
+              feedbackDiv.textContent = `❌ Errato. La risposta corretta è la (${correctKey}).`;
+            }
+          }
+        });
+      });
+    });
+
+    // Wire up toggle answer / explanation buttons
+    qResultsContainer.querySelectorAll('.toggle-ans-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.dataset.target;
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) {
+          const isHidden = targetEl.style.display === 'none';
+          targetEl.style.display = isHidden ? 'block' : 'none';
+          btn.textContent = isHidden ? '🙈 Nascondi Risposta' : '👁️ Mostra Risposta & Spiegazione';
+        }
+      });
+    });
+
+    qResultsContainer.querySelectorAll('.toggle-exp-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.dataset.target;
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) {
+          const isHidden = targetEl.style.display === 'none' || !targetEl.style.display;
+          targetEl.style.display = isHidden ? 'block' : 'none';
+          btn.textContent = isHidden ? '💡 Nascondi Spiegazione' : '💡 Mostra Spiegazione';
+        }
+      });
+    });
+
+  } catch (err) {
+    qResultsContainer.innerHTML = `<div style="font-size:11px; color:#ff6b6b; text-align:center; padding:16px 0;">Errore nella generazione: ${err.message}</div>`;
+  } finally {
+    qGenBtn.disabled = false;
+    qGenBtn.style.opacity = '1';
+  }
+}
+
+if (qGenBtn) qGenBtn.addEventListener('click', generateQuestionsHandler);
+
+// 3.5 Panel 3: Flashcard SM-2 Spaced Repetition
+let currentFlashcards = [];
+let currentCardIndex = 0;
+
+const fcCourseSelect = document.getElementById('studio-fc-course');
+const fcCard = document.getElementById('fc-card');
+const fcFrontCourse = document.getElementById('fc-front-course');
+const fcFrontText = document.getElementById('fc-front-text');
+const fcBackText = document.getElementById('fc-back-text');
+const fcBackSource = document.getElementById('fc-back-source');
+const fcIdxVal = document.getElementById('fc-idx-val');
+const fcTotalVal = document.getElementById('fc-total-val');
+const btnFcPrev = document.getElementById('btn-fc-prev');
+const btnFcNext = document.getElementById('btn-fc-next');
+const fcFeedback = document.getElementById('fc-feedback');
+
+function loadFlashcardDeck() {
+  const course = fcCourseSelect ? fcCourseSelect.value : 'ALL';
+  currentFlashcards = StudioAPI.getFlashcardDeck(course);
+  currentCardIndex = 0;
+  renderCurrentFlashcard();
+}
+
+function renderCurrentFlashcard() {
+  if (!currentFlashcards || currentFlashcards.length === 0) {
+    if (fcFrontText) fcFrontText.textContent = 'Nessuna flashcard disponibile per questo corso.';
+    if (fcBackText) fcBackText.textContent = 'Seleziona un altro corso o crea nuove flashcard.';
+    if (fcIdxVal) fcIdxVal.textContent = '0';
+    if (fcTotalVal) fcTotalVal.textContent = '0';
+    return;
+  }
+
+  // Ensure index in bounds
+  if (currentCardIndex >= currentFlashcards.length) currentCardIndex = 0;
+  if (currentCardIndex < 0) currentCardIndex = currentFlashcards.length - 1;
+
+  const card = currentFlashcards[currentCardIndex];
+  if (fcCard) fcCard.classList.remove('flipped');
+
+  if (fcIdxVal) fcIdxVal.textContent = (currentCardIndex + 1);
+  if (fcTotalVal) fcTotalVal.textContent = currentFlashcards.length;
+
+  const courseColor = (card.course && COLORS[card.course]) ? COLORS[card.course] : '#7c5cfc';
+  if (fcFrontCourse) {
+    fcFrontCourse.textContent = card.course || 'GENERAL';
+    fcFrontCourse.style.color = courseColor;
+    fcFrontCourse.style.background = `${courseColor}25`;
+  }
+  if (fcFrontText) fcFrontText.textContent = card.question;
+  if (fcBackText) fcBackText.textContent = card.answer;
+  if (fcBackSource) {
+    fcBackSource.textContent = `Ripetizioni: ${card.repetitions || 0} • Intervallo: ${card.interval || 0} gg • EF: ${(card.easiness_factor || 2.5).toFixed(2)}`;
+  }
+}
+
+// 3D Card flip toggle
+if (fcCard) {
+  fcCard.addEventListener('click', () => {
+    fcCard.classList.toggle('flipped');
+  });
+}
+
+// Navigation
+if (btnFcPrev) {
+  btnFcPrev.addEventListener('click', () => {
+    if (currentFlashcards.length > 0) {
+      currentCardIndex = (currentCardIndex - 1 + currentFlashcards.length) % currentFlashcards.length;
+      renderCurrentFlashcard();
+    }
+  });
+}
+
+if (btnFcNext) {
+  btnFcNext.addEventListener('click', () => {
+    if (currentFlashcards.length > 0) {
+      currentCardIndex = (currentCardIndex + 1) % currentFlashcards.length;
+      renderCurrentFlashcard();
+    }
+  });
+}
+
+if (fcCourseSelect) {
+  fcCourseSelect.addEventListener('change', loadFlashcardDeck);
+}
+
+// SM-2 Review Buttons: Di Nuovo (1), Difficile (2), Bene (3), Facile (5)
+function handleSM2Rating(quality) {
+  if (currentFlashcards.length === 0) return;
+  const card = currentFlashcards[currentCardIndex];
+  const result = StudioAPI.updateFlashcardReview(card.id, quality);
+
+  if (result && fcFeedback) {
+    fcFeedback.style.display = 'block';
+    fcFeedback.textContent = `Prossima revisione calcolata tra ${result.interval} giorni (SM-2: intervallo ${result.interval} gg, EF: ${result.easinessFactor})`;
+
+    // Reload deck state
+    currentFlashcards = StudioAPI.getFlashcardDeck(fcCourseSelect ? fcCourseSelect.value : 'ALL');
+
+    setTimeout(() => {
+      currentCardIndex = (currentCardIndex + 1) % currentFlashcards.length;
+      renderCurrentFlashcard();
+      setTimeout(() => {
+        if (fcFeedback) fcFeedback.style.display = 'none';
+      }, 2500);
+    }, 700);
+  }
+}
+
+const btnSm2Again = document.getElementById('btn-sm2-again');
+const btnSm2Hard = document.getElementById('btn-sm2-hard');
+const btnSm2Good = document.getElementById('btn-sm2-good');
+const btnSm2Easy = document.getElementById('btn-sm2-easy');
+
+if (btnSm2Again) btnSm2Again.addEventListener('click', () => handleSM2Rating(1));
+if (btnSm2Hard) btnSm2Hard.addEventListener('click', () => handleSM2Rating(2));
+if (btnSm2Good) btnSm2Good.addEventListener('click', () => handleSM2Rating(3));
+if (btnSm2Easy) btnSm2Easy.addEventListener('click', () => handleSM2Rating(5));
+
+// 3.6 Panel 4: Knowledge Gap Detection
+const gapsCourseSelect = document.getElementById('studio-gaps-course');
+const gapsAnalyzeBtn = document.getElementById('btn-studio-gaps-analyze');
+const gapsResultsContainer = document.getElementById('studio-gaps-results');
+const gapsSummaryContainer = document.getElementById('studio-gaps-summary');
+
+async function analyzeGapsHandler() {
+  const course = gapsCourseSelect ? gapsCourseSelect.value : 'CNS';
+  gapsResultsContainer.innerHTML = '<div style="font-size:11px; color:#a78bfa; text-align:center; padding:16px 0;">📊 Calcolo copertura e gap in corso...</div>';
+
+  try {
+    const report = await StudioAPI.detectGaps(course);
+    if (!report || report.length === 0) {
+      gapsResultsContainer.innerHTML = '<div style="font-size:11px; color:#888; text-align:center; padding:16px 0;">Nessun documento trovato per questo corso.</div>';
+      if (gapsSummaryContainer) gapsSummaryContainer.innerHTML = '';
+      return;
+    }
+
+    const totalDocs = report.length;
+    const criticalGaps = report.filter(r => r.chunk_count < 2).length;
+    const mediumDocs = report.filter(r => r.chunk_count >= 2 && r.chunk_count < 5).length;
+    const goodDocs = report.filter(r => r.chunk_count >= 5).length;
+
+    if (gapsSummaryContainer) {
+      gapsSummaryContainer.innerHTML = `
+        <span>Doc: <b>${totalDocs}</b></span>
+        <span style="color:#ff4757;">GAP: <b>${criticalGaps}</b></span>
+        <span style="color:#ffa502;">Med: <b>${mediumDocs}</b></span>
+        <span style="color:#2ed573;">Ok: <b>${goodDocs}</b></span>
+      `;
+    }
+
+    gapsResultsContainer.innerHTML = report.map(item => {
+      let badgeHtml = '';
+      if (item.chunk_count < 2) {
+        badgeHtml = `<span class="gap-badge critical">⚠️ GAP CRITICO (${item.chunk_count} chunk)</span>`;
+      } else if (item.chunk_count < 5) {
+        badgeHtml = `<span class="gap-badge medium">⚡ MEDIO (${item.chunk_count} chunk)</span>`;
+      } else {
+        badgeHtml = `<span class="gap-badge good">✅ COMPLETO (${item.chunk_count} chunk)</span>`;
+      }
+
+      const courseColor = (item.course && COLORS[item.course]) ? COLORS[item.course] : '#888';
+
+      return `
+        <div class="gap-item" data-id="${item.doc_id}" title="Clicca per visualizzare nel grafo 3D">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span class="tag" style="background:${courseColor}22; color:${courseColor}; font-weight:700;">${item.course}</span>
+            ${badgeHtml}
+          </div>
+          <div style="font-size:11px; font-weight:600; color:#fff; margin-bottom:2px;">${item.source_title}</div>
+          <div style="display:flex; justify-content:space-between; font-size:9.5px; color:#777;">
+            <span>Copertura: <b>${item.coverage_score}%</b></span>
+            <span style="color:#a78bfa;">🎯 Clicca per zoom 3D</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Clicking gap item focuses camera on node in 3D WebGL scene
+    gapsResultsContainer.querySelectorAll('.gap-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const docId = el.dataset.id;
+        const allNodes = (fullRawData || rawData || {}).nodes || [];
+        const node = allNodes.find(n => n.id === docId);
+        if (node) {
+          showInfo(node);
+          if (!selectedCourses.has(node.course)) {
+            selectedCourses.add(node.course);
+            updateCourseCount();
+            refreshGraph(node.id);
+          }
+        }
+        focusCameraOnNodes(new Set([docId]));
+      });
+    });
+
+  } catch (err) {
+    gapsResultsContainer.innerHTML = `<div style="font-size:11px; color:#ff6b6b; text-align:center; padding:16px 0;">Errore gap detection: ${err.message}</div>`;
+  }
+}
+
+if (gapsAnalyzeBtn) gapsAnalyzeBtn.addEventListener('click', analyzeGapsHandler);
+
+// 3.7 Panel 5: Learning Path (Prerequisites DAG)
+const pathTopicInput = document.getElementById('studio-path-topic');
+const pathGenBtn = document.getElementById('btn-studio-path-generate');
+const pathResultsContainer = document.getElementById('studio-path-results');
+
+async function generateLearningPathHandler() {
+  const topic = pathTopicInput ? pathTopicInput.value.trim() : 'Zero-Knowledge Proofs';
+  pathResultsContainer.innerHTML = '<div style="font-size:11px; color:#a78bfa; text-align:center; padding:16px 0;">🧭 Generazione percorso didattico in corso...</div>';
+
+  try {
+    const pathData = await StudioAPI.generateLearningPath(topic);
+    if (!pathData || !pathData.steps || pathData.steps.length === 0) {
+      pathResultsContainer.innerHTML = '<div style="font-size:11px; color:#888; text-align:center; padding:16px 0;">Nessun percorso generato. Riprova con un altro argomento.</div>';
+      return;
+    }
+
+    pathResultsContainer.innerHTML = `
+      <div style="font-size:10.5px; color:#bbb; margin-bottom:10px; line-height:1.4; padding:8px; background:rgba(255,255,255,0.03); border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
+        ${pathData.summary}
+      </div>
+      <div class="timeline">
+        ${pathData.steps.map(step => {
+          const courseColor = (step.course && COLORS[step.course]) ? COLORS[step.course] : '#7c5cfc';
+          return `
+            <div class="timeline-step" data-node="${step.node_id || ''}" title="Clicca per zoom 3D se collegato al grafo">
+              <div class="timeline-dot">${step.step_number}</div>
+              <div class="timeline-card">
+                <div class="timeline-title">
+                  <span>${step.concept_name}</span>
+                  <span class="tag" style="background:${courseColor}22; color:${courseColor}; font-size:9px;">${step.course}</span>
+                </div>
+                <div class="timeline-desc">${step.rationale}</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+
+    pathResultsContainer.querySelectorAll('.timeline-step').forEach(stepEl => {
+      stepEl.addEventListener('click', () => {
+        const nodeId = stepEl.dataset.node;
+        if (nodeId) {
+          focusCameraOnNodes(new Set([nodeId]));
+        }
+      });
+    });
+
+  } catch (err) {
+    pathResultsContainer.innerHTML = `<div style="font-size:11px; color:#ff6b6b; text-align:center; padding:16px 0;">Errore nella generazione percorso: ${err.message}</div>`;
+  }
+}
+
+if (pathGenBtn) pathGenBtn.addEventListener('click', generateLearningPathHandler);
+
+// --- 3D FLIGHT SIMULATOR (Tesla Roadster 2.0 & Aermacchi M-345 Frecce Tricolori) ---
+
+class ThrusterSoundSystem {
+  constructor() {
+    this.ctx = null;
+    this.noiseNode = null;
+    this.filterNode = null;
+    this.gainNode = null;
+    this.jetOsc = null;
+    this.jetGain = null;
+    this.isPlaying = false;
+    this.vehicleType = 'tesla';
+  }
+
+  setVehicle(type) {
+    this.vehicleType = type;
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    if (type === 'aermacchi') {
+      if (this.filterNode) {
+        this.filterNode.type = 'lowpass';
+        this.filterNode.frequency.setTargetAtTime(950, now, 0.05);
+      }
+      if (this.jetGain) {
+        this.jetGain.gain.setTargetAtTime(0.015, now, 0.05);
+      }
+    } else {
+      if (this.filterNode) {
+        this.filterNode.type = 'bandpass';
+        this.filterNode.frequency.setTargetAtTime(850, now, 0.05);
+      }
+      if (this.jetGain) {
+        this.jetGain.gain.setTargetAtTime(0.00001, now, 0.05);
+      }
+    }
+  }
+
+  init() {
+    if (this.ctx) return;
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      this.ctx = new AudioContext();
+
+      const bufferSize = this.ctx.sampleRate * 2;
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+
+      this.noiseNode = this.ctx.createBufferSource();
+      this.noiseNode.buffer = buffer;
+      this.noiseNode.loop = true;
+
+      this.filterNode = this.ctx.createBiquadFilter();
+      this.filterNode.type = this.vehicleType === 'aermacchi' ? 'lowpass' : 'bandpass';
+      this.filterNode.frequency.value = this.vehicleType === 'aermacchi' ? 950 : 850;
+      this.filterNode.Q.value = 1.3;
+
+      this.gainNode = this.ctx.createGain();
+      this.gainNode.gain.value = 0.0001;
+
+      this.noiseNode.connect(this.filterNode);
+      this.filterNode.connect(this.gainNode);
+      this.gainNode.connect(this.ctx.destination);
+      this.noiseNode.start(0);
+
+      // Jet Turbine High-Pitch Whine Compressor Oscillator (Williams FJ44 Turbofan)
+      this.jetOsc = this.ctx.createOscillator();
+      this.jetOsc.type = 'sine';
+      this.jetOsc.frequency.value = 1250;
+      this.jetGain = this.ctx.createGain();
+      this.jetGain.gain.value = 0.00001;
+      this.jetOsc.connect(this.jetGain);
+      this.jetGain.connect(this.ctx.destination);
+      this.jetOsc.start(0);
+
+      this.isPlaying = true;
+    } catch (e) {
+      console.warn('AudioContext initialization deferred:', e);
+    }
+  }
+
+  setThrust(throttle) {
+    if (!this.ctx || !this.gainNode) return;
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+    const now = this.ctx.currentTime;
+    if (this.vehicleType === 'aermacchi') {
+      const targetGain = Math.min(0.28, Math.max(0.001, throttle * 0.28));
+      const targetFreq = 450 + throttle * 1650;
+      this.gainNode.gain.setTargetAtTime(targetGain, now, 0.05);
+      this.filterNode.frequency.setTargetAtTime(targetFreq, now, 0.05);
+      if (this.jetOsc && this.jetGain) {
+        const jetFreq = 1200 + throttle * 1800; // Whistle from 1200Hz to 3000Hz
+        const oscGain = Math.min(0.042, Math.max(0.0001, throttle * 0.042));
+        this.jetOsc.frequency.setTargetAtTime(jetFreq, now, 0.05);
+        this.jetGain.gain.setTargetAtTime(oscGain, now, 0.05);
+      }
+    } else {
+      const targetGain = Math.min(0.24, Math.max(0.0001, throttle * 0.24));
+      const targetFreq = 500 + throttle * 1300;
+      this.gainNode.gain.setTargetAtTime(targetGain, now, 0.05);
+      this.filterNode.frequency.setTargetAtTime(targetFreq, now, 0.05);
+      if (this.jetGain) {
+        this.jetGain.gain.setTargetAtTime(0.00001, now, 0.05);
+      }
+    }
+  }
+
+  stop() {
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    if (this.gainNode) {
+      try { this.gainNode.gain.setTargetAtTime(0.0001, now, 0.05); } catch (e) {}
+    }
+    if (this.jetGain) {
+      try { this.jetGain.gain.setTargetAtTime(0.00001, now, 0.05); } catch (e) {}
+    }
+  }
+}
+
+function createGasParticleTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  gradient.addColorStop(0.2, 'rgba(200, 245, 255, 0.95)');
+  gradient.addColorStop(0.45, 'rgba(0, 242, 254, 0.6)');
+  gradient.addColorStop(0.75, 'rgba(0, 150, 255, 0.2)');
+  gradient.addColorStop(1, 'rgba(0, 80, 255, 0)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 64, 64);
+  const tex = new window.THREE.CanvasTexture(canvas);
+  return tex;
+}
+
+let cachedRoadsterGltf = null;
+
+async function loadTeslaRoadsterGLB() {
+  if (cachedRoadsterGltf) return cachedRoadsterGltf;
+  if (!window.THREE) {
+    window.THREE = await import('https://esm.sh/three');
+  }
+  const THREE = window.THREE;
+  const { GLTFLoader } = await import('https://esm.sh/three/addons/loaders/GLTFLoader.js');
+  const loader = new GLTFLoader();
+
+  const loadFromUrl = (url) => new Promise((resolve, reject) => {
+    loader.load(url, resolve, undefined, reject);
+  });
+
+  try {
+    cachedRoadsterGltf = await loadFromUrl('tesla_roadster_gen2.glb?v=2');
+  } catch (err) {
+    console.warn("Retrying GLB load from /static/tesla_roadster_gen2.glb...", err);
+    cachedRoadsterGltf = await loadFromUrl('/static/tesla_roadster_gen2.glb?v=2');
+  }
+  return cachedRoadsterGltf;
+}
+
+async function createTeslaRoadsterModel() {
+  const THREE = window.THREE;
+  const carGroup = new THREE.Group();
+
+  try {
+    const gltf = await loadTeslaRoadsterGLB();
+    if (gltf && gltf.scene) {
+      const model = gltf.scene.clone(true);
+
+      // L'autentico modello 3D Tesla Roadster Gen2 ha il muso orientato verso +Z.
+      // Ruotiamo di 180° attorno a Y (Math.PI) in modo che punti in avanti (-Z) in Three.js.
+      model.rotation.y = Math.PI;
+
+      // Scala ergonomica calibrata per l'universo del grafo 3D (~11.6m x 5.1m)
+      const scale = 2.55;
+      model.scale.set(scale, scale, scale);
+      model.position.set(0, 0, 0);
+
+      // Raccogliamo i gruppi ruote per l'animazione di rotolamento e valorizziamo i materiali PBR
+      const wheelSpins = [];
+      model.traverse(child => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            child.material.side = THREE.DoubleSide;
+            // Luce emissiva per i fari LED anteriori, il fascione posteriore rosso e il plasma SpaceX
+            if (child.material.emissive && (child.material.emissive.r > 0 || child.material.emissive.b > 0)) {
+              child.material.emissiveIntensity = 2.5;
+            }
+          }
+        }
+        if (child.name && child.name.includes('_Spin')) {
+          wheelSpins.push(child);
+        }
+      });
+
+      carGroup.add(model);
+      carGroup.wheels = wheelSpins;
+
+      // Coordinate esatte dei 4 ugelli SpaceX autentici nel diffusore posteriore del modello 3D
+      carGroup.thrusterNozzles = [
+        new THREE.Vector3(-1.07, 0.61, 5.76),
+        new THREE.Vector3(-0.36, 0.61, 5.76),
+        new THREE.Vector3(0.36, 0.61, 5.76),
+        new THREE.Vector3(1.07, 0.61, 5.76)
+      ];
+    }
+  } catch (err) {
+    console.error("Errore caricamento modello 3D Tesla Roadster Gen2 GLB:", err);
+  }
+
+  // Se per qualsiasi motivo thrusterNozzles non è stato creato, garantiamo fallback
+  if (!carGroup.thrusterNozzles) {
+    carGroup.thrusterNozzles = [
+      new THREE.Vector3(-1.07, 0.61, 5.76),
+      new THREE.Vector3(-0.36, 0.61, 5.76),
+      new THREE.Vector3(0.36, 0.61, 5.76),
+      new THREE.Vector3(1.07, 0.61, 5.76)
+    ];
+  }
+
+  // Fari Laser LED Anteriori (illuminano lo spazio, nodi e link di fronte alla vettura)
+  const leftHeadlight = new THREE.SpotLight(0xffffff, 4.5, 650, Math.PI / 4, 0.4);
+  leftHeadlight.position.set(-1.8, 1.0, -5.8);
+  leftHeadlight.target.position.set(-1.8, 0, -100);
+  carGroup.add(leftHeadlight);
+  carGroup.add(leftHeadlight.target);
+
+  const rightHeadlight = new THREE.SpotLight(0xffffff, 4.5, 650, Math.PI / 4, 0.4);
+  rightHeadlight.position.set(1.8, 1.0, -5.8);
+  rightHeadlight.target.position.set(1.8, 0, -100);
+  carGroup.add(rightHeadlight);
+  carGroup.add(rightHeadlight.target);
+
+  // Luce contour aura ciano per esaltare le linee e la silhouette della carrozzeria
+  const bodyAura = new THREE.PointLight(0x00f2fe, 1.6, 50);
+  bodyAura.position.set(0, 2.5, 0);
+  carGroup.add(bodyAura);
+
+  // Luce flare plasma propulsori SpaceX (si accende e pulsa all'accelerazione)
+  const thrusterGlow = new THREE.PointLight(0x00f2fe, 0, 45);
+  thrusterGlow.position.set(0, 0.61, 5.8);
+  carGroup.add(thrusterGlow);
+  carGroup.thrusterGlow = thrusterGlow;
+
+  // Luce zenitale direzionale attaccata alla vettura per riflessi speculari metallici su vernice e cristallo
+  const carSun = new THREE.DirectionalLight(0xffffff, 2.0);
+  carSun.position.set(0, 16, 14);
+  carGroup.add(carSun);
+
+  return carGroup;
+}
+
+let cachedAermacchiGltf = null;
+
+async function loadAermacchiGLB() {
+  if (cachedAermacchiGltf) return cachedAermacchiGltf;
+  if (!window.THREE) {
+    window.THREE = await import('https://esm.sh/three');
+  }
+  const THREE = window.THREE;
+  const { GLTFLoader } = await import('https://esm.sh/three/addons/loaders/GLTFLoader.js');
+  const loader = new GLTFLoader();
+
+  const loadFromUrl = (url) => new Promise((resolve, reject) => {
+    loader.load(url, resolve, undefined, reject);
+  });
+
+  try {
+    cachedAermacchiGltf = await loadFromUrl('aermacchi_m345_frecce_tricolori.glb?v=1');
+  } catch (err) {
+    console.warn("Retrying Aermacchi GLB load from /static/aermacchi_m345_frecce_tricolori.glb...", err);
+    cachedAermacchiGltf = await loadFromUrl('/static/aermacchi_m345_frecce_tricolori.glb?v=1');
+  }
+  return cachedAermacchiGltf;
+}
+
+async function createAermacchiModel() {
+  const THREE = window.THREE;
+  const jetGroup = new THREE.Group();
+  jetGroup.vehicleType = 'aermacchi';
+
+  try {
+    const gltf = await loadAermacchiGLB();
+    if (gltf && gltf.scene) {
+      const model = gltf.scene.clone(true);
+
+      // Orientamento: nel file GLB originale il muso punta verso +Z.
+      // Ruotiamo di 180° attorno all'asse Y (Math.PI) affinché punti in avanti verso -Z.
+      model.rotation.y = Math.PI;
+
+      // Scala ergonomica per l'universo del grafo 3D
+      const scale = 2.3;
+      model.scale.set(scale, scale, scale);
+      model.position.set(0, 0, 0);
+
+      model.traverse(child => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            child.material.side = THREE.DoubleSide;
+            // Ottimizzazione cupolino cockpit: vetro cristallino per mostrare chiaramente i piloti
+            if (child.name && child.name.includes('Canopy')) {
+              child.material.transparent = true;
+              child.material.opacity = 0.35;
+              child.material.roughness = 0.04;
+              child.material.metalness = 0.15;
+              child.material.depthWrite = false;
+            }
+          }
+        }
+      });
+
+      // Personalizzazione Piloti: Caschi Blu Frecce Tricolori con facce ritagliate e adattate
+      const cockpit = model.getObjectByName('Canopy_And_Cockpit');
+      if (cockpit) {
+        // Materiale Casco Blu Aeronautica Militare / Frecce Tricolori lucido
+        const blueHelmetMat = new THREE.MeshStandardMaterial({
+          color: 0x0a3575, // Blu Frecce Tricolori
+          roughness: 0.28,
+          metalness: 0.52,
+          side: THREE.DoubleSide
+        });
+
+        // Applica il materiale Casco Blu
+        cockpit.traverse(child => {
+          if (child.isMesh && child.material) {
+            const matName = child.material.name || '';
+            if (matName.includes('PAN_White_Trim')) {
+              // I due caschi diventano Caschi Blu
+              child.material = blueHelmetMat;
+              child.visible = true;
+            }
+          }
+        });
+
+        // Illuminazione interna cockpit per far risaltare i caschi blu sotto il cupolino
+        const cockpitLight = new THREE.PointLight(0xfff5e4, 2.2, 4.0);
+        cockpitLight.position.set(0, 0.9, 1.15);
+        cockpit.add(cockpitLight);
+      }
+
+      jetGroup.add(model);
+
+      // Emettitori Fumi Frecce Tricolori (Pattuglia Acrobatica Nazionale 🇮🇹)
+      // Ala Sinistra: VERDE | Fusoliera Centro: BIANCO | Ala Destra: ROSSO
+      jetGroup.smokeNozzles = [
+        { pos: new THREE.Vector3(-9.75, 0.25, 2.8), color: [0.0, 0.88, 0.25] },  // VERDE 🇮🇹
+        { pos: new THREE.Vector3(0.0, 0.1, 10.4), color: [1.0, 1.0, 1.0] },      // BIANCO 🇮🇹
+        { pos: new THREE.Vector3(9.75, 0.25, 2.8), color: [1.0, 0.15, 0.22] }    // ROSSO 🇮🇹
+      ];
+
+      // Ugello principale di spinta Williams FJ44
+      jetGroup.thrusterNozzles = [
+        new THREE.Vector3(0.0, 0.1, 10.4)
+      ];
+    }
+  } catch (err) {
+    console.error("Errore caricamento modello 3D Aermacchi M-345 GLB:", err);
+  }
+
+  if (!jetGroup.thrusterNozzles) {
+    jetGroup.thrusterNozzles = [new THREE.Vector3(0.0, 0.1, 10.4)];
+  }
+  if (!jetGroup.smokeNozzles) {
+    jetGroup.smokeNozzles = [
+      { pos: new THREE.Vector3(-9.75, 0.25, 2.8), color: [0.0, 0.88, 0.25] },
+      { pos: new THREE.Vector3(0.0, 0.1, 10.4), color: [1.0, 1.0, 1.0] },
+      { pos: new THREE.Vector3(9.75, 0.25, 2.8), color: [1.0, 0.15, 0.22] }
+    ];
+  }
+
+  // Luci di navigazione aeronautica standard (Sinistra: Rossa, Destra: Verde)
+  const navLeft = new THREE.PointLight(0xff2222, 2.5, 45);
+  navLeft.position.set(-9.75, 0.25, 2.8);
+  jetGroup.add(navLeft);
+
+  const navRight = new THREE.PointLight(0x00ff44, 2.5, 45);
+  navRight.position.set(9.75, 0.25, 2.8);
+  jetGroup.add(navRight);
+
+  // Faro Taxi / Landing muso anteriore
+  const landingLight = new THREE.SpotLight(0xffffff, 5.0, 850, Math.PI / 4, 0.35);
+  landingLight.position.set(0, -0.6, -11.5);
+  landingLight.target.position.set(0, -0.6, -120);
+  jetGroup.add(landingLight);
+  jetGroup.add(landingLight.target);
+
+  // Postbruciatore / Bagliore arancione-azzurro ugello Williams FJ44
+  const afterburnerGlow = new THREE.PointLight(0xff7700, 0, 55);
+  afterburnerGlow.position.set(0, 0.1, 10.6);
+  jetGroup.add(afterburnerGlow);
+  jetGroup.thrusterGlow = afterburnerGlow;
+
+  // Luce zenitale per risalto della livrea Frecce Tricolori
+  const jetSun = new THREE.DirectionalLight(0xffffff, 2.2);
+  jetSun.position.set(0, 18, 14);
+  jetGroup.add(jetSun);
+
+  return jetGroup;
+}
+
+// --- COLD GAS & TRICOLORE PARTICLES (Frecce Tricolori & SpaceX Supersonic Vapor) ---
+class ColdGasThrusterSystem {
+  constructor(maxParticles = 1200) {
+    const THREE = window.THREE;
+    this.maxParticles = maxParticles;
+    this.particles = [];
+    this.cursor = 0;
+
+    const positions = new Float32Array(maxParticles * 3);
+    const colors = new Float32Array(maxParticles * 3);
+
+    for (let i = 0; i < maxParticles; i++) {
+      positions[i * 3] = 0;
+      positions[i * 3 + 1] = -99999;
+      positions[i * 3 + 2] = 0;
+      colors[i * 3] = 0;
+      colors[i * 3 + 1] = 0;
+      colors[i * 3 + 2] = 0;
+
+      this.particles.push({
+        active: false,
+        x: 0, y: -99999, z: 0,
+        vx: 0, vy: 0, vz: 0,
+        r: 1, g: 1, b: 1,
+        life: 0,
+        maxLife: 0.35
+      });
+    }
+
+    this.geometry = new THREE.BufferGeometry();
+    this.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    this.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    this.geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), Infinity);
+
+    this.material = new THREE.PointsMaterial({
+      map: createGasParticleTexture(),
+      size: 3.4,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.88,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    this.mesh = new THREE.Points(this.geometry, this.material);
+    this.mesh.frustumCulled = false;
+  }
+
+  emit(origin, backwardDir, speed, spread = 0.14, r = 0.8, g = 0.98, b = 1.0, maxLife = 0.35) {
+    const p = this.particles[this.cursor];
+    p.active = true;
+    p.x = origin.x + (Math.random() - 0.5) * 0.25;
+    p.y = origin.y + (Math.random() - 0.5) * 0.25;
+    p.z = origin.z + (Math.random() - 0.5) * 0.25;
+
+    p.vx = backwardDir.x * speed + (Math.random() - 0.5) * spread * speed;
+    p.vy = backwardDir.y * speed + (Math.random() - 0.5) * spread * speed;
+    p.vz = backwardDir.z * speed + (Math.random() - 0.5) * spread * speed;
+
+    p.r = r;
+    p.g = g;
+    p.b = b;
+    p.life = maxLife * (0.85 + Math.random() * 0.3);
+    p.maxLife = p.life;
+
+    this.cursor = (this.cursor + 1) % this.maxParticles;
+  }
+
+  update(dt) {
+    const posAttr = this.geometry.attributes.position.array;
+    const colAttr = this.geometry.attributes.color.array;
+    let anyActive = false;
+
+    for (let i = 0; i < this.maxParticles; i++) {
+      const p = this.particles[i];
+      if (!p.active) continue;
+
+      anyActive = true;
+      p.life -= dt;
+      if (p.life <= 0) {
+        p.active = false;
+        posAttr[i * 3 + 1] = -99999;
+        colAttr[i * 3] = 0;
+        colAttr[i * 3 + 1] = 0;
+        colAttr[i * 3 + 2] = 0;
+        continue;
+      }
+
+      p.vx *= 0.95;
+      p.vy *= 0.95;
+      p.vz *= 0.95;
+
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.z += p.vz * dt;
+
+      posAttr[i * 3] = p.x;
+      posAttr[i * 3 + 1] = p.y;
+      posAttr[i * 3 + 2] = p.z;
+
+      const progress = 1.0 - (p.life / p.maxLife);
+      const alpha = Math.max(0, 1.0 - progress);
+      colAttr[i * 3] = p.r * alpha;
+      colAttr[i * 3 + 1] = p.g * alpha;
+      colAttr[i * 3 + 2] = p.b * alpha;
+    }
+
+    if (anyActive || this.wasActive) {
+      this.geometry.attributes.position.needsUpdate = true;
+      this.geometry.attributes.color.needsUpdate = true;
+    }
+    this.wasActive = anyActive;
+  }
+}
+
+// --- 3D FLIGHT CONTROLLER (Tesla Roadster 2.0 & Aermacchi M-345 Frecce Tricolori) ---
+const teslaFlight = {
+  active: false,
+  vehicle: (typeof localStorage !== 'undefined' && localStorage.getItem('academic_kb_flight_vehicle')) || 'tesla',
+  car: null,
+  thrusters: null,
+  audio: new ThrusterSoundSystem(),
+  keys: {},
+  mouseX: 0,
+  mouseY: 0,
+  lastMouseX: 0,
+  lastMouseY: 0,
+  isMouseDown: false,
+
+  // 360° Orbit Camera (attiva quando i tasti WASD NON sono premuti)
+  orbitAzimuth: 0,
+  orbitElevation: 0.22,
+  orbitDistance: 44,
+  targetOrbitAzimuth: 0,
+  targetOrbitElevation: 0.22,
+  targetOrbitDistance: 44,
+
+  speed: 0,
+  targetSpeed: 0,
+  maxSpeed: 260,
+  yaw: 0,
+  pitch: 0,
+  roll: 0,
+  camMode: 'chase',
+  nearestNode: null,
+  minDist: Infinity,
+  lastTime: performance.now(),
+  animId: null,
+
+  async setVehicle(type) {
+    if (type !== 'tesla' && type !== 'aermacchi') return;
+    this.vehicle = type;
+    try { localStorage.setItem('academic_kb_flight_vehicle', type); } catch(e){}
+    this.updateHangarUI();
+
+    if (this.active && Graph) {
+      const THREE = window.THREE;
+      const scene = Graph.scene();
+      const currentPos = this.car ? this.car.position.clone() : new THREE.Vector3(0, 260, 2200);
+      const currentRot = this.car ? this.car.rotation.clone() : new THREE.Euler(0, 0, 0, 'YXZ');
+
+      if (this.car) {
+        scene.remove(this.car);
+        this.car = null;
+      }
+
+      if (type === 'aermacchi') {
+        this.car = await createAermacchiModel();
+        this.orbitDistance = 52;
+        this.targetOrbitDistance = 52;
+        this.maxSpeed = 380;
+      } else {
+        this.car = await createTeslaRoadsterModel();
+        this.orbitDistance = 44;
+        this.targetOrbitDistance = 44;
+        this.maxSpeed = 260;
+      }
+
+      this.car.position.copy(currentPos);
+      this.car.rotation.order = 'YXZ';
+      this.car.rotation.copy(currentRot);
+      scene.add(this.car);
+
+      this.audio.setVehicle(type);
+      this.updateVehicleHUD();
+    }
+  },
+
+  updateHangarUI() {
+    const isJet = this.vehicle === 'aermacchi';
+    const btnTesla = document.getElementById('hangar-btn-tesla');
+    const btnJet = document.getElementById('hangar-btn-aermacchi');
+    const badge = document.getElementById('hangar-current-badge');
+    const flightBtnText = document.getElementById('btn-flight-text');
+    const flightBtnIcon = document.getElementById('btn-flight-icon');
+    const floatBtnIcon = document.getElementById('floating-flight-icon');
+    const floatBtnText = document.getElementById('floating-flight-text');
+
+    if (btnTesla) btnTesla.classList.toggle('selected', !isJet);
+    if (btnJet) btnJet.classList.toggle('selected', isJet);
+    if (badge) {
+      badge.textContent = isJet ? 'Attivo: M-345 🇮🇹' : 'Attivo: Tesla 🏎️';
+      badge.style.color = isJet ? '#00f2fe' : '#ef4444';
+      badge.style.borderColor = isJet ? 'rgba(0,242,254,0.4)' : 'rgba(239,68,68,0.4)';
+    }
+    if (flightBtnText) flightBtnText.textContent = isJet ? 'Vola nel Grafo (Aermacchi M-345 Frecce)' : 'Vola nel Grafo (Tesla Roadster)';
+    if (flightBtnIcon) flightBtnIcon.textContent = isJet ? '✈️🇮🇹' : '🏎️💨';
+    if (floatBtnIcon) floatBtnIcon.textContent = isJet ? '✈️🇮🇹' : '🏎️💨';
+    if (floatBtnText) floatBtnText.textContent = isJet ? 'Vola nel Grafo (Aermacchi M-345)' : 'Vola nel Grafo (Tesla Roadster)';
+    this.updateVehicleHUD();
+  },
+
+  updateVehicleHUD() {
+    const isJet = this.vehicle === 'aermacchi';
+    const vTitle = document.getElementById('hud-vehicle-title');
+    const vBadge = document.getElementById('hud-vehicle-badge');
+    const tLabel = document.getElementById('hud-thrust-label');
+    const switchBtn = document.getElementById('hud-switch-vehicle-btn');
+
+    if (vTitle) vTitle.textContent = isJet ? 'AERMACCHI M-345 HET' : 'TESLA ROADSTER 2.0';
+    if (vBadge) {
+      vBadge.textContent = isJet ? 'FRECCE TRICOLORI 🇮🇹' : 'SPACEX PACKAGE';
+      vBadge.style.color = isJet ? '#00f2fe' : '#ef4444';
+      vBadge.style.background = isJet ? 'rgba(0,242,254,0.2)' : 'rgba(239,68,68,0.2)';
+      vBadge.style.borderColor = isJet ? 'rgba(0,242,254,0.5)' : 'rgba(239,68,68,0.4)';
+    }
+    if (tLabel) tLabel.textContent = isJet ? 'TURBOFAN WILLIAMS FJ44' : 'COLD GAS THRUST (COPV)';
+    if (switchBtn) switchBtn.textContent = isJet ? '🏎️ Tesla [T]' : '✈️ M-345 [T]';
+  },
+
+  init() {
+    window.addEventListener('keydown', (e) => {
+      if (!this.active) return;
+      this.keys[e.code] = true;
+
+      if (!this.audio.ctx) this.audio.init();
+
+      if (e.code === 'KeyV') {
+        this.camMode = this.camMode === 'chase' ? 'cockpit' : 'chase';
+        const camLabel = document.getElementById('hud-cam-mode');
+        if (camLabel) {
+          camLabel.textContent = this.camMode === 'chase' ? 'INSEGUIMENTO' : 'PILOTA (COCKPIT)';
+        }
+      } else if (e.code === 'KeyT') {
+        this.setVehicle(this.vehicle === 'tesla' ? 'aermacchi' : 'tesla');
+      } else if (e.code === 'KeyE') {
+        const infoPanel = document.getElementById('info-panel');
+        const isInfoOpen = infoPanel && infoPanel.style.display !== 'none';
+        if (isInfoOpen) {
+          infoPanel.style.display = 'none';
+          if (highlightNodes.size > 0 || highlightLinks.size > 0) {
+            highlightNodes.clear();
+            highlightLinks.clear();
+            updateGraphHighlight();
+          }
+        } else if (this.nearestNode) {
+          showInfo(this.nearestNode);
+          highlightNodes = new Set([this.nearestNode.id]);
+          const adj = window.adjLinkSet ? window.adjLinkSet.get(this.nearestNode.id) : null;
+          highlightLinks = adj ? adj : new Set();
+          updateGraphHighlight();
+        }
+      } else if (e.code === 'Escape') {
+        const infoPanel = document.getElementById('info-panel');
+        if (infoPanel && infoPanel.style.display !== 'none') {
+          infoPanel.style.display = 'none';
+          if (highlightNodes.size > 0 || highlightLinks.size > 0) {
+            highlightNodes.clear();
+            highlightLinks.clear();
+            updateGraphHighlight();
+          }
+        } else {
+          this.stop();
+        }
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (!this.active) return;
+      this.keys[e.code] = false;
+      const isDriving = !!(
+        this.keys['KeyW'] || this.keys['KeyS'] || this.keys['KeyA'] || this.keys['KeyD'] ||
+        this.keys['ArrowUp'] || this.keys['ArrowDown'] || this.keys['ArrowLeft'] || this.keys['ArrowRight'] ||
+        this.keys['Space'] || this.keys['KeyC'] || this.keys['ShiftLeft'] || this.keys['ShiftRight']
+      );
+      if (!isDriving) {
+        this.mouseX = 0;
+        this.mouseY = 0;
+        const hudAim = document.getElementById('hud-mouse-aim');
+        if (hudAim) {
+          hudAim.style.opacity = '0.0';
+          hudAim.style.transform = 'translate(0px, 0px)';
+        }
+      }
+    });
+
+    // Mouse Interaction: Aim Steering rapido e reattivo & Orbit 360°
+    window.addEventListener('mousemove', (e) => {
+      if (!this.active) return;
+
+      const isDriving = !!(
+        this.keys['KeyW'] || this.keys['KeyS'] || this.keys['KeyA'] || this.keys['KeyD'] ||
+        this.keys['ArrowUp'] || this.keys['ArrowDown'] || this.keys['ArrowLeft'] || this.keys['ArrowRight'] ||
+        this.keys['Space'] || this.keys['KeyC'] || this.keys['ShiftLeft'] || this.keys['ShiftRight']
+      );
+
+      if (isDriving) {
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        const nx = (e.clientX - cx) / (cx * 0.58);
+        const ny = (e.clientY - cy) / (cy * 0.58);
+        this.mouseX = Math.max(-1, Math.min(1, nx));
+        this.mouseY = Math.max(-1, Math.min(1, ny));
+      } else {
+        this.mouseX = 0;
+        this.mouseY = 0;
+
+        if (this.isMouseDown) {
+          const dx = e.clientX - this.lastMouseX;
+          const dy = e.clientY - this.lastMouseY;
+          this.targetOrbitAzimuth -= dx * 0.0055;
+          this.targetOrbitElevation = Math.max(-0.65, Math.min(1.35, this.targetOrbitElevation + dy * 0.0050));
+        }
+      }
+
+      this.lastMouseX = e.clientX;
+      this.lastMouseY = e.clientY;
+    });
+
+    // Mousedown: avvia rotazione camera in orbita
+    window.addEventListener('mousedown', (e) => {
+      if (!this.active) return;
+      if (e.target && (
+        e.target.closest('#hud-inspect-btn') || 
+        e.target.closest('#btn-exit-flight') ||
+        e.target.closest('#hud-switch-vehicle-btn') ||
+        e.target.closest('#info-panel') ||
+        e.target.closest('#hud-controls-card')
+      )) return;
+      this.isMouseDown = true;
+      this.lastMouseX = e.clientX;
+      this.lastMouseY = e.clientY;
+      if (!this.audio.ctx) this.audio.init();
+    });
+
+    window.addEventListener('mouseup', (e) => {
+      if (!this.active) return;
+      this.isMouseDown = false;
+    });
+
+    // Rotella Mouse: Zoom / Throttle
+    window.addEventListener('wheel', (e) => {
+      if (!this.active) return;
+      if (e.target && e.target.closest('#info-panel')) return;
+      const isDriving = !!(
+        this.keys['KeyW'] || this.keys['KeyS'] || this.keys['KeyA'] || this.keys['KeyD'] ||
+        this.keys['ArrowUp'] || this.keys['ArrowDown'] || this.keys['ArrowLeft'] || this.keys['ArrowRight'] ||
+        this.keys['Space'] || this.keys['KeyC']
+      );
+
+      if (isDriving) {
+        if (e.deltaY < 0) {
+          this.speed = Math.min(this.maxSpeed * 1.35, this.speed + 16);
+        } else {
+          this.speed = Math.max(-45, this.speed - 16);
+        }
+      } else {
+        this.targetOrbitDistance = Math.max(14, Math.min(160, this.targetOrbitDistance + e.deltaY * 0.045));
+      }
+    }, { passive: true });
+
+    const exitBtn = document.getElementById('btn-exit-flight');
+    if (exitBtn) exitBtn.addEventListener('click', () => this.stop());
+
+    const switchHudBtn = document.getElementById('hud-switch-vehicle-btn');
+    if (switchHudBtn) switchHudBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.setVehicle(this.vehicle === 'tesla' ? 'aermacchi' : 'tesla');
+    });
+
+    const btnTesla = document.getElementById('hangar-btn-tesla');
+    if (btnTesla) btnTesla.addEventListener('click', () => this.setVehicle('tesla'));
+
+    const btnJet = document.getElementById('hangar-btn-aermacchi');
+    if (btnJet) btnJet.addEventListener('click', () => this.setVehicle('aermacchi'));
+
+    const inspectBtn = document.getElementById('hud-inspect-btn');
+    if (inspectBtn) inspectBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const infoPanel = document.getElementById('info-panel');
+      const isInfoOpen = infoPanel && infoPanel.style.display !== 'none';
+      if (isInfoOpen) {
+        infoPanel.style.display = 'none';
+        if (highlightNodes.size > 0 || highlightLinks.size > 0) {
+          highlightNodes.clear();
+          highlightLinks.clear();
+          updateGraphHighlight();
+        }
+      } else if (this.nearestNode) {
+        showInfo(this.nearestNode);
+        highlightNodes = new Set([this.nearestNode.id]);
+        const adj = window.adjLinkSet ? window.adjLinkSet.get(this.nearestNode.id) : null;
+        highlightLinks = adj ? adj : new Set();
+        updateGraphHighlight();
+      }
+    });
+
+    // Gestione Riduci/Espandi per il pannello Controlli di Volo HUD
+    const toggleControlsBtn = document.getElementById('hud-controls-toggle-btn');
+    const controlsHeader = document.getElementById('hud-controls-header');
+    const controlsBody = document.getElementById('hud-controls-body');
+    const controlsIcon = document.getElementById('hud-controls-toggle-icon');
+
+    const toggleControls = (ev) => {
+      if (ev) ev.stopPropagation();
+      if (!controlsBody) return;
+      const isHidden = controlsBody.style.display === 'none';
+      controlsBody.style.display = isHidden ? 'grid' : 'none';
+      if (controlsIcon) controlsIcon.textContent = isHidden ? '− Riduci' : '+ Espandi';
+    };
+
+    if (toggleControlsBtn) toggleControlsBtn.addEventListener('click', toggleControls);
+    if (controlsHeader) {
+      controlsHeader.addEventListener('click', (ev) => {
+        if (ev.target.closest('#hud-controls-toggle-btn')) return;
+        toggleControls(ev);
+      });
+    }
+
+    const startBtn = document.getElementById('btn-flight-mode');
+    if (startBtn) startBtn.addEventListener('click', () => this.start());
+
+    const floatingBtn = document.getElementById('floating-flight-btn');
+    if (floatingBtn) floatingBtn.addEventListener('click', () => this.start());
+
+    // Preload 3D GLB models in background
+    setTimeout(() => {
+      loadTeslaRoadsterGLB().catch(() => {});
+      loadAermacchiGLB().catch(() => {});
+    }, 1200);
+
+    this.updateHangarUI();
+  },
+
+  async start() {
+    if (this.active || !Graph) return;
+    if (!window.THREE) {
+      window.THREE = await import('https://esm.sh/three');
+    }
+    const THREE = window.THREE;
+    this.active = true;
+    document.body.classList.add('flight-active');
+
+    const hud = document.getElementById('flight-hud');
+    if (hud) hud.style.display = 'block';
+
+    const controls = Graph.controls();
+    if (controls) controls.enabled = false;
+
+    const scene = Graph.scene();
+    if (this.car) {
+      scene.remove(this.car);
+      this.car = null;
+    }
+
+    const isJet = this.vehicle === 'aermacchi';
+    if (isJet) {
+      this.car = await createAermacchiModel();
+      this.maxSpeed = 380;
+      this.orbitDistance = 52;
+      this.targetOrbitDistance = 52;
+    } else {
+      this.car = await createTeslaRoadsterModel();
+      this.maxSpeed = 260;
+      this.orbitDistance = 44;
+      this.targetOrbitDistance = 44;
+    }
+    scene.add(this.car);
+
+    if (this.thrusters) {
+      scene.remove(this.thrusters.mesh);
+      this.thrusters = null;
+    }
+    this.thrusters = new ColdGasThrusterSystem(1200);
+    scene.add(this.thrusters.mesh);
+
+    // Initial position: in front of graph at (0, 260, 2200) looking towards origin
+    this.car.position.set(0, 260, 2200);
+    this.yaw = 0;
+    this.pitch = 0;
+    this.roll = 0;
+    this.car.rotation.order = 'YXZ';
+    this.car.rotation.set(0, 0, 0);
+    this.speed = 35;
+    this.targetSpeed = 35;
+    this.keys = {};
+    this.mouseX = 0;
+    this.mouseY = 0;
+    this.lastMouseX = 0;
+    this.lastMouseY = 0;
+    this.isMouseDown = false;
+    this.orbitAzimuth = 0;
+    this.orbitElevation = 0.22;
+    this.targetOrbitAzimuth = 0;
+    this.targetOrbitElevation = 0.22;
+    this.smoothedTarget = null;
+    this.scanFrameCounter = 0;
+    const hudAim = document.getElementById('hud-mouse-aim');
+    if (hudAim) hudAim.style.transform = 'translate(0px, 0px)';
+    this.lastTime = performance.now();
+
+    // Snap chase camera behind vehicle
+    const cam = Graph.camera();
+    if (cam && controls) {
+      const initialCamPos = new THREE.Vector3(0, 275, 2244);
+      cam.position.copy(initialCamPos);
+      const lookAhead = new THREE.Vector3(0, 260, 2170);
+      controls.target.copy(lookAhead);
+      controls.update();
+    }
+
+    this.audio.init();
+    this.audio.setVehicle(this.vehicle);
+    this.updateVehicleHUD();
+    this.loop();
+  },
+
+  stop() {
+    if (!this.active) return;
+    this.active = false;
+    document.body.classList.remove('flight-active');
+    document.body.style.cursor = 'default';
+
+    const hud = document.getElementById('flight-hud');
+    if (hud) hud.style.display = 'none';
+
+    const infoPanel = document.getElementById('info-panel');
+    if (infoPanel) infoPanel.style.display = 'none';
+    if (typeof highlightNodes !== 'undefined' && highlightNodes.size > 0) {
+      highlightNodes.clear();
+      if (typeof highlightLinks !== 'undefined') highlightLinks.clear();
+      if (typeof updateGraphHighlight === 'function') updateGraphHighlight();
+    }
+
+    if (this.car) this.car.visible = false;
+    if (this.thrusters) this.thrusters.mesh.visible = false;
+
+    this.audio.stop();
+
+    if (this.animId) {
+      cancelAnimationFrame(this.animId);
+      this.animId = null;
+    }
+
+    this.mouseX = 0;
+    this.mouseY = 0;
+    this.isMouseDown = false;
+    const hudAim = document.getElementById('hud-mouse-aim');
+    if (hudAim) hudAim.style.transform = 'translate(0px, 0px)';
+
+    const controls = Graph.controls();
+    if (controls && this.car) {
+      controls.enabled = true;
+      controls.target.copy(this.car.position);
+      controls.update();
+    }
+  },
+
+  loop() {
+    if (!this.active) return;
+    this.animId = requestAnimationFrame(() => this.loop());
+
+    try {
+      const THREE = window.THREE;
+      if (!THREE || !this.car) return;
+
+      const now = performance.now();
+      const dt = Math.min(0.05, (now - this.lastTime) / 1000);
+      this.lastTime = now;
+
+      const isJet = this.vehicle === 'aermacchi';
+
+      // 1. Throttle / Speed Physics (Risposta immediata 1:1, zero latenza)
+      const isW = !!(this.keys['KeyW'] || this.keys['ArrowUp']);
+      const isS = !!(this.keys['KeyS'] || this.keys['ArrowDown']);
+      const isBoost = !!(this.keys['ShiftLeft'] || this.keys['ShiftRight']);
+      const isThrusting = isW || isBoost;
+
+      if (isThrusting) {
+        this.targetSpeed = isBoost ? (isJet ? 480 : 380) : (isJet ? 310 : 220);
+      } else if (isS) {
+        this.targetSpeed = isJet ? -80 : -75;
+      } else {
+        const cruiseFloor = isJet ? 35 : 25;
+        this.targetSpeed = this.speed > cruiseFloor ? cruiseFloor : 0;
+      }
+
+      // Risposta accelerazione
+      const accelRate = (this.targetSpeed > this.speed) ? (isBoost ? 10.5 : 7.0) : 3.8;
+      this.speed += (this.targetSpeed - this.speed) * accelRate * dt;
+
+      if (!isThrusting && !isS && this.speed <= (isJet ? 35 : 25)) {
+        this.speed *= (1.0 - 0.35 * dt);
+      }
+
+      const isMovementActive = !!(
+        isW || isS || isBoost || this.keys['KeyA'] || this.keys['KeyD'] ||
+        this.keys['ArrowLeft'] || this.keys['ArrowRight'] ||
+        this.keys['Space'] || this.keys['KeyC']
+      );
+
+      // 2. Flight Attitude & Steering
+      let yawInput = 0;
+      if (this.keys['KeyA'] || this.keys['ArrowLeft']) yawInput += 1.0;
+      if (this.keys['KeyD'] || this.keys['ArrowRight']) yawInput -= 1.0;
+
+      let pitchInput = 0;
+      if (this.keys['Space']) pitchInput += 1.0;
+      if (this.keys['KeyC']) pitchInput -= 1.0;
+
+      let mouseYaw = 0;
+      let mousePitch = 0;
+
+      if (isMovementActive) {
+        const deadzone = 0.02;
+        if (Math.abs(this.mouseX) > deadzone) {
+          const sign = Math.sign(this.mouseX);
+          const mag = (Math.abs(this.mouseX) - deadzone) / (1.0 - deadzone);
+          mouseYaw = -sign * mag * (isJet ? 2.0 : 1.8);
+        }
+        if (Math.abs(this.mouseY) > deadzone) {
+          const sign = Math.sign(this.mouseY);
+          const mag = (Math.abs(this.mouseY) - deadzone) / (1.0 - deadzone);
+          mousePitch = -sign * mag * (isJet ? 1.7 : 1.5);
+        }
+
+        this.targetOrbitAzimuth = 0;
+        this.targetOrbitElevation = 0.20;
+        this.targetOrbitDistance = isJet ? 52 : 44;
+      }
+
+      yawInput += mouseYaw;
+      pitchInput += mousePitch;
+
+      // Rotazione Y (Yaw)
+      const turnRate = isJet ? 2.35 : 2.2;
+      this.yaw += yawInput * turnRate * dt;
+
+      // Inclinazione Pitch
+      if (Math.abs(pitchInput) > 0.05) {
+        this.pitch = Math.max(-0.75, Math.min(0.75, this.pitch + pitchInput * (isJet ? 1.75 : 1.6) * dt));
+      } else {
+        this.pitch += (0 - this.pitch) * 2.2 * dt;
+      }
+
+      // Roll / Inclinazione laterale in virata (Bancata alare aeronautica)
+      const rollFactor = isJet ? 0.72 : 0.40;
+      const targetRoll = -Math.max(-1.0, Math.min(1.0, yawInput)) * rollFactor;
+      this.roll += (targetRoll - this.roll) * (isJet ? 8.5 : 7.5) * dt;
+
+      this.car.rotation.order = 'YXZ';
+      this.car.rotation.set(this.pitch, this.yaw, this.roll);
+
+      // 3. Spostamento in avanti
+      const forward = new THREE.Vector3(0, 0, -1).applyEuler(this.car.rotation);
+      const backward = forward.clone().negate();
+
+      this.car.position.addScaledVector(forward, this.speed * dt);
+      this.car.updateMatrix();
+      this.car.matrixWorld.copy(this.car.matrix);
+
+      if (this.car.wheels) {
+        this.car.wheels.forEach(w => {
+          if (w.rotation) w.rotation.x += this.speed * dt * 0.4;
+          if (w.children) {
+            w.children.forEach(c => {
+              if (c.rotation) c.rotation.x += this.speed * dt * 0.4;
+            });
+          }
+        });
+      }
+
+      // 4. Emissione Particelle: Frecce Tricolori (Verde, Bianco, Rosso) o SpaceX Cold Gas
+      const throttleNorm = Math.max(0, Math.min(1.0, this.speed / (isJet ? 340 : 240)));
+      if (isJet) {
+        if (isThrusting || this.speed > 30) {
+          const emitCount = isBoost ? 3 : 2;
+          if (this.car.smokeNozzles) {
+            this.car.smokeNozzles.forEach(nozzle => {
+              const worldPos = nozzle.pos.clone().applyMatrix4(this.car.matrixWorld);
+              for (let k = 0; k < emitCount; k++) {
+                this.thrusters.emit(
+                  worldPos,
+                  backward,
+                  75 + this.speed * 0.65,
+                  0.18,
+                  nozzle.color[0],
+                  nozzle.color[1],
+                  nozzle.color[2],
+                  isBoost ? 0.95 : 0.68
+                );
+              }
+            });
+          }
+        }
+      } else {
+        if (isThrusting || this.speed > 20) {
+          const emitCount = isBoost ? 4 : 2;
+          if (this.car.thrusterNozzles) {
+            this.car.thrusterNozzles.forEach(localNozzle => {
+              const worldPos = localNozzle.clone().applyMatrix4(this.car.matrixWorld);
+              for (let k = 0; k < emitCount; k++) {
+                this.thrusters.emit(worldPos, backward, 85 + this.speed * 0.7, 0.22, 0.8, 0.98, 1.0, 0.35);
+              }
+            });
+          }
+        }
+      }
+
+      // Luce dinamica flare plasma / postbruciatore
+      if (this.car.thrusterGlow) {
+        const targetIntensity = isThrusting ? (isBoost ? 7.0 : 4.0) : (this.speed > 35 ? 1.2 : 0);
+        this.car.thrusterGlow.intensity += (targetIntensity - this.car.thrusterGlow.intensity) * 15 * dt;
+      }
+
+      if (!isJet) {
+        if (yawInput > 0.15) {
+          const rcsPos = new THREE.Vector3(2.2, 0.6, -4.8).applyMatrix4(this.car.matrixWorld);
+          const rightDir = new THREE.Vector3(1, 0, 0).applyQuaternion(this.car.quaternion);
+          this.thrusters.emit(rcsPos, rightDir, 45, 0.2, 0.8, 0.98, 1.0, 0.25);
+        } else if (yawInput < -0.15) {
+          const rcsPos = new THREE.Vector3(-2.2, 0.6, -4.8).applyMatrix4(this.car.matrixWorld);
+          const leftDir = new THREE.Vector3(-1, 0, 0).applyQuaternion(this.car.quaternion);
+          this.thrusters.emit(rcsPos, leftDir, 45, 0.2, 0.8, 0.98, 1.0, 0.25);
+        }
+      }
+
+      this.thrusters.update(dt);
+
+      // 5. Audio Spinta / Turbina
+      this.audio.setThrust(isThrusting ? (isBoost ? 1.0 : 0.75) : throttleNorm * 0.25);
+
+      // 6. Camera Tracking: Sistema Stabilizzato Antivibrazione
+      const cam = Graph.camera();
+      if (cam) {
+        if (this.camMode === 'chase') {
+          const orbitBlendRate = isMovementActive ? 4.5 : 7.0;
+          this.orbitAzimuth += (this.targetOrbitAzimuth - this.orbitAzimuth) * orbitBlendRate * dt;
+          this.orbitElevation += (this.targetOrbitElevation - this.orbitElevation) * orbitBlendRate * dt;
+          this.orbitDistance += (this.targetOrbitDistance - this.orbitDistance) * orbitBlendRate * dt;
+
+          const cosElev = Math.cos(this.orbitElevation);
+          const sinElev = Math.sin(this.orbitElevation);
+          const cosAzim = Math.cos(this.orbitAzimuth);
+          const sinAzim = Math.sin(this.orbitAzimuth);
+
+          const yawSin = Math.sin(this.yaw);
+          const yawCos = Math.cos(this.yaw);
+          const baseBack = new THREE.Vector3(yawSin, 0, yawCos);
+          const baseRight = new THREE.Vector3(yawCos, 0, -yawSin);
+
+          const orbitHoriz = new THREE.Vector3()
+            .addScaledVector(baseBack, cosAzim)
+            .addScaledVector(baseRight, sinAzim);
+
+          const camHeight = Math.max(1.8, this.orbitDistance * sinElev + (isJet ? 3.2 : 2.5));
+          const targetCamPos = this.car.position.clone()
+            .addScaledVector(orbitHoriz, this.orbitDistance * cosElev)
+            .add(new THREE.Vector3(0, camHeight, 0));
+
+          cam.position.lerp(targetCamPos, Math.min(1.0, 9.5 * dt));
+
+          if (!this.smoothedTarget) {
+            this.smoothedTarget = this.car.position.clone();
+          }
+          const desiredTarget = this.car.position.clone().add(new THREE.Vector3(0, 1.4, 0));
+          if (isMovementActive) {
+            desiredTarget.addScaledVector(forward, 16);
+          }
+          this.smoothedTarget.lerp(desiredTarget, Math.min(1.0, 8.0 * dt));
+
+          cam.lookAt(this.smoothedTarget);
+
+          const controls = Graph.controls();
+          if (controls) {
+            controls.target.copy(this.smoothedTarget);
+          }
+        } else {
+          // Cockpit Camera (All'interno del cupolino per il jet o cofano per Tesla)
+          const hoodCamPos = isJet
+            ? this.car.position.clone().addScaledVector(forward, 1.6).add(new THREE.Vector3(0, 2.2, 0))
+            : this.car.position.clone().addScaledVector(forward, 3.2).add(new THREE.Vector3(0, 2.0, 0));
+          cam.position.copy(hoodCamPos);
+          const cockpitLookAhead = this.car.position.clone().addScaledVector(forward, 120);
+          cam.lookAt(cockpitLookAhead);
+          const controls = Graph.controls();
+          if (controls) {
+            controls.target.copy(cockpitLookAhead);
+          }
+        }
+      }
+
+      // 7. Radar Proximity Scanner (Nearest Academic Node)
+      this.scanFrameCounter = (this.scanFrameCounter || 0) + 1;
+      if (this.scanFrameCounter % 8 === 0) {
+        const gData = Graph.graphData();
+        let bestNode = null;
+        let bestDistSq = Infinity;
+        if (gData && Array.isArray(gData.nodes)) {
+          const nodes = gData.nodes;
+          const cPos = this.car.position;
+          for (let i = 0; i < nodes.length; i++) {
+            const n = nodes[i];
+            if (n.type !== 'document') continue;
+            const dx = (n.x || 0) - cPos.x;
+            const dy = (n.y || 0) - cPos.y;
+            const dz = (n.z || 0) - cPos.z;
+            const dSq = dx * dx + dy * dy + dz * dz;
+            if (dSq < bestDistSq) {
+              bestDistSq = dSq;
+              bestNode = n;
+            }
+          }
+        }
+
+        this.nearestNode = bestNode;
+        this.minDist = Math.sqrt(bestDistSq);
+
+        const hudTargetName = document.getElementById('hud-target-name');
+        const hudTargetDist = document.getElementById('hud-target-dist');
+        if (hudTargetName && hudTargetDist) {
+          if (bestNode) {
+            hudTargetName.textContent = `[${bestNode.course || 'Doc'}] ${bestNode.label || bestNode.id}`;
+            hudTargetDist.textContent = Math.round(this.minDist) + ' m';
+            hudTargetDist.style.color = (this.minDist < 120) ? '#00f2fe' : '#ffd32a';
+          } else {
+            hudTargetName.textContent = 'Scansione spazio circostante...';
+            hudTargetDist.textContent = '-- m';
+          }
+        }
+      }
+
+      // 8. Update HUD Elements
+      const hudSpeed = document.getElementById('hud-speed');
+      if (hudSpeed) hudSpeed.textContent = Math.abs(Math.round(this.speed * (isJet ? 2.3 : 2.2)));
+
+      const hudThrustBar = document.getElementById('hud-thrust-bar');
+      if (hudThrustBar) {
+        const thrustPct = isThrusting ? (isBoost ? 100 : 75) : Math.min(100, Math.round(throttleNorm * 100));
+        hudThrustBar.style.width = thrustPct + '%';
+      }
+
+      const hudPsi = document.getElementById('hud-psi');
+      if (hudPsi) {
+        if (isJet) {
+          const rpm = isBoost ? '108% REHEAT' : (isThrusting ? '100% MIL' : (this.speed > 35 ? '88% CRUISE' : '70% IDLE'));
+          hudPsi.textContent = rpm;
+        } else {
+          const psiVal = isThrusting ? (isBoost ? 12000 : 10000) : Math.round(8000 + throttleNorm * 4000);
+          hudPsi.textContent = psiVal.toLocaleString('it-IT') + ' PSI';
+        }
+      }
+
+      const hudGear = document.getElementById('hud-gear');
+      if (hudGear) {
+        if (isBoost) {
+          hudGear.textContent = isJet ? 'POSTBRUCIATORE' : 'SPACEX BOOST';
+          hudGear.style.color = '#ef4444';
+          hudGear.style.background = 'rgba(239,68,68,0.2)';
+          hudGear.style.borderColor = 'rgba(239,68,68,0.5)';
+        } else if (isThrusting) {
+          hudGear.textContent = isJet ? 'TURBOFAN MAX' : 'THRUST ACTIVE';
+          hudGear.style.color = '#00f2fe';
+          hudGear.style.background = 'rgba(0,242,254,0.2)';
+          hudGear.style.borderColor = 'rgba(0,242,254,0.5)';
+        } else if (isS) {
+          hudGear.textContent = isJet ? 'AEROBRAKE' : 'AIRBRAKE / REV';
+          hudGear.style.color = '#f59e0b';
+          hudGear.style.background = 'rgba(245,158,11,0.2)';
+          hudGear.style.borderColor = 'rgba(245,158,11,0.5)';
+        } else {
+          hudGear.textContent = isJet ? 'VOLO CROCIERA' : 'ORBIT / CRUISE';
+          hudGear.style.color = '#10b981';
+          hudGear.style.background = 'rgba(16,185,129,0.15)';
+          hudGear.style.borderColor = 'rgba(16,185,129,0.3)';
+        }
+      }
+
+      // 9. Update HUD Mouse Aim Reticle & Flight Guidance Status
+      const hudAim = document.getElementById('hud-mouse-aim');
+      if (hudAim) {
+        if (isMovementActive) {
+          hudAim.style.opacity = '1.0';
+          hudAim.style.borderColor = '#00f2fe';
+          hudAim.style.boxShadow = '0 0 12px #00f2fe, inset 0 0 6px rgba(0,242,254,0.6)';
+          hudAim.style.transform = `translate(${this.mouseX * 55}px, ${this.mouseY * 55}px)`;
+        } else {
+          hudAim.style.opacity = '0.0';
+          hudAim.style.transform = 'translate(0px, 0px)';
+        }
+      }
+
+      const hudGuidance = document.getElementById('hud-guidance-mode');
+      if (hudGuidance) {
+        if (isMovementActive) {
+          hudGuidance.textContent = 'VOLO & STERZO ATTIVO (WASD)';
+          hudGuidance.style.color = '#00f2fe';
+        } else {
+          hudGuidance.textContent = 'CAMERA IN ORBITA 360° (Trascina il mouse)';
+          hudGuidance.style.color = '#38bdf8';
+        }
+      }
+
+      const targetCursor = isMovementActive ? 'crosshair' : (this.isMouseDown ? 'grabbing' : 'grab');
+      if (document.body.style.cursor !== targetCursor) {
+        document.body.style.cursor = targetCursor;
+      }
+    } catch (err) {
+      console.error("Flight loop frame error:", err);
+    }
+  }
+};
+
+window.addEventListener('DOMContentLoaded', () => {
+  teslaFlight.init();
+});
+
+
+
+// Auto-activate tab based on URL param
+window.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('mode') === 'study') {
+    if (document.getElementById('btn-tab-studio')) {
+      document.getElementById('btn-tab-studio').click();
+    }
   }
 });
 
 </script>
+
 </body>
 </html>

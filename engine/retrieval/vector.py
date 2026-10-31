@@ -10,27 +10,32 @@ class VectorRetriever:
         self.embedder = embedder
         self.index_name = index_name
 
-    def search(self, query: str, top_k: int = 5):
+    def search(self, query: str, top_k: int = 5, tier_filter: str = None):
         query_embedding = self.embedder.get_embeddings([query])[0]
         
-        # Cypher query for vector search using cosine similarity
+        tier_clause = "AND doc.source_tier = $tier_filter" if tier_filter else ""
+
         cypher = f"""
         CALL db.index.vector.queryNodes($index_name, $top_k, $query_embedding)
         YIELD node AS chunk, score
         MATCH (doc:Document)-[:HAS_CHUNK]->(chunk)
+        WHERE 1=1 {tier_clause}
         RETURN chunk.id AS chunk_id,
                chunk.text AS text,
                chunk.page AS page,
                doc.title AS source_title,
                doc.source_type AS source_type,
+               doc.source_tier AS source_tier,
                doc.course AS course,
                score
         """
         
-        results = self.db.execute_query(cypher, {
+        params = {
             "index_name": self.index_name,
             "top_k": top_k,
             "query_embedding": query_embedding
-        })
-        
-        return results
+        }
+        if tier_filter:
+            params["tier_filter"] = tier_filter
+
+        return self.db.execute_query(cypher, params)

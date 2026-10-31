@@ -29,6 +29,9 @@ class Document(BaseModel):
     mime_type: str
     course: Optional[str] = None
     topic: Optional[str] = None
+    # "primary" = slide, appunti, notion  |  "resource" = libri in cartella resources/
+    # "article" = articoli scientifici / paper in cartella articles/ dentro resources/
+    source_tier: str = "primary"
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     checksum: str

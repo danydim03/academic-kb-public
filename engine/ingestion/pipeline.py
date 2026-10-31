@@ -54,6 +54,7 @@ class IngestionPipeline:
         MERGE (d:Document {id: $id})
         SET d.title = $title,
             d.source_type = $source_type,
+            d.source_tier = $source_tier,
             d.uri = $uri,
             d.course = $course,
             d.checksum = $checksum,

@@ -47,14 +47,40 @@ class PDFConnector(BaseConnector):
             else:
                 course = "Generale"
 
+        # Source tier — sistema a 3 livelli di priorità:
+        #   "primary"  = slide, appunti, notion  (⭐⭐⭐ priorità massima)
+        #   "resource" = libri di testo in resources/  (⭐⭐ priorità media)
+        #   "article"  = articoli scientifici / paper in articles/ dentro resources/  (⭐ priorità bassa)
+        abs_path = os.path.abspath(filepath)
+        path_segments = abs_path.lower().split(os.sep)
+        filename_lower = os.path.basename(filepath).lower()
+
+        # 1) Articoli: dentro una cartella "articles" o "papers", oppure file che NON iniziano
+        #    con "book" dentro resources/ (euristica: i libri hanno prefisso "book -")
+        is_in_articles_dir = any(seg in ("articles", "papers", "articoli") for seg in path_segments)
+        is_in_resources = any(seg.endswith(" resources") or seg == "resources" for seg in path_segments)
+        is_book_file = filename_lower.startswith("book -") or filename_lower.startswith("book-")
+
+        if is_in_articles_dir:
+            source_tier = "article"
+        elif is_in_resources and not is_book_file:
+            # File in resources/ che NON è un libro → articolo/paper
+            source_tier = "article"
+        elif is_in_resources and is_book_file:
+            # File in resources/ con prefisso "book" → libro
+            source_tier = "resource"
+        else:
+            source_tier = "primary"
+
         return Document(
             id=f"pdf-{hashlib.md5(filepath.encode()).hexdigest()}",
             source_type="pdf",
             source_id=filepath,
             title=filename,
-            uri=f"file://{os.path.abspath(filepath)}",
+            uri=f"file://{abs_path}",
             mime_type="application/pdf",
             course=course,
+            source_tier=source_tier,
             checksum=checksum,
             metadata={"raw_text": full_text, "pages": len(text_content)}
         )

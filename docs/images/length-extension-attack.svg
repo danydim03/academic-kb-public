@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1060" viewBox="0 0 1600 1060" font-family="Helvetica, Arial, sans-serif">
+  <rect width="1600" height="1060" fill="#ffffff"/>
+
+  <!-- HEADER -->
+  <text x="40" y="48" font-size="28" font-weight="700" fill="#111827">Length extension attack su H(Secret || m)</text>
+  <text x="40" y="76" font-size="15" fill="#6b7280">Perché la posizione del segreto conta · Merkle–Damgård · [LEZIONE 5 §10.2; LEZIONE 6; book - Aumasson - Serious cryptography.pdf]</text>
+
+  <!-- legend -->
+  <line x1="40" y1="94" x2="1560" y2="94" stroke="#e5e7eb"/>
+  <rect x="44" y="106" width="14" height="14" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="66" y="118" font-size="12" fill="#4b5563">dove entra il segreto</text>
+  <rect x="214" y="106" width="14" height="14" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/>
+  <text x="236" y="118" font-size="12" fill="#4b5563">elaborazione senza segreto</text>
+  <rect x="404" y="106" width="14" height="14" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="426" y="118" font-size="12" fill="#4b5563">stato interno = digest</text>
+  <rect x="574" y="106" width="14" height="14" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="596" y="118" font-size="12" fill="#4b5563">dati scelti dall'attaccante</text>
+
+  <!-- ================= PANEL A ================= -->
+  <rect x="40" y="138" width="1520" height="330" rx="10" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="64" y="170" font-size="16" font-weight="700" fill="#2563eb">A · La catena legittima — il mittente calcola il tag</text>
+  <text x="64" y="190" font-size="11.5" fill="#6b7280">Il segreto viene assorbito solo nel primo blocco; da lì in poi la catena prosegue senza di esso.</text>
+
+  <!-- boxes -->
+  <rect x="90" y="222" width="150" height="92" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.6"/>
+  <text x="165" y="262" font-size="13" font-weight="700" fill="#374151" text-anchor="middle">IV</text>
+  <text x="165" y="280" font-size="10.5" fill="#6b7280" text-anchor="middle">fisso, pubblico</text>
+
+  <rect x="320" y="222" width="240" height="92" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="440" y="256" font-size="13" font-weight="700" fill="#b91c1c" text-anchor="middle">Blocco 1</text>
+  <text x="440" y="276" font-size="11.5" fill="#b91c1c" text-anchor="middle">Secret || m₁</text>
+  <text x="440" y="296" font-size="10.5" fill="#9ca3af" text-anchor="middle">h₁ = f(h₀, Secret||m₁)</text>
+
+  <rect x="640" y="222" width="240" height="92" rx="6" fill="#d1fae5" stroke="#059669" stroke-width="1.8"/>
+  <text x="760" y="256" font-size="13" font-weight="700" fill="#047857" text-anchor="middle">Blocchi 2…n</text>
+  <text x="760" y="276" font-size="11.5" fill="#047857" text-anchor="middle">m₂ … mₙ (solo dati)</text>
+  <text x="760" y="296" font-size="10.5" fill="#9ca3af" text-anchor="middle">hᵢ = f(hᵢ₋₁, mᵢ)</text>
+
+  <rect x="960" y="222" width="150" height="92" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <text x="1035" y="272" font-size="16" font-weight="700" fill="#9ca3af" text-anchor="middle">…</text>
+
+  <rect x="1190" y="222" width="320" height="92" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="1350" y="256" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">tag  t = H(Secret || m)</text>
+  <text x="1350" y="276" font-size="11" fill="#1e40af" text-anchor="middle">il digest È lo stato interno hₙ</text>
+  <text x="1350" y="296" font-size="10.5" fill="#6b7280" text-anchor="middle">l'attaccante lo vede: questo è il punto debole</text>
+
+  <!-- arrows -->
+  <line x1="240" y1="268" x2="310" y2="268" stroke="#6b7280" stroke-width="2"/>
+  <polygon points="310,268 298,262 298,274" fill="#6b7280"/>
+  <line x1="560" y1="268" x2="630" y2="268" stroke="#6b7280" stroke-width="2"/>
+  <polygon points="630,268 618,262 618,274" fill="#6b7280"/>
+  <line x1="880" y1="268" x2="950" y2="268" stroke="#6b7280" stroke-width="2"/>
+  <polygon points="950,268 938,262 938,274" fill="#6b7280"/>
+  <line x1="1110" y1="268" x2="1180" y2="268" stroke="#6b7280" stroke-width="2"/>
+  <polygon points="1180,268 1168,262 1168,274" fill="#6b7280"/>
+
+  <!-- step 1 -->
+  <circle cx="1350" cy="345" r="13" fill="#111827"/>
+  <text x="1350" y="350" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+  <text x="1330" y="350" font-size="11.5" fill="#4b5563" text-anchor="end">l'attaccante osserva m e il tag t — non conosce Secret</text>
+  <line x1="1350" y1="332" x2="1350" y2="316" stroke="#111827" stroke-width="1.2" stroke-dasharray="3 3"/>
+
+  <text x="90" y="440" font-size="11.5" font-weight="700" fill="#dc2626">Regola d'oro:</text>
+  <text x="186" y="440" font-size="11.5" fill="#4b5563">il segreto è «consumato» nello stato h₁. Dopo quel punto la catena è <tspan font-weight="700">keyless</tspan>: chi conosce hₙ può continuarla.</text>
+
+  <!-- ================= PANEL B ================= -->
+  <rect x="40" y="486" width="1520" height="330" rx="10" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="64" y="518" font-size="16" font-weight="700" fill="#ea580c">B · La catena dell'attaccante — riparte dallo stato noto</text>
+  <text x="64" y="538" font-size="11.5" fill="#6b7280">Nessuna chiave, nessuna forza bruta: si riusa lo stato interno come nuovo punto di partenza.</text>
+
+  <rect x="90" y="570" width="230" height="92" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="205" y="622" font-size="13" font-weight="700" fill="#1d4ed8" text-anchor="middle">t = hₙ</text>
+  <text x="205" y="642" font-size="11" fill="#1e40af" text-anchor="middle">stato interno noto</text>
+  <text x="205" y="660" font-size="10.5" fill="#6b7280" text-anchor="middle">diventa il nuovo "IV"</text>
+
+  <rect x="370" y="570" width="180" height="92" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <text x="460" y="622" font-size="13" font-weight="700" fill="#374151" text-anchor="middle">pad</text>
+  <text x="460" y="642" font-size="10.5" fill="#6b7280" text-anchor="middle">ricostruito dalla</text>
+  <text x="460" y="658" font-size="10.5" fill="#6b7280" text-anchor="middle">lunghezza di m</text>
+
+  <rect x="600" y="570" width="270" height="92" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="735" y="622" font-size="13" font-weight="700" fill="#c2410c" text-anchor="middle">m′</text>
+  <text x="735" y="642" font-size="11" fill="#c2410c" text-anchor="middle">nuovi attributi RADIUS</text>
+  <text x="735" y="660" font-size="10.5" fill="#6b7280" text-anchor="middle">scelti liberamente</text>
+
+  <rect x="920" y="570" width="590" height="92" rx="6" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+  <text x="1215" y="622" font-size="13" font-weight="700" fill="#854d0e" text-anchor="middle">t′ = H(Secret || m || pad || m′)</text>
+  <text x="1215" y="642" font-size="11" fill="#854d0e" text-anchor="middle">tag VALIDO per un messaggio mai prodotto dal mittente</text>
+  <text x="1215" y="660" font-size="10.5" fill="#6b7280" text-anchor="middle">forgiatura riuscita — senza aver mai visto Secret</text>
+
+  <line x1="320" y1="634" x2="360" y2="634" stroke="#6b7280" stroke-width="2"/>
+  <polygon points="360,634 348,628 348,640" fill="#6b7280"/>
+  <line x1="550" y1="634" x2="590" y2="634" stroke="#6b7280" stroke-width="2"/>
+  <polygon points="590,634 578,628 578,640" fill="#6b7280"/>
+  <line x1="870" y1="634" x2="910" y2="634" stroke="#6b7280" stroke-width="2"/>
+  <polygon points="910,634 898,628 898,640" fill="#6b7280"/>
+
+  <!-- steps 2-5 -->
+  <circle cx="460" cy="562" r="12" fill="#111827"/>
+  <text x="460" y="566" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+  <circle cx="205" cy="562" r="12" fill="#111827"/>
+  <text x="205" y="566" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+  <circle cx="735" cy="562" r="12" fill="#111827"/>
+  <text x="735" y="566" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+  <circle cx="1460" cy="562" r="12" fill="#111827"/>
+  <text x="1460" y="566" font-size="11.5" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+
+  <text x="90" y="700" font-size="11.5" font-weight="700" fill="#dc2626">Perché funziona:</text>
+  <text x="216" y="700" font-size="11.5" fill="#4b5563">il server, ricevendo il messaggio esteso, ricalcola MD5 da zero e ottiene <tspan font-weight="700">esattamente t′</tspan> — il padding è parte del messaggio, quindi il conto torna.</text>
+  <text x="90" y="722" font-size="11.5" fill="#4b5563">Il messaggio esteso è una stringa di bit arbitraria: la definizione di sicurezza del MAC non richiede che sia «sensato». [LEZIONE 6]</text>
+  <text x="90" y="748" font-size="11.5" font-weight="700" fill="#047857">In RADIUS questo NON accade:</text>
+  <text x="266" y="748" font-size="11.5" fill="#4b5563">RADIUS usa MD5(m||S), segreto in coda → l'estensione non si applica. Ma paga la precomputazione dello stato MD5.</text>
+
+  <!-- ================= FORMULE + QUOTE ================= -->
+  <rect x="40" y="836" width="740" height="176" rx="10" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="64" y="866" font-size="13" font-weight="700" fill="#111827">Le due formule a confronto</text>
+  <text x="64" y="898" font-size="13" fill="#dc2626">H(Secret || m)  →  estensione possibile  ✗</text>
+  <text x="64" y="922" font-size="13" fill="#047857">H(m || Secret)  →  estensione NON possibile  ✓</text>
+  <text x="64" y="952" font-size="11.5" fill="#6b7280">Il segreto in testa è rotto: la catena dopo il primo blocco non dipende più da Secret.</text>
+  <text x="64" y="972" font-size="11.5" fill="#6b7280">Il segreto in coda salva dall'estensione, ma NON rende la costruzione un buon MAC</text>
+  <text x="64" y="992" font-size="11.5" fill="#6b7280">(collisione su m ⇒ collisione sul tag; precomputazione dello stato MD5). Soluzione: HMAC.</text>
+
+  <rect x="800" y="836" width="760" height="176" rx="10" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="824" y="866" font-size="13" font-weight="700" fill="#111827">Aumasson, Serious Cryptography</text>
+  <text x="824" y="898" font-size="12.5" fill="#374151" font-style="italic">«The length-extension attack allows attackers to compute</text>
+  <text x="824" y="918" font-size="12.5" fill="#374151" font-style="italic">Hash(K || M₁ || M₂) given only Hash(K || M₁) and neither M₁ nor K.</text>
+  <text x="824" y="938" font-size="12.5" fill="#374151" font-style="italic">These functions allow attackers to forge valid MAC tags for free.»</text>
+  <text x="824" y="968" font-size="11.5" fill="#6b7280">Violazione per definizione di MAC: l'attaccante produce un messaggio</text>
+  <text x="824" y="988" font-size="11.5" fill="#6b7280">nuovo con un tag valido, senza conoscere la chiave. [LEZIONE 6]</text>
+
+  <text x="40" y="1044" font-size="11" fill="#9ca3af">Fonti: LEZIONE 5 §10.2 · LEZIONE 6 (Merkle–Damgård, definizione di MAC) · LEZIONE 12 §1 · book - Aumasson - Serious cryptography.pdf</text>
+</svg>

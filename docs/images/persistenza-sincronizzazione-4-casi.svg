@@ -1,0 +1,225 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1360" viewBox="0 0 1600 1360" font-family="Helvetica, Arial, sans-serif">
+  <rect width="1600" height="1360" fill="#ffffff"/>
+
+  <!-- ===== HEADER ===== -->
+  <text x="40" y="50" font-size="29" font-weight="700" fill="#111827">Comunicazione persistente e transiente, sincrona e asincrona</text>
+  <text x="40" y="78" font-size="15" fill="#6b7280">Due assi indipendenti: la persistenza (chi conserva il messaggio) e la sincronizzazione (chi si blocca) · DS_Communication-RPC.pdf, pp. 3–8</text>
+
+  <!-- legend -->
+  <line x1="40" y1="104" x2="1560" y2="104" stroke="#e5e7eb"/>
+  <rect x="44" y="116" width="14" height="14" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="66" y="128" font-size="12" fill="#4b5563">componente attivo</text>
+  <rect x="196" y="116" width="14" height="14" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="218" y="128" font-size="12" fill="#4b5563">sender bloccato</text>
+  <rect x="344" y="116" width="14" height="14" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="366" y="128" font-size="12" fill="#4b5563">memorizzazione persistente</text>
+  <line x1="556" y1="123" x2="596" y2="123" stroke="#2563eb" stroke-width="2"/>
+  <polygon points="596,123 586,118 586,128" fill="#2563eb"/>
+  <text x="604" y="128" font-size="12" fill="#4b5563">messaggio</text>
+  <line x1="706" y1="123" x2="746" y2="123" stroke="#059669" stroke-width="2"/>
+  <polygon points="746,123 736,118 736,128" fill="#059669"/>
+  <text x="754" y="128" font-size="12" fill="#4b5563">risposta / consegna</text>
+  <text x="900" y="128" font-size="17" font-weight="700" fill="#dc2626">✕</text>
+  <text x="922" y="128" font-size="12" fill="#4b5563">messaggio perso</text>
+
+  <!-- ============================================================= -->
+  <!-- PANEL A — PERSISTENTE ASINCRONA                               -->
+  <!-- ============================================================= -->
+  <g>
+    <rect x="40" y="150" width="740" height="560" rx="10" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.5"/>
+    <text x="64" y="184" font-size="16" font-weight="700" fill="#7c3aed">a) Persistente · asincrona</text>
+    <text x="64" y="204" font-size="11.5" fill="#6b7280">il sender non attende · il messaggio è memorizzato finché il receiver è pronto</text>
+
+    <!-- lifelines -->
+    <line x1="160" y1="228" x2="160" y2="650" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 5"/>
+    <line x1="410" y1="228" x2="410" y2="650" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 5"/>
+    <line x1="660" y1="228" x2="660" y2="440" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="2 6"/>
+    <line x1="660" y1="440" x2="660" y2="650" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 5"/>
+
+    <!-- headers -->
+    <rect x="105" y="212" width="110" height="28" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="160" y="231" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Sender</text>
+    <rect x="355" y="212" width="110" height="28" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="410" y="231" font-size="12" font-weight="700" fill="#5b21b6" text-anchor="middle">Middleware</text>
+    <rect x="605" y="212" width="110" height="28" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="660" y="231" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Receiver</text>
+
+    <!-- send -->
+    <line x1="215" y1="300" x2="352" y2="300" stroke="#2563eb" stroke-width="2"/>
+    <polygon points="352,300 340,294 340,306" fill="#2563eb"/>
+    <text x="284" y="291" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">send</text>
+
+    <!-- store box -->
+    <rect x="382" y="320" width="56" height="110" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+    <text x="410" y="375" font-size="11.5" font-weight="700" fill="#5b21b6" text-anchor="middle" transform="rotate(-90 410 375)">STORAGE</text>
+
+    <!-- sender continues -->
+    <line x1="148" y1="300" x2="172" y2="300" stroke="#059669" stroke-width="3"/>
+    <line x1="160" y1="306" x2="160" y2="360" stroke="#059669" stroke-width="1.2" stroke-dasharray="3 3"/>
+    <text x="182" y="372" font-size="12" font-weight="700" fill="#047857">sender continua subito</text>
+    <text x="182" y="389" font-size="11" fill="#6b7280">nessun blocco: send non-bloccante</text>
+
+    <!-- receiver offline -->
+    <text x="668" y="360" font-size="11" fill="#9ca3af">receiver offline</text>
+
+    <!-- pull -->
+    <line x1="605" y1="500" x2="452" y2="500" stroke="#059669" stroke-width="2"/>
+    <polygon points="452,500 464,494 464,506" fill="#059669"/>
+    <text x="528" y="491" font-size="12.5" font-weight="700" fill="#047857" text-anchor="middle">pull / delivery</text>
+    <text x="528" y="520" font-size="11" fill="#6b7280" text-anchor="middle">il messaggio resta nello store</text>
+
+    <!-- note -->
+    <text x="64" y="600" font-size="11.5" fill="#4b5563">Esempi: email, Teams chat, message-oriented middleware.</text>
+    <text x="64" y="620" font-size="11.5" fill="#4b5563">Il receiver può essere offline: il middleware conserva il messaggio.</text>
+    <text x="64" y="640" font-size="11.5" font-weight="700" fill="#7c3aed">Il mittente non paga latenza; paga il broker.</text>
+  </g>
+
+  <!-- ============================================================= -->
+  <!-- PANEL B — PERSISTENTE SINCRONA                                -->
+  <!-- ============================================================= -->
+  <g>
+    <rect x="820" y="150" width="740" height="560" rx="10" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.5"/>
+    <text x="844" y="184" font-size="16" font-weight="700" fill="#7c3aed">b) Persistente · sincrona</text>
+    <text x="844" y="204" font-size="11.5" fill="#6b7280">il sender resta bloccato fino alla consegna · il messaggio è memorizzato fino alla conferma</text>
+
+    <line x1="940" y1="228" x2="940" y2="650" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 5"/>
+    <line x1="1190" y1="228" x2="1190" y2="650" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 5"/>
+    <line x1="1440" y1="228" x2="1440" y2="650" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 5"/>
+
+    <rect x="885" y="212" width="110" height="28" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="940" y="231" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Sender</text>
+    <rect x="1135" y="212" width="110" height="28" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="1190" y="231" font-size="12" font-weight="700" fill="#5b21b6" text-anchor="middle">Middleware</text>
+    <rect x="1385" y="212" width="110" height="28" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="1440" y="231" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Receiver</text>
+
+    <!-- send -->
+    <line x1="995" y1="310" x2="1132" y2="310" stroke="#2563eb" stroke-width="2"/>
+    <polygon points="1132,310 1120,304 1120,316" fill="#2563eb"/>
+    <text x="1064" y="301" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">send</text>
+
+    <!-- store -->
+    <rect x="1162" y="330" width="56" height="110" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2"/>
+    <text x="1190" y="385" font-size="11.5" font-weight="700" fill="#5b21b6" text-anchor="middle" transform="rotate(-90 1190 385)">STORAGE</text>
+
+    <!-- blocked bar -->
+    <rect x="928" y="310" width="24" height="212" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="906" y="425" font-size="11.5" font-weight="700" fill="#dc2626" text-anchor="middle" transform="rotate(-90 906 425)">SENDER BLOCCATO</text>
+
+    <!-- delivery -->
+    <line x1="1226" y1="470" x2="1382" y2="470" stroke="#059669" stroke-width="2"/>
+    <polygon points="1382,470 1370,464 1370,476" fill="#059669"/>
+    <text x="1304" y="461" font-size="12.5" font-weight="700" fill="#047857" text-anchor="middle">delivery</text>
+
+    <!-- ack -->
+    <line x1="1382" y1="522" x2="956" y2="522" stroke="#059669" stroke-width="1.8" stroke-dasharray="5 4"/>
+    <polygon points="956,522 968,516 968,528" fill="#059669"/>
+    <text x="1190" y="513" font-size="11.5" fill="#047857" text-anchor="middle">ack di consegna</text>
+
+    <!-- unblock -->
+    <line x1="928" y1="522" x2="952" y2="522" stroke="#059669" stroke-width="3"/>
+    <text x="1000" y="548" font-size="11.5" font-weight="700" fill="#047857">sender si sblocca</text>
+
+    <text x="844" y="600" font-size="11.5" fill="#4b5563">Semantica: la conferma è di <tspan font-weight="700">consegna</tspan>, non di elaborazione.</text>
+    <text x="844" y="620" font-size="11.5" fill="#4b5563">Il mittente paga il blocco; il messaggio sopravvive se il receiver è lento.</text>
+    <text x="844" y="640" font-size="11.5" font-weight="700" fill="#7c3aed">Blocco + durabilità: massima garanzia, massimo costo.</text>
+  </g>
+
+  <!-- ============================================================= -->
+  <!-- PANEL C — TRANSIENTE ASINCRONA                                -->
+  <!-- ============================================================= -->
+  <g>
+    <rect x="40" y="750" width="740" height="560" rx="10" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.5"/>
+    <text x="64" y="784" font-size="16" font-weight="700" fill="#dc2626">c) Transiente · asincrona</text>
+    <text x="64" y="804" font-size="11.5" fill="#6b7280">il sender non attende · il messaggio non è memorizzato: se il receiver è offline si perde</text>
+
+    <line x1="160" y1="828" x2="160" y2="1250" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 5"/>
+    <line x1="660" y1="828" x2="660" y2="1000" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="2 6"/>
+    <line x1="660" y1="1000" x2="660" y2="1250" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 5"/>
+
+    <rect x="105" y="812" width="110" height="28" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="160" y="831" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Sender</text>
+    <rect x="605" y="812" width="110" height="28" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="660" y="831" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Receiver</text>
+
+    <!-- message with X -->
+    <line x1="215" y1="910" x2="612" y2="910" stroke="#2563eb" stroke-width="2"/>
+    <text x="400" y="901" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">send (UDP datagram)</text>
+    <line x1="640" y1="890" x2="680" y2="930" stroke="#dc2626" stroke-width="4" stroke-linecap="round"/>
+    <line x1="680" y1="890" x2="640" y2="930" stroke="#dc2626" stroke-width="4" stroke-linecap="round"/>
+
+    <text x="690" y="905" font-size="11" font-weight="700" fill="#dc2626">receiver offline</text>
+    <text x="690" y="921" font-size="10.5" fill="#dc2626">messaggio scartato</text>
+
+    <!-- no store -->
+    <rect x="330" y="1010" width="160" height="80" rx="6" fill="#f9fafb" stroke="#d1d5db" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="410" y="1046" font-size="11.5" font-weight="700" fill="#9ca3af" text-anchor="middle">nessuno storage</text>
+    <text x="410" y="1066" font-size="11" fill="#9ca3af" text-anchor="middle">niente sopravvive all'assenza</text>
+
+    <!-- sender continues -->
+    <line x1="148" y1="910" x2="172" y2="910" stroke="#059669" stroke-width="3"/>
+    <line x1="160" y1="916" x2="160" y2="968" stroke="#059669" stroke-width="1.2" stroke-dasharray="3 3"/>
+    <text x="182" y="980" font-size="12" font-weight="700" fill="#047857">sender continua subito</text>
+    <text x="182" y="997" font-size="11" fill="#6b7280">nessun blocco, nessuna attesa</text>
+
+    <text x="64" y="1180" font-size="11.5" fill="#4b5563">Trasporto: i router fanno store-and-forward, ma scartano se il forwarding fallisce.</text>
+    <text x="64" y="1200" font-size="11.5" fill="#4b5563">La perdita non è un errore: è parte del contratto del canale.</text>
+    <text x="64" y="1220" font-size="11.5" font-weight="700" fill="#dc2626">Nessuna garanzia di consegna: solo best effort.</text>
+
+    <text x="64" y="1258" font-size="11" fill="#9ca3af">Esempio: UDP. Il mittente non sa e non può sapere che il messaggio è stato perso.</text>
+  </g>
+
+  <!-- ============================================================= -->
+  <!-- PANEL D — TRANSIENTE SINCRONA                                 -->
+  <!-- ============================================================= -->
+  <g>
+    <rect x="820" y="750" width="740" height="560" rx="10" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.5"/>
+    <text x="844" y="784" font-size="16" font-weight="700" fill="#2563eb">d) Transiente · sincrona</text>
+    <text x="844" y="804" font-size="11.5" fill="#6b7280">il sender si blocca · entrambe le parti devono essere attive · nessuna memorizzazione</text>
+
+    <line x1="940" y1="828" x2="940" y2="1250" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 5"/>
+    <line x1="1440" y1="828" x2="1440" y2="1250" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 5"/>
+
+    <rect x="885" y="812" width="110" height="28" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="940" y="831" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Client</text>
+    <rect x="1385" y="812" width="110" height="28" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="1440" y="831" font-size="12" font-weight="700" fill="#1e3a8a" text-anchor="middle">Server</text>
+
+    <!-- request -->
+    <line x1="995" y1="900" x2="1422" y2="900" stroke="#2563eb" stroke-width="2"/>
+    <polygon points="1422,900 1410,894 1410,906" fill="#2563eb"/>
+    <text x="1208" y="891" font-size="12.5" font-weight="700" fill="#1e3a8a" text-anchor="middle">request</text>
+
+    <!-- blocked bar -->
+    <rect x="928" y="900" width="24" height="300" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="906" y="1045" font-size="11.5" font-weight="700" fill="#dc2626" text-anchor="middle" transform="rotate(-90 906 1045)">SENDER BLOCCATO</text>
+
+    <!-- receipt / delivery ticks -->
+    <line x1="1432" y1="946" x2="1452" y2="946" stroke="#0891b2" stroke-width="3"/>
+    <text x="1460" y="941" font-size="11" font-weight="700" fill="#0e7490">d) receipt</text>
+    <text x="1460" y="956" font-size="10.5" fill="#6b7280">nel buffer</text>
+    <line x1="1432" y1="972" x2="1452" y2="972" stroke="#0891b2" stroke-width="3"/>
+    <text x="1460" y="975" font-size="11" font-weight="700" fill="#0e7490">e) delivery</text>
+
+    <!-- processing -->
+    <rect x="1408" y="996" width="64" height="112" rx="5" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.6"/>
+    <text x="1440" y="1055" font-size="11.5" font-weight="700" fill="#1e40af" text-anchor="middle" transform="rotate(-90 1440 1055)">elaborazione</text>
+
+    <!-- reply -->
+    <line x1="1422" y1="1160" x2="998" y2="1160" stroke="#059669" stroke-width="2"/>
+    <polygon points="998,1160 1010,1154 1010,1166" fill="#059669"/>
+    <text x="1208" y="1151" font-size="12.5" font-weight="700" fill="#047857" text-anchor="middle">reply</text>
+
+    <!-- unblock -->
+    <line x1="928" y1="1200" x2="952" y2="1200" stroke="#059669" stroke-width="3"/>
+    <text x="1010" y="1204" font-size="11.5" font-weight="700" fill="#047857">f) il sender si sblocca alla reply</text>
+
+    <text x="844" y="1240" font-size="11.5" font-weight="700" fill="#2563eb">Il caso canonico: RPC (f = response-based).</text>
+    <text x="844" y="1260" font-size="11.5" fill="#4b5563">Se il server è lento o è crashato, il client non può distinguerlo:</text>
+    <text x="844" y="1280" font-size="11.5" fill="#4b5563">servono timeout e semantiche at-least-once / at-most-once.</text>
+  </g>
+
+  <!-- ===== FOOTER ===== -->
+  <line x1="40" y1="1330" x2="1560" y2="1330" stroke="#e5e7eb"/>
+  <text x="40" y="1350" font-size="11" fill="#9ca3af">Fonti: DS_Communication-RPC.pdf (pp. 3–8, 24–26) · SDCC 10 - 27-oct-23.pdf (pp. 1, 3, 6) · LEZIONE 8 (appunti)</text>
+</svg>

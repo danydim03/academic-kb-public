@@ -47,9 +47,37 @@ class NotionConnector(BaseConnector):
             visited_pages = set()
             visited_dbs = set()
             
-            # Queue holds tuples: (entity_type, entity_id, course_context, depth)
-            # Try to see if root is page or database
-            queue = [("page", self.root_id, "MAGISTRALE", 0)]
+            queue = []
+            
+            # Recupera TUTTI i documenti e i database condivisi con questa API Key tramite la Search API
+            cursor = None
+            while True:
+                try:
+                    payload = {"page_size": 100}
+                    if cursor:
+                        payload["start_cursor"] = cursor
+                    resp = client.post(f"{self.base_url}/search", json=payload)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        for item in data.get("results", []):
+                            obj_type = item.get("object")
+                            item_id = item.get("id")
+                            if obj_type in ["page", "database"]:
+                                queue.append((obj_type, item_id, "MAGISTRALE", 0))
+                        
+                        if not data.get("has_more"):
+                            break
+                        cursor = data.get("next_cursor")
+                    else:
+                        break
+                except Exception as e:
+                    logger.warning(f"Failed to fetch search API: {e}")
+                    break
+
+            # Aggiungiamo anche il root_id manuale nel caso non fosse emerso
+            if self.root_id:
+                queue.insert(0, ("database", self.root_id, "MAGISTRALE", 0))
+                queue.insert(0, ("page", self.root_id, "MAGISTRALE", 0))
 
             while queue:
                 entity_type, entity_id, course_context, depth = queue.pop(0)
@@ -117,6 +145,7 @@ class NotionConnector(BaseConnector):
             title=title or "Untitled Notion Page",
             uri=url,
             course=course,
+            source_tier="primary",   # Notion è sempre fonte primaria
             mime_type="text/markdown",
             checksum=checksum,
             metadata={
@@ -167,7 +196,7 @@ class NotionConnector(BaseConnector):
                 if t_arr:
                     title = "".join(t.get("plain_text", "") for t in t_arr)
             elif prop_type == "multi_select":
-                vals = [x.get("name", "") for x in v.get("multi_select", [])]
+                vals = [x.get("name", "") if isinstance(x, dict) else str(x) for x in v.get("multi_select", [])]
                 if vals:
                     details.append(f"**{k}:** {', '.join(vals)}")
             elif prop_type == "select":

@@ -65,6 +65,9 @@ def build_chunk_similarity(db: Neo4jManager, threshold: float = 0.82, top_k: int
     batch_size = 100
     start_time = time.time()
 
+    seen_pairs = set()
+    pending_links = []
+
     for i in range(0, len(chunk_ids), batch_size):
         batch = chunk_ids[i:i + batch_size]
 
@@ -80,7 +83,7 @@ def build_chunk_similarity(db: Neo4jManager, threshold: float = 0.82, top_k: int
                 WHERE target.id <> $chunk_id AND score >= $threshold
                 MATCH (target_doc:Document)-[:HAS_CHUNK]->(target)
                 WHERE target_doc.id <> $doc_id
-                RETURN target.id AS target_id, score, target_doc.id AS target_doc_id
+                RETURN target.id AS target_id, score
                 LIMIT $top_k
             """, {
                 "chunk_id": chunk_id,
@@ -91,44 +94,29 @@ def build_chunk_similarity(db: Neo4jManager, threshold: float = 0.82, top_k: int
             })
 
             for neighbor in neighbors:
-                # Crea relazione solo in una direzione (A->B dove A.id < B.id)
-                # per evitare duplicati
-                source_id = chunk_id
                 target_id = neighbor["target_id"]
-
-                if source_id < target_id:
-                    db.execute_query("""
-                        MATCH (a:Chunk {id: $source_id}), (b:Chunk {id: $target_id})
-                        MERGE (a)-[r:SIMILAR_TO]->(b)
-                        SET r.score = $score
-                    """, {
-                        "source_id": source_id,
-                        "target_id": target_id,
-                        "score": round(neighbor["score"], 4)
-                    })
-                    created += 1
-                else:
-                    # Controlla se la relazione inversa esiste già
-                    existing = db.execute_query("""
-                        MATCH (a:Chunk {id: $target_id})-[r:SIMILAR_TO]->(b:Chunk {id: $source_id})
-                        RETURN r.score as score LIMIT 1
-                    """, {"target_id": target_id, "source_id": source_id})
-
-                    if not existing:
-                        db.execute_query("""
-                            MATCH (a:Chunk {id: $target_id}), (b:Chunk {id: $source_id})
-                            MERGE (a)-[r:SIMILAR_TO]->(b)
-                            SET r.score = $score
-                        """, {
-                            "target_id": target_id,
-                            "source_id": source_id,
-                            "score": round(neighbor["score"], 4)
-                        })
-                        created += 1
-                    else:
-                        skipped += 1
+                u, v = (chunk_id, target_id) if chunk_id < target_id else (target_id, chunk_id)
+                if (u, v) in seen_pairs:
+                    skipped += 1
+                    continue
+                seen_pairs.add((u, v))
+                pending_links.append({
+                    "source_id": u,
+                    "target_id": v,
+                    "score": round(neighbor["score"], 4)
+                })
 
             processed += 1
+
+        if len(pending_links) >= 500:
+            db.execute_query("""
+                UNWIND $links AS item
+                MATCH (a:Chunk {id: item.source_id}), (b:Chunk {id: item.target_id})
+                MERGE (a)-[r:SIMILAR_TO]->(b)
+                SET r.score = item.score
+            """, {"links": pending_links})
+            created += len(pending_links)
+            pending_links = []
 
         # Progress log ogni batch
         elapsed = time.time() - start_time
@@ -140,6 +128,16 @@ def build_chunk_similarity(db: Neo4jManager, threshold: float = 0.82, top_k: int
             f"Link creati: {created} | Saltati: {skipped} | "
             f"Velocità: {rate:.1f} chunk/s | ETA: {eta:.0f}s"
         )
+
+    if pending_links:
+        db.execute_query("""
+            UNWIND $links AS item
+            MATCH (a:Chunk {id: item.source_id}), (b:Chunk {id: item.target_id})
+            MERGE (a)-[r:SIMILAR_TO]->(b)
+            SET r.score = item.score
+        """, {"links": pending_links})
+        created += len(pending_links)
+        pending_links = []
 
     logger.info(f"✅ Completato! Link SIMILAR_TO creati: {created}")
     return created

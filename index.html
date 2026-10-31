@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Tor Vergata Cyber">
+  <link rel="apple-touch-icon" href="static/dimeogpt_logo.png">
+  <title>Tor Vergata - Cyber Security Eng</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body, html {
+      height: 100%;
+      font-family: 'Inter', -apple-system, sans-serif;
+      overflow: hidden;
+      background-color: #000;
+    }
+    .background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('static/bg_login.jpg') no-repeat center center/cover;
+      filter: brightness(0.7) contrast(1.1);
+      z-index: 1;
+    }
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(0, 104, 55, 0.4) 0%, rgba(0,0,0,0.8) 100%);
+      z-index: 2;
+    }
+    .header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 24px 40px;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    }
+    .header img.logo {
+      height: 60px;
+    }
+    .main-content {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      color: #fff;
+    }
+    .title-box {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(12px);
+      padding: 40px 80px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 50px;
+      animation: fadeUp 1s ease-out;
+    }
+    h1 {
+      font-size: 4rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #fff, #a8d5ba);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: #e0e0e0;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+    .designer-credit {
+      margin-top: 16px;
+      font-size: 0.85rem;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 0.5px;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .action-cards {
+      display: flex;
+      gap: 32px;
+      animation: fadeUp 1.2s ease-out;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 40px;
+      width: 320px;
+      text-decoration: none;
+      color: #fff;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+    }
+    .card:hover {
+      transform: translateY(-10px);
+      background: rgba(0, 104, 55, 0.8);
+      border-color: #006837;
+      box-shadow: 0 20px 48px rgba(0, 104, 55, 0.4);
+    }
+    .card-icon {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 58px;
+    }
+    .card-logo-img {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 14px rgba(0, 255, 136, 0.45));
+      transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .card:hover .card-logo-img {
+      transform: scale(1.15) rotate(2deg);
+    }
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .card-desc {
+      font-size: 0.95rem;
+      color: #ccc;
+      line-height: 1.5;
+    }
+    .card:hover .card-desc {
+      color: #e8e8e8;
+    }
+    
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       MOBILE PERFECTION (IPHONE & TOUCH DEVICES ONLY)
+       Does NOT affect Mac desktop/laptop screens in any way (strict <= 768px query)
+       ========================================================================== */
+    @media only screen and (max-width: 768px) {
+      body, html {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        height: auto !important;
+        min-height: 100% !important;
+        -webkit-overflow-scrolling: touch;
+      }
+      .background, .overlay {
+        position: fixed !important;
+        width: 100vw !important;
+        height: 100vh !important;
+      }
+      .header {
+        position: sticky !important;
+        top: 0 !important;
+        padding: max(14px, env(safe-area-inset-top)) 20px 14px 20px !important;
+        background: rgba(255, 255, 255, 0.90) !important;
+        backdrop-filter: blur(24px) saturate(1.8) !important;
+        -webkit-backdrop-filter: blur(24px) saturate(1.8) !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.18) !important;
+        z-index: 100 !important;
+      }
+      .header img.logo {
+        height: 38px !important;
+      }
+      .header .lang-badge {
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        color: #006837 !important;
+        background: rgba(0, 104, 55, 0.12) !important;
+        padding: 5px 12px !important;
+        border-radius: 12px !important;
+        letter-spacing: 0.5px !important;
+      }
+      .main-content {
+        height: auto !important;
+        min-height: auto !important;
+        padding: 24px 16px 36px 16px !important;
+        justify-content: flex-start !important;
+      }
+      .title-box {
+        padding: 22px 18px !important;
+        margin-bottom: 22px !important;
+        width: 100% !important;
+        max-width: 380px !important;
+        border-radius: 20px !important;
+        background: rgba(0, 0, 0, 0.55) !important;
+        backdrop-filter: blur(18px) !important;
+        -webkit-backdrop-filter: blur(18px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.45) !important;
+      }
+      h1 {
+        font-size: 1.85rem !important;
+        letter-spacing: 0.5px !important;
+        margin-bottom: 4px !important;
+        line-height: 1.15 !important;
+      }
+      h2 {
+        font-size: 0.92rem !important;
+        letter-spacing: 2px !important;
+      }
+      .designer-credit {
+        margin-top: 10px !important;
+        font-size: 0.72rem !important;
+        opacity: 0.8 !important;
+      }
+      .action-cards {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 14px !important;
+        width: 100% !important;
+        max-width: 380px !important;
+      }
+      .card {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 16px 18px !important;
+        border-radius: 18px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        text-align: left !important;
+        gap: 16px !important;
+        background: rgba(255, 255, 255, 0.12) !important;
+        backdrop-filter: blur(25px) !important;
+        -webkit-backdrop-filter: blur(25px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.22) !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+        -webkit-tap-highlight-color: transparent !important;
+        touch-action: manipulation !important;
+      }
+      .card:active {
+        transform: scale(0.97) !important;
+        background: rgba(0, 104, 55, 0.88) !important;
+        border-color: #00ff88 !important;
+      }
+      .card-icon {
+        margin-bottom: 0 !important;
+        width: 48px !important;
+        height: 48px !important;
+        flex-shrink: 0 !important;
+        font-size: 2rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      .card-logo-img {
+        width: 46px !important;
+        height: 46px !important;
+      }
+      .card-title {
+        font-size: 1.15rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 3px !important;
+      }
+      .card-desc {
+        font-size: 0.80rem !important;
+        line-height: 1.35 !important;
+        color: rgba(255, 255, 255, 0.80) !important;
+      }
+      .card-chevron {
+        display: block !important;
+        margin-left: auto !important;
+        font-size: 1.4rem !important;
+        color: rgba(255, 255, 255, 0.35) !important;
+        font-weight: 300 !important;
+        padding-left: 6px !important;
+      }
+      .footer {
+        position: relative !important;
+        gap: 14px 18px !important;
+        flex-wrap: wrap !important;
+        padding: 16px 14px max(24px, env(safe-area-inset-bottom)) 14px !important;
+        font-size: 0.72rem !important;
+        letter-spacing: 0.4px !important;
+      }
+    }
+
+    /* ==========================================================================
+       TABLET & IPAD PERFECTION (769px - 1080px, iPad Portrait & Landscape)
+       Spacious, touch-optimized glassmorphic layout without cropping or overflow
+       ========================================================================== */
+    @media only screen and (min-width: 769px) and (max-width: 1080px) {
+      body, html {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        height: auto !important;
+        min-height: 100% !important;
+        -webkit-overflow-scrolling: touch;
+      }
+      .background, .overlay {
+        position: fixed !important;
+        width: 100vw !important;
+        height: 100vh !important;
+      }
+      .header {
+        position: sticky !important;
+        top: 0 !important;
+        padding: max(18px, env(safe-area-inset-top)) 32px 18px 32px !important;
+        background: rgba(255, 255, 255, 0.92) !important;
+        backdrop-filter: blur(24px) saturate(1.8) !important;
+        -webkit-backdrop-filter: blur(24px) saturate(1.8) !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.18) !important;
+        z-index: 100 !important;
+      }
+      .header img.logo {
+        height: 48px !important;
+      }
+      .header .lang-badge {
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        color: #006837 !important;
+        background: rgba(0, 104, 55, 0.12) !important;
+        padding: 6px 14px !important;
+        border-radius: 12px !important;
+      }
+      .main-content {
+        height: auto !important;
+        min-height: calc(100vh - 80px) !important;
+        padding: 40px 24px 60px 24px !important;
+        justify-content: center !important;
+      }
+      .title-box {
+        padding: 30px 48px !important;
+        margin-bottom: 32px !important;
+        width: 90% !important;
+        max-width: 680px !important;
+        border-radius: 22px !important;
+        background: rgba(0, 0, 0, 0.55) !important;
+        backdrop-filter: blur(18px) !important;
+        -webkit-backdrop-filter: blur(18px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.45) !important;
+      }
+      h1 {
+        font-size: 2.8rem !important;
+        letter-spacing: 1.5px !important;
+        margin-bottom: 6px !important;
+      }
+      h2 {
+        font-size: 1.25rem !important;
+        letter-spacing: 3px !important;
+      }
+      .designer-credit {
+        margin-top: 12px !important;
+        font-size: 0.80rem !important;
+      }
+      .action-cards {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 22px !important;
+        max-width: 960px !important;
+        width: 100% !important;
+      }
+      .card {
+        width: min(290px, 45%) !important;
+        padding: 28px 20px !important;
+        border-radius: 20px !important;
+        background: rgba(255, 255, 255, 0.12) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.22) !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+        -webkit-tap-highlight-color: transparent !important;
+        touch-action: manipulation !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease !important;
+      }
+      .card:active {
+        transform: scale(0.97) !important;
+        background: rgba(0, 104, 55, 0.88) !important;
+        border-color: #00ff88 !important;
+      }
+      .card-icon {
+        font-size: 2.6rem !important;
+        margin-bottom: 14px !important;
+        height: 52px !important;
+      }
+      .card-logo-img {
+        width: 52px !important;
+        height: 52px !important;
+      }
+      .card-title {
+        font-size: 1.3rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 8px !important;
+      }
+      .card-desc {
+        font-size: 0.86rem !important;
+        line-height: 1.42 !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+      }
+      .card-chevron {
+        display: none !important;
+      }
+      .footer {
+        position: relative !important;
+        gap: 20px 28px !important;
+        flex-wrap: wrap !important;
+        padding: 18px 20px max(24px, env(safe-area-inset-bottom)) 20px !important;
+        font-size: 0.80rem !important;
+        letter-spacing: 0.4px !important;
+      }
+    }
+    
+    .footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #006837;
+      color: white;
+      padding: 12px 0;
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      z-index: 10;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.2);
+    }
+    .footer span {
+      cursor: pointer;
+    }
+    .footer span:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="background"></div>
+  <div class="overlay"></div>
+
+  <div class="header">
+    <img src="static/logo_torvergata.png" alt="Tor Vergata" class="logo">
+    <div class="lang-badge" style="font-weight: 600; color: #006837;">ITA | ENG</div>
+  </div>
+
+  <div class="main-content">
+    <div class="title-box">
+      <h1>Cyber Security Eng</h1>
+      <h2>The god's eye</h2>
+      <div class="designer-credit">Academic Knowledge Hub</div>
+    </div>
+
+    <div class="action-cards">
+      <a href="graph_3d.html?mode=graph" class="card">
+        <div class="card-icon">🌐</div>
+        <div class="card-info">
+          <div class="card-title">Knowledge Graph</div>
+          <div class="card-desc">Esplora visivamente i concetti, i documenti e le relazioni in un ambiente 3D immersivo.</div>
+        </div>
+        <div class="card-chevron" style="display:none;">›</div>
+      </a>
+      
+      <a href="study.html?v=3" class="card">
+        <div class="card-icon">📚</div>
+        <div class="card-info">
+          <div class="card-title">Study Engine</div>
+          <div class="card-desc">Accedi alle nuove feature: interrogazioni LLM, flashcards, simulazione domande ed exam linker.</div>
+        </div>
+        <div class="card-chevron" style="display:none;">›</div>
+      </a>
+
+      <a href="http://127.0.0.1:8090" id="dimeogpt-card" target="_blank" rel="noopener noreferrer" class="card">
+        <div class="card-icon"><img src="static/dimeogpt_logo.png" alt="DIMEOGPT" class="card-logo-img"></div>
+        <div class="card-info">
+          <div class="card-title">DIMEOGPT</div>
+          <div class="card-desc">Accedi al cockpit AI avanzato: coding agent, terminali interattivi e chat multi-modello.</div>
+        </div>
+        <div class="card-chevron" style="display:none;">›</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>RICERCA</span>
+    <span>IMPRESE E TERRITORIO</span>
+    <span>AMMINISTRAZIONE</span>
+    <span>INTERNAZIONALE</span>
+    <span>VIVI TOR VERGATA</span>
+  </div>
+
+  <script>
+    // Propaga host e token di sicurezza dinamicamente verso il cockpit DIMEOGPT
+    document.addEventListener("DOMContentLoaded", () => {
+      const host = window.location.hostname || "127.0.0.1";
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get("token") || "dev-token-academic-kb";
+      
+      const dimeoCard = document.getElementById("dimeogpt-card");
+      if (dimeoCard) {
+        dimeoCard.href = `http://${host}:8090/?token=${token}`;
+      }
+    });
+  </script>
+</body>
+</html>

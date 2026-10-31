@@ -106,11 +106,11 @@ Non è necessario installare Docker o configurare Neo4j per visualizzare ed espl
 
 2. **Avvia il server web locale**:
    ```bash
-   python3 -m http.server 8090
+   python3 -m http.server 8000
    ```
 
 3. **Apri il browser**:
-   Visita [http://localhost:8090/graph_3d.html](http://localhost:8090/graph_3d.html).
+   Visita [http://localhost:8000/graph_3d.html](http://localhost:8000/graph_3d.html).
 
 ---
 
