@@ -173,25 +173,27 @@ class AcademicGroundingBridge:
 
         return f"""
 Sei DIMEOGPT Voice Assistant, l'assistente vocale accademico di livello magistrale (Tor Vergata) integrato in DIMEOGPT Study Studio.
-Comunichi a voce in lingua italiana in modo naturale, chiaro, conciso e autorevole.{course_clause}
+Comunichi a voce in lingua italiana in modo naturale, didattico, approfondito e autorevole.{course_clause}
 
-REGOLE FONDAMENTALI DI GROUNDING RIGOROSO:
-1. Quando l'utente ti pone qualsiasi domanda concettuale, teorica, tecnica o d'esame su materie universitarie (CNS, SDCC, ML, SE, Geometria, SERT, ecc.), DEVI OBBLIGATORIAMENTE invocare lo strumento `query_academic_kb` PRIMA di formulare la risposta.
+REGOLE FONDAMENTALI DI GROUNDING RIGOROSO ED ESPOSIZIONE ACCADEMICA:
+1. Quando l'utente ti pone qualsiasi domanda concettuale, teorica, tecnica o d'esame su materie universitarie (CNS, SDCC, ML, SE, Geometria, SERT, BD, ecc.), DEVI OBBLIGATORIAMENTE invocare lo strumento `query_academic_kb` PRIMA di formulare la risposta.
 2. Rispondi STRETTAMENTE ed ESCLUSIVAMENTE utilizzando le informazioni presenti nei documenti e chunk restituiti da `query_academic_kb`.
-3. In ogni risposta, cita esplicitamente il documento sorgente e la pagina (ad esempio: "Nelle slide di Network Security, documento TLS 1.3 a pagina 24...").
+3. In ogni risposta, cita esplicitamente il documento sorgente e la pagina (ad esempio: "Nelle slide del corso, documento TLS 1.3 a pagina 24...").
 4. SE IL TOOL RESTITUISCE `found: false` o nessun documento pertinente sul tema richiesto, DEVI DICHIARARE APERTAMENTE:
    "Ho verificato nel Knowledge Graph accademico, ma questo argomento non è trattato nei materiali indicizzati del corso."
    NON inventare spiegazioni e NON rispondere attingendo a conoscenze esterne generiche non verificate.
-5. DIALOGO UMANO, PAUSE E PROFONDITÀ PEDAGOGICA:
-   - Sii paziente: l'utente può fare pause naturali di riflessione mentre parla. Mantieni la conversazione fluida, aperta e continuativa senza forzare conclusioni premature.
-   - Non dare risposte telegrafiche o monoriga! Spiega i concetti in modo pedagogico, esaustivo e approfondito, illustrando il funzionamento, le motivazioni teoriche e le implicazioni pratiche con chiarezza ed empatia, come un brillante docente di Tor Vergata o collega di studio.
+5. PROFONDITÀ PEDAGOGICA, COMPLETEZZA E RITMO VOCALE:
+   - NON dare risposte telegrafiche o di poche righe! Lo studente si aspetta una spiegazione esaustiva, completa e ricca di dettagli tecnici, come una vera lezione universitaria individuale o un confronto tra brillanti studenti magistrali.
+   - Quando esponi un concetto, strutturalo chiaramente: (a) definizione formale e obiettivo teorico, (b) funzionamento dettagliato passo dopo passo (protocolli, algoritmi, messaggi, architettura), (c) motivazioni, differenze con alternative ed eventuali criticità o domande tipiche d'esame.
+   - Sfrutta tutti i dettagli tecnici e i passaggi presenti nel testo dei chunk restituiti dal tool senza sintetizzare all'estremo.
+   - Parla con tono rilassato e accogliente, senza fretta di concludere il turno. Al termine della spiegazione dettagliata, chiedi se il concetto è chiaro o se desidera approfondire un aspetto specifico.
 """.strip()
 
     async def search(
         self,
         query: str,
         course: Optional[str] = None,
-        top_k: int = 3
+        top_k: int = 5
     ) -> Dict[str, Any]:
         """
         Asynchronously searches the Academic Knowledge Base via asyncio.to_thread
@@ -201,22 +203,22 @@ REGOLE FONDAMENTALI DI GROUNDING RIGOROSO:
 
     def query(self, query_str: str, course: Optional[str] = None) -> Dict[str, Any]:
         """Synchronous search execution (compatible with test harnesses)."""
-        return self._search_sync(query=query_str, course=course, top_k=3)
+        return self._search_sync(query=query_str, course=course, top_k=5)
 
     def _search_sync(
         self,
         query: str,
         course: Optional[str] = None,
-        top_k: int = 3
+        top_k: int = 5
     ) -> Dict[str, Any]:
         """
         Synchronous search engine executing:
         1. Query tokenization and domain sanitization.
-        2. Course isolation filter.
+        2. Course isolation filter with dynamic cross-course fallback.
         3. Hybrid retrieval execution.
         4. Layer 1 relevance threshold & out-of-domain guard.
         5. Layer 2 zero-hallucination fallback.
-        6. Structured citation generation [Doc.pdf, p. X].
+        6. Structured citation generation [Doc.pdf, p. X] and rich technical grounding.
         """
         # 1. Input sanitization & empty query guard
         q_str = str(query).strip() if query is not None else ""
@@ -281,11 +283,12 @@ REGOLE FONDAMENTALI DI GROUNDING RIGOROSO:
             if self.retriever is not None:
                 try:
                     # Request more candidates to allow effective course & relevance filtering
-                    raw_chunks = self.retriever.search(query=q_str, top_k=max(top_k * 3, 8))
+                    raw_chunks = self.retriever.search(query=q_str, top_k=max(top_k * 4, 16))
                 except Exception as e:
                     logger.error(f"Retriever search error for query '{q_str}': {e}", exc_info=True)
                     raw_chunks = []
 
+                # Pass 1: Try scoped course filter if course is explicitly specified
                 for chunk in raw_chunks:
                     chunk_course = chunk.get("course", "") if isinstance(chunk, dict) else getattr(chunk, "course", "")
                     if course_str and course_str.upper() not in ("ALL", "GENERAL"):
@@ -296,10 +299,25 @@ REGOLE FONDAMENTALI DI GROUNDING RIGOROSO:
                     title = chunk.get("source_title", "") if isinstance(chunk, dict) else getattr(chunk, "source_title", "")
                     full_text_lower = f"{title} {content}".lower()
 
-                    # Verify token presence
                     match_count = sum(1 for t in terms if t in full_text_lower)
-                    if match_count > 0:
+                    is_hybrid_hit = bool(isinstance(chunk, dict) and chunk.get("rrf_score"))
+                    if match_count > 0 or is_hybrid_hit:
                         candidates.append(chunk)
+
+                # Pass 2: Cross-course Fallback.
+                # If course filter was restrictive and produced 0 candidates, fallback to all courses
+                # so we never falsely deny knowledge that exists in another academic course!
+                if not candidates and course_str and course_str.upper() not in ("ALL", "GENERAL"):
+                    logger.info(f"Course-specific search for '{course_str}' yielded 0 hits. Executing cross-course fallback.")
+                    for chunk in raw_chunks:
+                        content = chunk.get("text", "") or chunk.get("content", "") if isinstance(chunk, dict) else (getattr(chunk, "text", "") or getattr(chunk, "content", ""))
+                        title = chunk.get("source_title", "") if isinstance(chunk, dict) else getattr(chunk, "source_title", "")
+                        full_text_lower = f"{title} {content}".lower()
+
+                        match_count = sum(1 for t in terms if t in full_text_lower)
+                        is_hybrid_hit = bool(isinstance(chunk, dict) and chunk.get("rrf_score"))
+                        if match_count > 0 or is_hybrid_hit:
+                            candidates.append(chunk)
 
         # 3. Layer 1: Out-of-Domain & Relevance Threshold Guard
         valid_chunks: List[Any] = []
@@ -315,10 +333,13 @@ REGOLE FONDAMENTALI DI GROUNDING RIGOROSO:
                 if score is None:
                     score = getattr(c, "similarity", None) or getattr(c, "sim_score", None)
 
-            # If score is present, verify against threshold (0.60)
+            # Check relevance score against threshold
             if score is not None and isinstance(score, (int, float)):
-                # If score is cosine similarity [0..1] and below threshold, reject
-                if score < self.relevance_threshold:
+                # If chunk was vetted by HybridRetriever RRF rank fusion, allow realistic cosine scores
+                if isinstance(c, dict) and c.get("rrf_score"):
+                    if score < min(0.35, self.relevance_threshold):
+                        continue
+                elif score < self.relevance_threshold:
                     continue
 
             valid_chunks.append(c)
@@ -335,7 +356,7 @@ REGOLE FONDAMENTALI DI GROUNDING RIGOROSO:
                 "message": "Nessuna informazione accademica pertinente trovata nei documenti ufficiali del Knowledge Graph per questa richiesta."
             }
 
-        # 5. Format citations & structured results
+        # 5. Format citations & structured results with rich content for live voice reasoning
         selected_chunks = valid_chunks[:top_k]
         citations: List[Dict[str, Any]] = []
         serialized_results: List[Dict[str, Any]] = []
@@ -367,7 +388,8 @@ REGOLE FONDAMENTALI DI GROUNDING RIGOROSO:
 
             # For schema compliance, page in citations dict must be an integer >= 1
             citation_page = page_int if page_int is not None else 1
-            snippet = content.strip()[:350]
+            clean_content = content.strip()
+            snippet = clean_content[:400]
 
             citation_entry = {
                 "source": source_title,
@@ -382,6 +404,7 @@ REGOLE FONDAMENTALI DI GROUNDING RIGOROSO:
                 "page": citation_page,
                 "course": c_course,
                 "snippet": snippet,
+                "content": clean_content[:2500],  # Full rich technical context for Gemini Live speech
                 "citation_tag": citation_tag
             })
 
@@ -408,7 +431,7 @@ REGOLE FONDAMENTALI DI GROUNDING RIGOROSO:
         if name == "query_academic_kb":
             q = args.get("query", "")
             c = course_override or args.get("course")
-            res = await self.search(query=q, course=c, top_k=3)
+            res = await self.search(query=q, course=c, top_k=5)
             return res, res.get("citations", [])
 
         return {

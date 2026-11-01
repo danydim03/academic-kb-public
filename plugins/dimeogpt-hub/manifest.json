@@ -1,0 +1,58 @@
+{
+  "id": "dimeogpt-hub",
+  "name": "DIMEOGPT Hub",
+  "version": "1.0.0",
+  "description": "DIMEOGPT Cockpit Hub Plugin: Academic Research Modes, Transcript Exporter, and Token Usage Analytics",
+  "apiVersion": 2,
+  "permissions": [
+    "ui",
+    "http",
+    "chat",
+    "storage"
+  ],
+  "ui": {
+    "composer.actions": [
+      {
+        "id": "research-mode-select",
+        "label": "Modalità Ricerca",
+        "kind": "select",
+        "action": "dimeogpt:select-research-mode",
+        "value": "normal",
+        "options": [
+          { "value": "normal", "label": "🔍 Standard (normal)" },
+          { "value": "deep_research", "label": "🔬 Approfondita (deep_research)" },
+          { "value": "thesis_research", "label": "🎓 Tesi / Macro (thesis_research)" }
+        ]
+      }
+    ],
+    "topbar.primary": [
+      {
+        "id": "export-transcript-md",
+        "label": "Export MD",
+        "icon": "download",
+        "kind": "action",
+        "action": "dimeogpt:export-transcript-md",
+        "align": "end",
+        "order": 50
+      },
+      {
+        "id": "export-transcript-json",
+        "label": "Export JSON",
+        "icon": "file",
+        "kind": "action",
+        "action": "dimeogpt:export-transcript-json",
+        "align": "end",
+        "order": 51
+      },
+      {
+        "id": "token-usage",
+        "label": "Tokens",
+        "icon": "zap",
+        "kind": "action",
+        "action": "dimeogpt:token-usage",
+        "align": "end",
+        "order": 52
+      }
+    ]
+  }
+}

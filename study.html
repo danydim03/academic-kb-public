@@ -7553,6 +7553,7 @@ La spiegazione sintetica non mi basta per dissipare i dubbi e desidero una tratt
 
         if (this.state !== 'speaking') {
           this.setVoiceState('speaking');
+          this._speakingStartTime = performance.now();
         }
 
         source.onended = () => {
@@ -7830,10 +7831,15 @@ La spiegazione sintetica non mi basta per dissipare i dubbi e desidero una tratt
         this.renderMicMeter(micRMS);
 
         // Client Hybrid VAD: Barge-in when user speaks while assistant is outputting speech
-        if (this.state === 'speaking' && this.isMicActive && micRMS > 0.08) {
+        // Guard against acoustic feedback from laptop speakers:
+        // 1. Minimum 1200ms grace period after assistant starts speaking
+        // 2. Higher RMS threshold (0.18) so speaker bleed doesn't trigger false barge-in
+        // 3. At least 8 consecutive frames (~130ms) of sustained human vocal energy
+        const speechElapsedMs = performance.now() - (this._speakingStartTime || 0);
+        if (this.state === 'speaking' && this.isMicActive && speechElapsedMs > 1200 && micRMS > 0.18) {
           this.vadConsecutiveFrames++;
-          if (this.vadConsecutiveFrames >= 2) {
-            console.log('[Voice Engine] Hybrid VAD detected user speech, triggering client barge-in');
+          if (this.vadConsecutiveFrames >= 8) {
+            console.log('[Voice Engine] Hybrid VAD detected intentional user barge-in, triggering client barge-in');
             this.triggerBargeIn();
             this.vadConsecutiveFrames = 0;
           }

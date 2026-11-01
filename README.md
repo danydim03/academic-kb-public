@@ -100,12 +100,15 @@ Assistente vocale interattivo bidirezionale a bassissima latenza integrato diret
 ---
 
 ### 7. DIMEOGPT Cockpit & Prompt Templates Hub
-Ambiente operativo per lo sviluppo software, revisione codice e refactoring accademico:
+Ambiente operativo per lo sviluppo software, revisione codice, refactoring accademico e monitoraggio in tempo reale:
 
 <p align="center">
   <img src="docs/images/dimeogpt_cockpit.png" alt="DIMEOGPT Cockpit e Prompt Templates" width="95%">
 </p>
 
+* **Monitoraggio Token & Costo in Euro in Tempo Reale**: Integrato direttamente nella statusbar inferiore (`footer.statusbar`) dell'interfaccia via il plugin `plugins/dimeogpt-hub/`. Visualizza i token del singolo turno e la stima del costo convertita in Euro (`🪙 4.433 tok · € 0,0021`), con notifica toast al clic per i dettagli analitici (Input, Output, Cache Hit, Costo turno e Totale sessione).
+* **Modalità di Ricerca Accademica Dinamica**: Menu di selezione rapida direttamente nel composer (*Standard*, *Approfondita / Deep Research*, *Tesi / Thesis Research*).
+* **Esportazione Sessioni di Studio**: Pulsanti in topbar per esportare la conversazione attiva in formato **Markdown (`.md`)** strutturato o in **JSON**.
 * **Libreria di Prompt Templates Specializzati**: *Repo setup, Skill navigator, Grill & record, To spec, To tickets, Implement spec, Code review, Architecture review, Diagnose bugs, Resolve merge conflicts, Triage, Setup wizard*.
 * **Selettore Modelli Multi-Provider**: Supporto flessibile per modelli di ragionamento profondo (*DeepSeek V4.1 Flash, Gemini 2.0 Flash, Claude 3.5 Sonnet, GPT-4o*).
 
@@ -383,6 +386,19 @@ Se desideri semplicemente esplorare il grafo 3D senza avviare Neo4j o FastAPI:
 python3 -m http.server 8000
 ```
 Visita [http://localhost:8000/graph_3d.html](http://localhost:8000/graph_3d.html).
+
+#### 🟠 Modalità 4: Web UI Cockpit con Plugin DIMEOGPT Hub
+Se utilizzi l'interfaccia Web UI / Cockpit per le conversazioni LLM con agenti, installa il plugin `plugins/dimeogpt-hub` per abilitare l'indicatore di token e costo in Euro nella statusbar, le modalità di ricerca accademica e l'export conversazioni:
+```bash
+# Installa il plugin nella directory Web UI
+mkdir -p ~/.pi-web/plugins/dimeogpt-hub
+cp -r plugins/dimeogpt-hub/* ~/.pi-web/plugins/dimeogpt-hub/
+
+# Installa il tema custom coordinato (opzionale)
+mkdir -p ~/.pi-web/themes
+cp plugins/dimeogpt-hub/themes/chatgpt-custom.css ~/.pi-web/themes/
+```
+Consulta il [README del Plugin DIMEOGPT Hub](plugins/dimeogpt-hub/README.md) per tutti i dettagli.
 
 #### 🟣 Modalità 3: Server FastMCP per Assistenti AI (Claude / Antigravity / Cursor)
 Puoi connettere il tuo assistente AI direttamente al Knowledge Graph aggiungendo il server MCP alla configurazione del client (es. `claude_desktop_config.json`):

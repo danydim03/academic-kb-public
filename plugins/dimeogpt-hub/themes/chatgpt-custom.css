@@ -1,0 +1,1193 @@
+/* theme-name: DIMEOGPT Cyber Security */
+/* theme-name-en: DIMEOGPT Cyber Security */
+/* theme-group: Custom */
+/*
+ * DIMEOGPT Theme — Tor Vergata Cyber Security Eng "THE GOD'S EYE".
+ * Palette: Deep Stealth Dark Emerald, Frosted Glassmorphism, Tor Vergata Green (#006837)
+ * e accenti al neon (#00ff88 / #00a859) ad alto contrasto.
+ */
+:root {
+	color-scheme: dark;
+	--bg: #070d0a !important;
+	--bg-elev: #0b1711 !important;
+	--bg-elev2: #102219 !important;
+	--bg-elev3: rgba(255, 255, 255, 0.08) !important;
+	--card-bg: rgba(11, 23, 17, 0.75) !important;
+	--chip-bg: rgba(16, 34, 25, 0.65) !important;
+	--inputbox-bg: rgba(12, 26, 19, 0.85) !important;
+	--msgs-bg: transparent !important;
+	--topbar-bg: transparent !important;
+	--statusbar-bg: rgba(6, 13, 9, 0.92) !important;
+
+	--border: #1c3629 !important;
+	--border-soft: #12281e !important;
+	--text: #f2fbf6 !important;
+	--text-strong: #4ade80 !important;
+	--text-dim: #9eb8aa !important;
+	--text-faint: #5d7568 !important;
+
+	/* Accents (Neon Emerald instead of Purple) */
+	--accent: #00a859 !important;
+	--accent-contrast: #030805 !important;
+	--accent-soft: rgba(0, 168, 89, 0.20) !important;
+	--green: #22c55e !important;
+	--green-soft: rgba(34, 197, 94, 0.15) !important;
+	--amber: #fbbf24 !important;
+	--blue: #38bdf8 !important;
+	--red: #f87171 !important;
+	--red-soft: rgba(248, 113, 113, 0.12) !important;
+
+	/* Terminal */
+	--term-bg: #040907 !important;
+	--term-fg: #f2fbf6 !important;
+	--term-cursor: #00ff88 !important;
+	--term-cursor-accent: #040907 !important;
+	--term-selection: rgba(0, 255, 136, 0.35) !important;
+	--term-black: #0c1812 !important;
+	--term-green: #22c55e !important;
+	--term-bright-green: #00ff88 !important;
+
+	/* Buttons & Controls */
+	--send-blue: #006837 !important;
+	--send-blue-hover: #008f4c !important;
+	--brand-grad-a: #00ff88 !important;
+	--brand-grad-b: #006837 !important;
+	--control-fg: #9eb8aa !important;
+	--control-bg: #0c1812 !important;
+	--control-border: #1c3629 !important;
+
+	/* Glassmorphism */
+	--wallpaper-panel-alpha: 65% !important;
+	--bg-image-dim: 0.8 !important;
+	--menu-bg: #0e1d15 !important;
+}
+
+/* Background Atmosphere & Safari Window Tinting */
+html {
+	background-color: #103826 !important;
+}
+body {
+	background-color: #103826 !important;
+	background: radial-gradient(
+		ellipse at 50% 12%,
+		rgba(0, 104, 55, 0.42) 0%,
+		rgba(6, 13, 9, 0.96) 65%,
+		#030705 100%
+	) !important;
+	background-attachment: fixed !important;
+}
+
+/* Glassmorphism Top Bar — Transparent when closed, only left DIMEOGPT pill visible */
+header,
+.topbar {
+	background: transparent !important;
+	border-bottom: 1px solid transparent !important;
+	box-shadow: none !important;
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+	transition: background 0.25s ease, border-color 0.25s ease, backdrop-filter 0.25s ease !important;
+}
+
+/* When menu is opened: Glassmorphism bar active to merge with left section */
+header.topbar.dimeogpt-menu-open,
+.topbar.dimeogpt-menu-open {
+	backdrop-filter: blur(16px) !important;
+	-webkit-backdrop-filter: blur(16px) !important;
+	background: rgba(6, 13, 9, 0.88) !important;
+	border-bottom: 1px solid rgba(0, 168, 89, 0.28) !important;
+}
+
+/* Input Area / Composer */
+.inputbox,
+.composer,
+textarea {
+	backdrop-filter: blur(14px) !important;
+	border: 1px solid rgba(0, 168, 89, 0.35) !important;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.inputbox:focus-within,
+textarea:focus {
+	border-color: #00ff88 !important;
+	box-shadow: 0 0 18px rgba(0, 255, 136, 0.28) !important;
+}
+
+/* Cards & Sidebars */
+.card-box,
+.panel-rail,
+.toolcall,
+.skillcard,
+.attachcard {
+	backdrop-filter: blur(12px) !important;
+	border: 1px solid rgba(0, 168, 89, 0.25) !important;
+	border-radius: 12px !important;
+	transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+.toolcall:hover,
+.skillcard:hover {
+	border-color: rgba(0, 255, 136, 0.5) !important;
+	box-shadow: 0 6px 24px rgba(0, 104, 55, 0.3) !important;
+	transform: translateY(-2px);
+}
+
+/* Active tab indicators & chips */
+.chip.active,
+.view-switch button.active,
+[data-active="true"] {
+	background: rgba(0, 168, 89, 0.25) !important;
+	border-color: #00ff88 !important;
+	color: #00ff88 !important;
+}
+
+/* DIMEOGPT Welcome Hero Screen */
+.dimeogpt-welcome-hero {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	margin: 28px auto 20px auto;
+	max-width: 680px;
+	width: 92%;
+	animation: dimeogptFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+	pointer-events: auto;
+	user-select: none;
+}
+
+.dimeogpt-welcome-banners {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+}
+
+.dimeogpt-banner-wrap {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+}
+
+.dimeogpt-hero-banner {
+	max-width: 480px;
+	width: 90%;
+	height: auto;
+	object-fit: contain;
+	filter: drop-shadow(0 8px 24px rgba(0, 255, 136, 0.22));
+	transition: transform 0.3s ease, filter 0.3s ease;
+	cursor: pointer;
+	user-select: none;
+	-webkit-user-drag: none;
+}
+
+.dimeogpt-hero-banner:hover {
+	transform: scale(1.025);
+	filter: drop-shadow(0 14px 36px rgba(0, 255, 136, 0.48));
+}
+
+.dimeogpt-hero-banner:active {
+	transform: scale(0.975);
+}
+
+.dimeogpt-hero-banner.sub-banner {
+	max-width: 480px;
+	width: 90%;
+	opacity: 0.98;
+	filter: drop-shadow(0 6px 20px rgba(0, 255, 136, 0.18));
+}
+
+/* ==========================================================================
+   CYBER KRAKEN SCREEN SHAKE (HIGH-PERFORMANCE HARDWARE ACCELERATED)
+   ========================================================================== */
+@keyframes dimeogpt-kraken-shake {
+	0% { transform: translate3d(0, 0, 0) rotate(0deg); }
+	12% { transform: translate3d(-14px, 10px, 0) rotate(-1.2deg); }
+	25% { transform: translate3d(16px, -12px, 0) rotate(1.1deg); }
+	40% { transform: translate3d(-12px, -8px, 0) rotate(-0.8deg); }
+	55% { transform: translate3d(10px, 8px, 0) rotate(0.6deg); }
+	70% { transform: translate3d(-6px, 5px, 0) rotate(-0.4deg); }
+	85% { transform: translate3d(3px, -3px, 0) rotate(0.2deg); }
+	100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+}
+
+body.kraken-screen-slam {
+	animation: dimeogpt-kraken-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+	will-change: transform;
+}
+
+.dimeogpt-hero-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 18px;
+	padding: 6px 16px;
+	border-radius: 999px;
+	background: rgba(11, 23, 17, 0.75);
+	border: 1px solid rgba(0, 168, 89, 0.35);
+	backdrop-filter: blur(12px);
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.dimeogpt-hero-badge .badge-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: #00ff88;
+	box-shadow: 0 0 10px #00ff88;
+	animation: dimeogptPulse 2s infinite ease-in-out;
+}
+
+.dimeogpt-hero-badge .badge-text {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 1.5px;
+	color: #a7f3d0;
+	text-transform: uppercase;
+}
+
+.dimeogpt-hero-badge .badge-tag {
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 1px;
+	color: #030805;
+	background: #00ff88;
+	padding: 2px 7px;
+	border-radius: 4px;
+	text-transform: uppercase;
+}
+
+@keyframes dimeogptFadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes dimeogptPulse {
+	0%, 100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.5;
+		transform: scale(0.85);
+	}
+}
+
+/* Brand Logo & Header Customization */
+.brand-logo,
+.bar-item-brand-logo,
+.brand img,
+[data-bar-item='host:brand'] img,
+[data-bar-item='brand'] img {
+	background: transparent !important;
+	background-image: none !important;
+	box-shadow: none !important;
+	border-radius: 4px !important;
+	object-fit: contain !important;
+	width: 26px !important;
+	height: 26px !important;
+	filter: drop-shadow(0 2px 8px rgba(0, 255, 136, 0.35)) !important;
+}
+
+/* ==========================================================================
+   Two-Section Topbar Architecture:
+   Section 1 (Left, Fixed): DIMEOGPT + New Chat + Menu Toggle
+   Section 2 (Right, Collapsible): Merges seamlessly beside Section 1 when open
+   ========================================================================== */
+
+/* Left Section: Capsule Container */
+.bar-item-brand,
+[data-bar-item='host:brand'],
+.brand,
+.bar-item-brand.dimeogpt-left-section,
+[data-bar-item='host:brand'].dimeogpt-left-section,
+.brand.dimeogpt-left-section {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 8px !important;
+	background: rgba(10, 22, 16, 0.82) !important;
+	border: 1px solid rgba(0, 168, 89, 0.35) !important;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(0, 255, 136, 0.15) !important;
+	border-radius: 9999px !important;
+	padding: 4px 10px 4px 6px !important;
+	flex-shrink: 0 !important;
+	transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+	cursor: default !important;
+	user-select: none !important;
+	z-index: 50 !important;
+}
+
+.bar-item-brand.dimeogpt-left-section:hover,
+[data-bar-item='host:brand'].dimeogpt-left-section:hover {
+	border-color: rgba(0, 255, 136, 0.55) !important;
+	box-shadow: 0 4px 20px rgba(0, 104, 55, 0.35), 0 0 12px rgba(0, 255, 136, 0.2) !important;
+}
+
+/* Brand Logo & Text inside Left Section */
+.bar-item-brand .brand-logo,
+.brand .brand-logo,
+[data-bar-item='host:brand'] .brand-logo {
+	cursor: pointer !important;
+	transition: transform 0.2s ease, filter 0.2s ease !important;
+}
+
+.bar-item-brand .brand-logo:hover,
+[data-bar-item='host:brand'] .brand-logo:hover {
+	transform: scale(1.08) !important;
+	filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.7)) !important;
+}
+
+.bar-item-brand .brand-name,
+.brand .brand-name,
+[data-bar-item='host:brand'] .brand-name {
+	font-weight: 700 !important;
+	letter-spacing: 0.5px !important;
+	color: #f2fbf6 !important;
+	cursor: pointer !important;
+	padding-right: 2px !important;
+	transition: color 0.2s ease, text-shadow 0.2s ease !important;
+}
+
+.bar-item-brand .brand-name:hover,
+[data-bar-item='host:brand'] .brand-name:hover {
+	color: #00ff88 !important;
+	text-shadow: 0 0 12px rgba(0, 255, 136, 0.5) !important;
+}
+
+/* Actions inside Left Section */
+.dimeogpt-topbar-actions {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 6px !important;
+	flex-shrink: 0 !important;
+}
+
+.dimeogpt-section-divider {
+	display: inline-block !important;
+	width: 1px !important;
+	height: 18px !important;
+	background: rgba(0, 255, 136, 0.25) !important;
+	margin: 0 2px !important;
+	flex-shrink: 0 !important;
+}
+
+/* Left Section Buttons Base */
+.dimeogpt-topbar-btn {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 6px !important;
+	padding: 4px 10px !important;
+	border-radius: 9999px !important;
+	font-size: 12px !important;
+	font-weight: 600 !important;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+	cursor: pointer !important;
+	border: 1px solid transparent !important;
+	transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+	white-space: nowrap !important;
+	user-select: none !important;
+	line-height: 1 !important;
+	flex-shrink: 0 !important;
+	margin: 0 !important;
+}
+
+/* Dedicated New Chat Button (Fixed & Always Visible) */
+.dimeogpt-newchat-btn {
+	background: linear-gradient(135deg, rgba(0, 168, 89, 0.35), rgba(0, 104, 55, 0.22)) !important;
+	border-color: rgba(0, 255, 136, 0.4) !important;
+	color: #00ff88 !important;
+	box-shadow: 0 2px 8px rgba(0, 168, 89, 0.2) !important;
+}
+
+.dimeogpt-newchat-btn:hover {
+	background: linear-gradient(135deg, rgba(0, 255, 136, 0.45), rgba(0, 168, 89, 0.35)) !important;
+	border-color: #00ff88 !important;
+	color: #ffffff !important;
+	box-shadow: 0 0 14px rgba(0, 255, 136, 0.5) !important;
+	transform: scale(1.04) !important;
+}
+
+.dimeogpt-newchat-btn:active {
+	transform: scale(0.96) !important;
+}
+
+/* Menu Toggle Button (Controls Collapsible Second Section) */
+.dimeogpt-toggle-btn {
+	background: rgba(255, 255, 255, 0.06) !important;
+	border-color: rgba(255, 255, 255, 0.12) !important;
+	color: #d1fae5 !important;
+}
+
+.dimeogpt-toggle-btn:hover {
+	background: rgba(0, 255, 136, 0.18) !important;
+	border-color: rgba(0, 255, 136, 0.5) !important;
+	color: #00ff88 !important;
+	box-shadow: 0 0 10px rgba(0, 255, 136, 0.25) !important;
+}
+
+.dimeogpt-toggle-btn.active {
+	background: rgba(0, 255, 136, 0.25) !important;
+	border-color: #00ff88 !important;
+	color: #00ff88 !important;
+	box-shadow: 0 0 12px rgba(0, 255, 136, 0.35) !important;
+}
+
+.dimeogpt-toggle-chevron {
+	transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* ==========================================================================
+   Section 2: Collapsible Menu States
+   ========================================================================== */
+
+/* State A: COLLAPSED (Closed) — Transparent navbar, only fixed Section 1 visible */
+header.topbar:not(.dimeogpt-menu-open),
+.topbar.dimeogpt-menu-closed {
+	background: transparent !important;
+	border-bottom: none !important;
+	box-shadow: none !important;
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+}
+
+header.topbar:not(.dimeogpt-menu-open) .topbar-flow,
+.topbar.dimeogpt-menu-closed .topbar-flow {
+	background: transparent !important;
+}
+
+header.topbar:not(.dimeogpt-menu-open) .topbar-flow > *:not([data-bar-item='host:brand']):not(.dimeogpt-left-section),
+header.topbar:not(.dimeogpt-menu-open) .plugin-topbar-more,
+header.topbar:not(.dimeogpt-menu-open) .tb-spacer {
+	display: none !important;
+}
+
+/* State B: EXPANDED (Open) — Smooth slide-in, merged alongside Section 1 */
+header.topbar.dimeogpt-menu-open .topbar-flow {
+	display: flex !important;
+	flex-wrap: nowrap !important;
+	overflow-x: auto !important;
+	overflow-y: hidden !important;
+	align-items: center !important;
+	gap: 6px !important;
+	scrollbar-width: none !important;
+	-ms-overflow-style: none !important;
+}
+
+header.topbar.dimeogpt-menu-open .topbar-flow::-webkit-scrollbar {
+	display: none !important;
+}
+
+/* Hide spacers when merged so items sit directly beside left section */
+header.topbar.dimeogpt-menu-open .tb-spacer {
+	display: none !important;
+}
+
+/* Styling for each item in the merged secondary section */
+header.topbar.dimeogpt-menu-open .topbar-flow > *:not([data-bar-item='host:brand']):not(.tb-spacer) {
+	display: inline-flex !important;
+	align-items: center !important;
+	flex-shrink: 0 !important;
+	white-space: nowrap !important;
+	background: rgba(10, 22, 16, 0.7) !important;
+	border: 1px solid rgba(0, 168, 89, 0.25) !important;
+	border-radius: 9999px !important;
+	padding: 4px 10px !important;
+	font-size: 12px !important;
+	color: #d1fae5 !important;
+	backdrop-filter: blur(10px) !important;
+	animation: dimeogptMergeSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+	margin: 0 !important;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+	transition: all 0.2s ease !important;
+}
+
+header.topbar.dimeogpt-menu-open .topbar-flow > *:not([data-bar-item='host:brand']):not(.tb-spacer):hover {
+	background: rgba(0, 168, 89, 0.22) !important;
+	border-color: rgba(0, 255, 136, 0.5) !important;
+	color: #00ff88 !important;
+	box-shadow: 0 0 12px rgba(0, 255, 136, 0.25) !important;
+}
+
+/* Active tab inside merged section */
+header.topbar.dimeogpt-menu-open .topbar-flow > .tb-tab.active,
+header.topbar.dimeogpt-menu-open .topbar-flow > [data-active="true"] {
+	background: rgba(0, 255, 136, 0.22) !important;
+	border-color: #00ff88 !important;
+	color: #00ff88 !important;
+	box-shadow: 0 0 10px rgba(0, 255, 136, 0.3) !important;
+}
+
+/* Plugin overflow button when merged */
+header.topbar.dimeogpt-menu-open .plugin-topbar-more {
+	display: inline-flex !important;
+	align-items: center !important;
+	flex-shrink: 0 !important;
+	animation: dimeogptMergeSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+}
+
+@keyframes dimeogptMergeSlide {
+	from {
+		opacity: 0;
+		transform: translateX(-12px) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0) scale(1);
+	}
+}
+
+/* ==========================================================================
+   Central Window Maximization & Right Sidebar Collapse
+   ========================================================================== */
+
+/* Maximize central chat canvas & remove 860px restriction */
+.main {
+	--chat-max: min(1360px, 94vw) !important;
+	--chat-pad: 24px !important;
+	--chat-rail: 0px !important;
+	flex: 1 1 0% !important;
+	width: 100% !important;
+	min-width: 0 !important;
+	transition: max-width 0.25s ease !important;
+}
+
+/* Ensure messages thread, empty state, and composer take full breathing room */
+.messages,
+.empty-state,
+.composer,
+.conversation-header,
+.chat-thread {
+	max-width: min(1360px, 94vw) !important;
+	width: 100% !important;
+	margin-left: auto !important;
+	margin-right: auto !important;
+}
+
+/* Tool outputs, markdown body, and code blocks take full width of container */
+.msg-content,
+.markdown-body,
+pre,
+code {
+	max-width: 100% !important;
+}
+
+/* Right Panel as Slide-Over Drawer: NEVER shrinks or steals space from central window */
+.drawer-right,
+.panel-drawer.drawer-right {
+	display: block !important;
+	position: fixed !important;
+	top: 0 !important;
+	bottom: 0 !important;
+	right: 0 !important;
+	z-index: 90 !important;
+	width: var(--right-w, 320px) !important;
+	max-width: 88vw !important;
+	background: rgba(8, 16, 12, 0.95) !important;
+	backdrop-filter: blur(20px) !important;
+	border-left: 1px solid rgba(0, 168, 89, 0.3) !important;
+	box-shadow: -10px 0 35px rgba(0, 0, 0, 0.6) !important;
+	transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
+}
+
+/* When collapsed / hidden: completely off-screen and zero width */
+.drawer-right.hidden,
+.panel-drawer.drawer-right.hidden,
+.drawer-right:not(.open):not(:hover) {
+	transform: translateX(105%) !important;
+	pointer-events: none !important;
+	opacity: 0 !important;
+}
+
+/* When explicitly opened by user: slides over smoothly */
+.drawer-right.open,
+.panel-drawer.drawer-right.open {
+	transform: translateX(0) !important;
+	opacity: 1 !important;
+	pointer-events: auto !important;
+}
+
+/* Hide horizontal resize handle so it takes 0px between main and right edge */
+.resize-handle.side-right,
+.layout > .resize-handle:last-of-type {
+	display: none !important;
+}
+
+/* Right Rail Expand Button: Floats cleanly on top right without eating central space */
+.panel-rail.panel-rail-right,
+button.panel-rail-right {
+	position: fixed !important;
+	right: 12px !important;
+	top: 54px !important;
+	z-index: 40 !important;
+	background: rgba(10, 22, 16, 0.8) !important;
+	border: 1px solid rgba(0, 168, 89, 0.35) !important;
+	color: #00ff88 !important;
+	border-radius: 8px !important;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+	backdrop-filter: blur(12px) !important;
+	transition: all 0.2s ease !important;
+}
+
+.panel-rail.panel-rail-right:hover,
+button.panel-rail-right:hover {
+	background: rgba(0, 168, 89, 0.25) !important;
+	border-color: #00ff88 !important;
+	box-shadow: 0 0 14px rgba(0, 255, 136, 0.4) !important;
+	transform: scale(1.08) !important;
+}
+
+/* Syntax Highlighting */
+.hljs {
+	color: #e2f5ec !important;
+	background: transparent !important;
+}
+.hljs-keyword,
+.hljs-type {
+	color: #34d399 !important;
+	font-weight: 600 !important;
+}
+.hljs-title {
+	color: #38bdf8 !important;
+}
+.hljs-string {
+	color: #86efac !important;
+}
+.hljs-number {
+	color: #fbbf24 !important;
+}
+.hljs-comment {
+	color: #5d7568 !important;
+	font-style: italic !important;
+}
+
+/* ==========================================================================
+   DIMEOGPT Research Mode Selector & Chat Pills
+   ========================================================================== */
+
+/* Composer select dropdown */
+.composer select,
+[data-slot="composer.actions"] select,
+.composer-actions select {
+	background: rgba(13, 24, 19, 0.95) !important;
+	color: #00ff88 !important;
+	border: 1px solid rgba(0, 168, 89, 0.45) !important;
+	border-radius: 8px !important;
+	padding: 6px 12px !important;
+	font-size: 12.5px !important;
+	font-weight: 600 !important;
+	letter-spacing: 0.3px !important;
+	outline: none !important;
+	cursor: pointer !important;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+	transition: all 0.2s ease !important;
+}
+
+.composer select:hover,
+[data-slot="composer.actions"] select:hover,
+.composer-actions select:hover {
+	border-color: #00ff88 !important;
+	box-shadow: 0 0 14px rgba(0, 255, 136, 0.3) !important;
+}
+
+.composer select:focus,
+[data-slot="composer.actions"] select:focus,
+.composer-actions select:focus {
+	border-color: #00ff88 !important;
+	box-shadow: 0 0 16px rgba(0, 255, 136, 0.4) !important;
+}
+
+.composer select option,
+[data-slot="composer.actions"] select option,
+.composer-actions select option {
+	background: #0d1813 !important;
+	color: #f2fbf6 !important;
+	padding: 8px 12px !important;
+}
+
+/* User Message Mode Pills */
+.dimeogpt-user-mode-pill {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 6px !important;
+	margin-bottom: 8px !important;
+	padding: 4px 10px !important;
+	border-radius: 6px !important;
+	font-size: 11px !important;
+	font-weight: 700 !important;
+	letter-spacing: 0.5px !important;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+	width: fit-content !important;
+}
+
+.dimeogpt-user-mode-pill .pill-dot {
+	width: 6px !important;
+	height: 6px !important;
+	border-radius: 50% !important;
+	display: inline-block !important;
+}
+
+.dimeogpt-user-mode-pill.mode-normal {
+	border: 1px solid rgba(56, 189, 248, 0.5) !important;
+	background: rgba(14, 165, 233, 0.12) !important;
+	color: #38bdf8 !important;
+}
+.dimeogpt-user-mode-pill.mode-normal .pill-dot {
+	background: #38bdf8 !important;
+	box-shadow: 0 0 6px #38bdf8 !important;
+}
+
+.dimeogpt-user-mode-pill.mode-deep_research {
+	border: 1px solid rgba(168, 85, 247, 0.55) !important;
+	background: rgba(168, 85, 247, 0.14) !important;
+	color: #c084fc !important;
+}
+.dimeogpt-user-mode-pill.mode-deep_research .pill-dot {
+	background: #c084fc !important;
+	box-shadow: 0 0 6px #c084fc !important;
+}
+
+.dimeogpt-user-mode-pill.mode-thesis_research {
+	border: 1px solid rgba(0, 255, 136, 0.6) !important;
+	background: rgba(0, 255, 136, 0.14) !important;
+	color: #00ff88 !important;
+}
+.dimeogpt-user-mode-pill.mode-thesis_research .pill-dot {
+	background: #00ff88 !important;
+	box-shadow: 0 0 8px #00ff88 !important;
+}
+
+.dimeogpt-user-mode-pill .pill-k {
+	opacity: 0.85 !important;
+	font-size: 10px !important;
+	background: rgba(0, 0, 0, 0.25) !important;
+	padding: 1px 5px !important;
+	border-radius: 4px !important;
+	margin-left: 4px !important;
+}
+
+/* Riquadro trasparente verdino per la domanda dell'utente (Stile Cyber Stealth Emerald) */
+.msg-user .msg-body {
+	background: transparent !important;
+	border: none !important;
+	padding: 0 !important;
+	box-shadow: none !important;
+}
+
+.dimeogpt-user-prompt-text,
+.msg-user .msg-text,
+.msg-user .msg-text-main {
+	background: rgba(0, 168, 89, 0.14) !important;
+	border: 1px solid rgba(0, 255, 136, 0.35) !important;
+	border-radius: 12px !important;
+	padding: 10px 16px !important;
+	color: #f2fbf6 !important;
+	font-size: 14.5px !important;
+	line-height: 1.55 !important;
+	white-space: pre-wrap !important;
+	word-break: break-word !important;
+	backdrop-filter: blur(12px) !important;
+	-webkit-backdrop-filter: blur(12px) !important;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(0, 255, 136, 0.05) !important;
+	width: fit-content !important;
+	max-width: 90% !important;
+	margin-top: 6px !important;
+}
+
+/* Nasconde l'etichetta PI e la barra metadati sopra le risposte dell'assistente */
+.msg-assistant .msg-role,
+.msg-assistant .msg-meta,
+.msg-assistant .msg-meta .msg-role,
+.msg-assistant .msg-model {
+	display: none !important;
+}
+
+/* Nasconde etichette testuali delle azioni sul messaggio utente (Re-ask, Fork, Rollback, Copy) */
+.msg-action-label,
+.msg-user .msg-actions,
+.msg-user .msg-action {
+	display: none !important;
+}
+
+/* ==========================================================================
+   DIMEOGPT CLEAN MODE & DEFORMING 'D' THINKING LOADER
+   Hides intermediate toolcall & thinking clutter UNCONDITIONALLY via CSS.
+   No body class required — works from the very first frame.
+   Toggle body.dimeogpt-debug-mode to restore visibility.
+   ========================================================================== */
+
+/* ── 1. HIDE thinking & toolcall blocks ALWAYS (no JS dependency) ──────── */
+.thinking,
+.toolcall,
+.model-thinking-capsule,
+.thinking-wait,
+.streaming-wait {
+	display: none !important;
+}
+
+/* ── 2. Collapse assistant messages that ONLY contain hidden content ────── */
+.msg-assistant:has(.thinking):not(:has(.msg-text)):not(:has(.msg-text-main)):not(:has(.msg-editor)):not(:has(.dimeogpt-thinking-capsule)),
+.msg-assistant:has(.toolcall):not(:has(.msg-text)):not(:has(.msg-text-main)):not(:has(.msg-editor)):not(:has(.dimeogpt-thinking-capsule)) {
+	max-height: 0 !important;
+	overflow: hidden !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	border: none !important;
+	opacity: 0 !important;
+	pointer-events: none !important;
+}
+
+/* ── 3. DEBUG MODE: show everything when user toggles ──────────────────── */
+body.dimeogpt-debug-mode .thinking,
+body.dimeogpt-debug-mode .toolcall,
+body.dimeogpt-debug-mode .model-thinking-capsule,
+body.dimeogpt-debug-mode .thinking-wait,
+body.dimeogpt-debug-mode .streaming-wait {
+	display: block !important;
+}
+
+body.dimeogpt-debug-mode .msg-assistant {
+	max-height: none !important;
+	overflow: visible !important;
+	padding-top: 2px !important;
+	padding-bottom: 4px !important;
+	margin: 0 !important;
+	border: none !important;
+	opacity: 1 !important;
+	pointer-events: auto !important;
+}
+
+/* Deformazione fluida e organica della 'D' del logo */
+@keyframes dimeoFluidMorph {
+	0% {
+		border-radius: 40% 60% 70% 30% / 45% 45% 55% 55%;
+		transform: scale(1) rotate(0deg);
+		filter: drop-shadow(0 0 6px rgba(0, 255, 136, 0.6));
+	}
+	25% {
+		border-radius: 65% 35% 40% 60% / 60% 35% 65% 40%;
+		transform: scale(1.08, 0.94) rotate(4deg);
+		filter: drop-shadow(0 0 12px rgba(0, 255, 136, 0.9));
+	}
+	50% {
+		border-radius: 35% 65% 60% 40% / 50% 65% 35% 50%;
+		transform: scale(0.95, 1.07) rotate(-4deg);
+		filter: drop-shadow(0 0 8px rgba(0, 168, 89, 0.8));
+	}
+	75% {
+		border-radius: 55% 45% 35% 65% / 40% 50% 50% 60%;
+		transform: scale(1.05, 0.97) rotate(2deg);
+		filter: drop-shadow(0 0 14px rgba(0, 255, 136, 0.95));
+	}
+	100% {
+		border-radius: 40% 60% 70% 30% / 45% 45% 55% 55%;
+		transform: scale(1) rotate(0deg);
+		filter: drop-shadow(0 0 6px rgba(0, 255, 136, 0.6));
+	}
+}
+
+/* Aura neon a battito */
+@keyframes dimeoPulseAura {
+	0%, 100% {
+		opacity: 0.35;
+		transform: scale(0.92);
+	}
+	50% {
+		opacity: 0.85;
+		transform: scale(1.28);
+	}
+}
+
+/* Puntini di digitazione a onda */
+@keyframes dimeoDotsWave {
+	0%, 20% {
+		opacity: 0.2;
+		transform: translateY(0);
+	}
+	50% {
+		opacity: 1;
+		transform: translateY(-2px);
+	}
+	80%, 100% {
+		opacity: 0.2;
+		transform: translateY(0);
+	}
+}
+
+/* Capsula interattiva "DIMEOGPT sta pensando..." (click per espandere/collassare i dettagli tecnici) */
+.dimeogpt-thinking-capsule {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 12px !important;
+	padding: 6px 18px 6px 12px !important;
+	margin: 8px 0 14px 0 !important;
+	background: rgba(11, 23, 17, 0.88) !important;
+	backdrop-filter: blur(14px) !important;
+	-webkit-backdrop-filter: blur(14px) !important;
+	border: 1px solid rgba(0, 168, 89, 0.55) !important;
+	border-radius: 9999px !important;
+	box-shadow: 0 4px 20px rgba(0, 168, 89, 0.25) !important;
+	animation: fadeIn 0.25s ease-out !important;
+	width: fit-content !important;
+	z-index: 10 !important;
+	cursor: pointer !important;
+	user-select: none !important;
+	transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.dimeogpt-thinking-capsule:hover {
+	border-color: #00ff88 !important;
+	box-shadow: 0 6px 25px rgba(0, 255, 136, 0.35) !important;
+	transform: translateY(-1px) scale(1.02) !important;
+}
+
+.dimeogpt-thinking-capsule:active {
+	transform: translateY(0) scale(0.98) !important;
+}
+
+.dimeogpt-capsule-hint {
+	font-size: 11px !important;
+	color: #9eb8aa !important;
+	background: rgba(0, 0, 0, 0.35) !important;
+	border: 1px solid rgba(0, 168, 89, 0.35) !important;
+	padding: 2px 7px !important;
+	border-radius: 999px !important;
+	margin-left: 6px !important;
+	font-weight: 500 !important;
+	opacity: 0.85 !important;
+	transition: all 0.15s ease !important;
+}
+
+.dimeogpt-thinking-capsule:hover .dimeogpt-capsule-hint {
+	opacity: 1 !important;
+	border-color: #00ff88 !important;
+	color: #00ff88 !important;
+}
+
+.dimeogpt-d-container {
+	position: relative !important;
+	width: 34px !important;
+	height: 34px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	flex-shrink: 0 !important;
+}
+
+.dimeogpt-d-aura {
+	position: absolute !important;
+	inset: -4px !important;
+	background: radial-gradient(circle, rgba(0, 255, 136, 0.45) 0%, transparent 70%) !important;
+	border-radius: 50% !important;
+	animation: dimeoPulseAura 2.2s infinite ease-in-out !important;
+	pointer-events: none !important;
+}
+
+.dimeogpt-d-morph {
+	width: 28px !important;
+	height: 28px !important;
+	background: linear-gradient(135deg, rgba(0, 255, 136, 0.25), rgba(0, 104, 55, 0.55)) !important;
+	border: 1.5px solid #00ff88 !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	animation: dimeoFluidMorph 3.5s infinite ease-in-out !important;
+	box-shadow: 0 0 12px rgba(0, 255, 136, 0.35), inset 0 0 8px rgba(0, 255, 136, 0.25) !important;
+	overflow: hidden !important;
+}
+
+.dimeogpt-d-letter {
+	font-family: system-ui, -apple-system, sans-serif !important;
+	font-weight: 900 !important;
+	font-size: 17px !important;
+	color: #00ff88 !important;
+	text-shadow: 0 0 8px #00ff88 !important;
+	user-select: none !important;
+	line-height: 1 !important;
+	transform: translateY(-0.5px) !important;
+}
+
+.dimeogpt-thinking-text {
+	display: flex !important;
+	align-items: center !important;
+	gap: 4px !important;
+	font-size: 13.5px !important;
+	font-weight: 600 !important;
+	letter-spacing: 0.3px !important;
+	color: #f2fbf6 !important;
+	user-select: none !important;
+}
+
+.dimeogpt-thinking-text .brand-name {
+	color: #00ff88 !important;
+	font-weight: 700 !important;
+}
+
+.dimeogpt-thinking-text .dot-1 {
+	animation: dimeoDotsWave 1.4s infinite 0.1s !important;
+	color: #00ff88 !important;
+}
+.dimeogpt-thinking-text .dot-2 {
+	animation: dimeoDotsWave 1.4s infinite 0.3s !important;
+	color: #00ff88 !important;
+}
+.dimeogpt-thinking-text .dot-3 {
+	animation: dimeoDotsWave 1.4s infinite 0.5s !important;
+	color: #00ff88 !important;
+}
+
+
+/* ==========================================================================
+   DIMEOGPT MOBILE TOPBAR PERFECTION (IPHONE / <= 768px)
+   Eliminates all button overlapping, collisions, and transparent content overlays.
+   Does NOT alter the Mac desktop experience in any way.
+   ========================================================================== */
+@media only screen and (max-width: 768px) {
+  /* Frosted Glass Solid Topbar: messages scroll cleanly underneath without transparent visual clash */
+  header,
+  .topbar,
+  header.topbar {
+    background: rgba(6, 13, 9, 0.94) !important;
+    backdrop-filter: blur(20px) saturate(1.8) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
+    border-bottom: 1px solid rgba(0, 168, 89, 0.3) !important;
+    padding: max(6px, env(safe-area-inset-top)) 10px 6px 10px !important;
+    z-index: 100 !important;
+  }
+
+  /* Horizontal touch scrolling for topbar items with zero overlap */
+  .topbar-flow {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    align-items: center !important;
+    gap: 8px !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-right: 12px !important;
+  }
+  .topbar-flow::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Left Capsule Container (DIMEOGPT brand + actions) */
+  .bar-item-brand,
+  [data-bar-item='host:brand'],
+  .brand,
+  .bar-item-brand.dimeogpt-left-section,
+  [data-bar-item='host:brand'].dimeogpt-left-section,
+  .brand.dimeogpt-left-section {
+    padding: 3px 8px 3px 6px !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+    max-width: none !important;
+  }
+
+  /* Brand Name slightly scaled for phone */
+  .bar-item-brand .brand-name,
+  .brand .brand-name,
+  [data-bar-item='host:brand'] .brand-name {
+    font-size: 13px !important;
+    letter-spacing: 0.3px !important;
+  }
+
+  .bar-item-brand .brand-logo,
+  [data-bar-item='host:brand'] .brand-logo {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  /* Actions wrapper */
+  .dimeogpt-topbar-actions {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .dimeogpt-section-divider {
+    height: 14px !important;
+    margin: 0 1px !important;
+  }
+
+  /* Buttons on iPhone: Compact with clear boundaries so they NEVER collide */
+  .dimeogpt-topbar-btn {
+    padding: 4px 7px !important;
+    gap: 4px !important;
+    font-size: 11px !important;
+    height: 26px !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+  }
+
+  .dimeogpt-btn-label {
+    font-size: 11px !important;
+  }
+
+  .dimeogpt-toggle-label {
+    font-size: 11px !important;
+  }
+
+  /* Secondary items (Files, Models, etc.) inside topbar-flow on mobile */
+  .topbar-flow > *:not([data-bar-item='host:brand']):not(.tb-spacer) {
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    padding: 4px 9px !important;
+    font-size: 11px !important;
+    height: 26px !important;
+  }
+}
+
+/* ==========================================================================
+   DIMEOGPT Bottom Statusbar Token & Cost Integration (Zero-Overlay Design)
+   ========================================================================== */
+.dimeogpt-cost-widget {
+  display: none !important;
+}
+
+/* Statusbar Integration Badge — Docked cleanly in footer.statusbar */
+.dimeogpt-statusbar-cost {
+  color: #a7f3d0 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 2px 8px !important;
+  margin: 0 4px !important;
+  border-radius: 4px !important;
+  background: rgba(0, 255, 136, 0.09) !important;
+  border: 1px solid rgba(0, 255, 136, 0.22) !important;
+  font-feature-settings: "tnum" !important;
+  transition: all 0.2s ease !important;
+  height: 20px !important;
+  line-height: 20px !important;
+  user-select: none !important;
+}
+
+.dimeogpt-statusbar-cost:hover {
+  background: rgba(0, 255, 136, 0.2) !important;
+  border-color: rgba(0, 255, 136, 0.45) !important;
+  color: #00ff88 !important;
+}
+
+.dimeogpt-statusbar-icon {
+  font-size: 11px !important;
+  line-height: 1 !important;
+}
+
+.dimeogpt-statusbar-tok {
+  color: #f2fbf6 !important;
+  font-weight: 500 !important;
+}
+
+.dimeogpt-statusbar-eur {
+  color: #34d399 !important;
+  font-weight: 600 !important;
+}
