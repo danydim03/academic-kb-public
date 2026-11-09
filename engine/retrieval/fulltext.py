@@ -39,7 +39,7 @@ class FulltextRetriever:
         self.db = db
         self.index_name = index_name
 
-    def search(self, query: str, top_k: int = 5, tier_filter: Optional[str] = None) -> List[Dict[str, Any]]:
+    def search(self, query: str, top_k: int = 5, tier_filter: Optional[str] = None, course_filter: Optional[str] = None) -> List[Dict[str, Any]]:
         if not query or not str(query).strip():
             return []
 
@@ -48,10 +48,11 @@ class FulltextRetriever:
             return []
 
         tier_clause = "AND doc.source_tier = $tier_filter" if tier_filter else ""
+        course_clause = "AND doc.course = $course_filter" if course_filter else ""
         cypher = f"""
         CALL db.index.fulltext.queryNodes($index_name, $query) YIELD node AS chunk, score
         MATCH (doc:Document)-[:HAS_CHUNK]->(chunk)
-        WHERE 1=1 {tier_clause}
+        WHERE 1=1 {tier_clause} {course_clause}
         RETURN chunk.id AS chunk_id,
                chunk.text AS text,
                chunk.page AS page,
@@ -60,6 +61,7 @@ class FulltextRetriever:
                doc.source_tier AS source_tier,
                doc.course AS course,
                score
+        ORDER BY score DESC
         LIMIT $top_k
         """
         params = {
@@ -69,6 +71,8 @@ class FulltextRetriever:
         }
         if tier_filter:
             params["tier_filter"] = tier_filter
+        if course_filter:
+            params["course_filter"] = course_filter
 
         try:
             return self.db.execute_query(cypher, params)
