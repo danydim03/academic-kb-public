@@ -5,7 +5,7 @@ import time
 import pytest
 from telegram_bot.config import BotConfig, _parse_allowed_users
 from telegram_bot.middleware import RateLimiter, AuthWhitelist
-from telegram_bot.formatters import format_response, split_long_message, _clean_mcp_artifacts
+from telegram_bot.formatters import format_response, split_long_message
 
 
 def test_config_parse_allowed_users(monkeypatch):
@@ -56,10 +56,11 @@ def test_auth_whitelist():
 
 
 def test_format_response_and_split():
-    raw_text = "Riga 1\nRiga 2\nRiga 3"
-    formatted = format_response(raw_text, mode_label="Standard")
-    assert "Standard" in formatted
-    assert "Riga 1" in formatted
+    raw_text = "- **Tipologia**: Standard\n- Riga 1\nRiga 2 con **grassetto** e $x_1$"
+    formatted = format_response(raw_text)
+    assert "<b>Tipologia</b>" in formatted
+    assert "<b>grassetto</b>" in formatted
+    assert "<code>x_1</code>" in formatted
 
     # Test splitting di messaggio lungo
     long_text = "Linea di testo accademico lunga.\n" * 200
@@ -69,8 +70,9 @@ def test_format_response_and_split():
         assert len(chunk) <= 500
 
 
-def test_clean_mcp_artifacts():
-    dirty = "Titolo\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n\n\nTesto"
-    clean = _clean_mcp_artifacts(dirty)
-    assert "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" in clean
+def test_format_clean_separators():
+    dirty = "Titolo\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n\n\nTesto con **parola**"
+    clean = format_response(dirty)
+    assert "━━━━━━━━" not in clean
     assert "\n\n\n\n" not in clean
+    assert "<b>parola</b>" in clean

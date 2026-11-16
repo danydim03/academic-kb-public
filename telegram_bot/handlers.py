@@ -118,13 +118,18 @@ async def thesis_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     await _search_handler(update, context, SearchMode.THESIS, "Ricerca Tesi", top_k=28)
 
 
-async def _safe_reply(message, text: str, parse_mode: Optional[str] = ParseMode.MARKDOWN) -> None:
-    """Invia un messaggio provando con parse_mode specificato; in caso di errore di parsing fa fallback a plain text."""
+import re
+
+async def _safe_reply(message, text: str, parse_mode: Optional[str] = ParseMode.HTML) -> None:
+    """Invia un messaggio provando con parse_mode specificato (default HTML);
+    in caso di errore di parsing fa fallback inviando il testo pulito dai tag.
+    """
     try:
         await message.reply_text(text, parse_mode=parse_mode)
     except Exception as exc:
-        logger.warning("Errore invio con %s (%s) — invio come plain text", parse_mode, exc)
-        await message.reply_text(text)
+        logger.warning("Invio con %s fallito (%s) — invio come testo semplice", parse_mode, exc)
+        clean = re.sub(r"<[^>]+>", "", text)
+        await message.reply_text(clean)
 
 
 # ==============================================================================
@@ -148,8 +153,8 @@ async def status_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         result = await client.health()
         await _safe_reply(
             update.effective_message,
-            f"📊 *Stato DIMEOGPT*\n\n{result}",
-            parse_mode=ParseMode.MARKDOWN,
+            f"<b>📊 Stato DIMEOGPT</b>\n\n{result}",
+            parse_mode=ParseMode.HTML,
         )
     except Exception as exc:
         logger.error("Errore /status: %s", exc)
@@ -218,17 +223,12 @@ async def _search_handler(
         elapsed = time.monotonic() - t0
         logger.info("✅ Risposta %s in %.1fs (%d chars)", mode_label, elapsed, len(raw_result))
 
-        # Formatta e invia
-        formatted = format_response(raw_result, mode_label)
+        # Formatta esclusivamente la risposta finale in HTML
+        formatted = format_response(raw_result)
         chunks = split_long_message(formatted)
 
         for chunk in chunks:
-            try:
-                await message.reply_text(chunk, parse_mode=ParseMode.MARKDOWN)
-            except Exception:
-                # Fallback: invia senza parse_mode se Markdown dà errore
-                logger.warning("Markdown parsing fallito, invio come testo semplice")
-                await message.reply_text(chunk)
+            await _safe_reply(message, chunk, parse_mode=ParseMode.HTML)
 
     except Exception as exc:
         elapsed = time.monotonic() - t0
